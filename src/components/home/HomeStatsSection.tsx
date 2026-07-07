@@ -1,11 +1,43 @@
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import {
   fetchPlatformStats,
   formatPlatformMetric,
   type PlatformStats,
 } from "@/lib/home-stats";
+
+function smoothSparklinePaths(seed: number, width = 200, height = 60) {
+  const values = Array.from({ length: 12 }, (_, j) => {
+    const t = j / 11;
+    const trend = 0.32 + t * 0.48;
+    const wave = Math.sin(t * Math.PI * 1.15 + seed * 1.7) * 0.05;
+    return trend + wave;
+  });
+
+  const padY = 8;
+  const innerH = height - padY * 2;
+  const step = width / (values.length - 1);
+
+  const pts = values.map((v, j) => ({
+    x: j * step,
+    y: padY + innerH * (1 - v),
+  }));
+
+  let line = `M${pts[0].x},${pts[0].y}`;
+  for (let j = 0; j < pts.length - 1; j++) {
+    const p0 = pts[Math.max(0, j - 1)];
+    const p1 = pts[j];
+    const p2 = pts[j + 1];
+    const p3 = pts[Math.min(pts.length - 1, j + 2)];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    line += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+  }
+
+  return { line, area: `${line} L${width},${height} L0,${height} Z` };
+}
 
 function StatSkeleton() {
   return (
@@ -66,36 +98,35 @@ export function HomeStatsSection() {
                 Milhares de criadores já estão transformando seus perfis e alcançando o mundo.
               </p>
             </HomeScrollReveal>
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-pink-hot/30 bg-pink-hot/5 px-3 py-1 text-xs text-pink-hot">
-              <Sparkles className="h-3 w-3" /> Atualizado em tempo real
-            </div>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {items
-              ? items.map((s, i) => (
-                  <div key={s.t}>
-                    <div className="text-xs text-white/60">{s.t}</div>
-                    <div className="mt-1 text-3xl font-black tabular-nums">{s.v}</div>
-                    <svg viewBox="0 0 200 60" className="mt-3 h-16 w-full">
-                      <defs>
-                        <linearGradient id={`g${i}`} x1="0" x2="0" y1="0" y2="1">
-                          <stop offset="0%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0.4" />
-                          <stop offset="100%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        d={`M0,${40 + i * 2} L10,35 L20,42 L30,30 L40,38 L50,25 L60,32 L70,20 L80,28 L90,15 L100,22 L110,28 L120,18 L130,25 L140,12 L150,20 L160,10 L170,18 L180,8 L190,15 L200,5 L200,60 L0,60 Z`}
-                        fill={`url(#g${i})`}
-                      />
-                      <path
-                        d={`M0,${40 + i * 2} L10,35 L20,42 L30,30 L40,38 L50,25 L60,32 L70,20 L80,28 L90,15 L100,22 L110,28 L120,18 L130,25 L140,12 L150,20 L160,10 L170,18 L180,8 L190,15 L200,5`}
-                        stroke="oklch(0.65 0.28 0)"
-                        strokeWidth="1.5"
-                        fill="none"
-                      />
-                    </svg>
-                  </div>
-                ))
+              ? items.map((s, i) => {
+                  const { line, area } = smoothSparklinePaths(i + 1);
+                  return (
+                    <div key={s.t}>
+                      <div className="text-xs text-white/60">{s.t}</div>
+                      <div className="mt-1 text-3xl font-black tabular-nums">{s.v}</div>
+                      <svg viewBox="0 0 200 60" className="mt-3 h-16 w-full" aria-hidden>
+                        <defs>
+                          <linearGradient id={`g${i}`} x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0.35" />
+                            <stop offset="100%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+                        <path d={area} fill={`url(#g${i})`} />
+                        <path
+                          d={line}
+                          stroke="oklch(0.65 0.28 0)"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          fill="none"
+                        />
+                      </svg>
+                    </div>
+                  );
+                })
               : [0, 1, 2].map((i) => <StatSkeleton key={i} />)}
           </div>
         </div>

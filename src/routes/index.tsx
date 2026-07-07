@@ -29,7 +29,7 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Biosy — Seu mundo. Seu perfil. Seu jeito." },
       { name: "description", content: "Crie um perfil único com links, músicas, álbuns, cards, redes sociais e muito mais. Tudo em um só lugar." },
-      { property: "og:title", content: "Biosy — A plataforma mais completa para seu perfil digital" },
+      { property: "og:title", content: "Biosy — Seu mundo. Seu perfil. Seu jeito." },
       { property: "og:description", content: "Junte-se a milhares de criadores e mostre seu mundo para o mundo." },
     ],
   }),
@@ -114,11 +114,7 @@ function Index() {
       <section id="inicio" className="relative mx-auto max-w-7xl px-6 pt-8 pb-16">
         <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_1.15fr]">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-pink-hot/40 bg-pink-hot/10 px-3 py-1 text-xs">
-              <span className="rounded-full bg-pink-hot px-2 py-0.5 text-[10px] font-bold">NOVO</span>
-              <span className="text-white/80">A plataforma mais completa para seu perfil digital</span>
-            </div>
-            <h1 className="mt-6 text-6xl font-black leading-[0.95] tracking-tight lg:text-7xl">
+            <h1 className="text-6xl font-black leading-[0.95] tracking-tight lg:text-7xl">
               Seu mundo.<br />
               <span
                 className="text-glow bg-clip-text text-transparent"
@@ -350,33 +346,32 @@ function Index() {
 
       {/* FOOTER */}
       <footer className="border-t border-white/5">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-5">
-            <div className="md:col-span-1">
-              <Logo />
-              <p className="mt-3 text-sm text-white/55">Do seu jeito.<br/>Para o mundo.</p>
-            </div>
-            {[
-              { t: "Produto", l: ["Recursos", "Modelos", "Preços", "Atualizações"] },
-              { t: "Empresa", l: ["Sobre nós", "Carreiras", "Contato", "Imprensa"] },
-              { t: "Suporte", l: ["Central de ajuda", "Tutoriais", "Privacidade", "Termos de uso"] },
-            ].map((c, i) => (
-              <div key={i}>
-                <h4 className="text-sm font-bold">{c.t}</h4>
-                <ul className="mt-3 space-y-2 text-sm text-white/55">
-                  {c.l.map((it, k) => <li key={k}><a href="#" className="hover:text-white">{it}</a></li>)}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h4 className="text-sm font-bold">Siga-nos</h4>
-              <div className="mt-3 flex gap-2">
-                {[Instagram, Youtube, Twitter, Music2].map((Ic, i) => (
-                  <a key={i} href="#" className="grid h-9 w-9 place-items-center rounded-full border border-pink-hot/30 bg-pink-hot/10 text-pink-hot hover:bg-pink-hot/20">
-                    <Ic className="h-4 w-4" />
+        <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-14 md:flex-row md:items-start md:justify-between">
+          <div>
+            <Logo />
+            <p className="mt-3 text-sm text-white/55">Do seu jeito.<br />Para o mundo.</p>
+          </div>
+          <nav aria-label="Links do site">
+            <ul className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/55">
+              {[
+                { label: "Terms of Service", href: "/terms-of-service" },
+                { label: "Privacy Policy", href: "/privacy-policy" },
+                { label: "FAQ", href: "/faq" },
+                { label: "Support", href: "/support" },
+                { label: "Discord", href: "#" },
+              ].map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    className="hover:text-white"
+                    {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  >
+                    {link.label}
                   </a>
-                ))}
-              </div>
-            </div>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
         <div className="border-t border-white/5 py-5 text-center text-xs text-white/40">
           © 2024 Biosy. Todos os direitos reservados.
