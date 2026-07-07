@@ -318,6 +318,7 @@ function Dashboard() {
 
   const handleSave = async () => {
     if (!profile) return;
+    const savedCardHeight = clampCardHeight(profile, profile.card_height ?? DEFAULT_CARD_HEIGHT, blocks);
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
@@ -348,7 +349,7 @@ function Dashboard() {
         card_border_radius: profile.card_border_radius,
         socials: profile.socials,
         card_width: profile.card_width,
-        card_height: profile.card_height,
+        card_height: savedCardHeight,
         inner_banner_url: profile.inner_banner_url,
         inner_banner_pos_x: profile.inner_banner_pos_x ?? 50,
         inner_banner_pos_y: profile.inner_banner_pos_y ?? 50,
@@ -437,10 +438,11 @@ function Dashboard() {
       return;
     }
     try {
-      await syncLivePublicTemplate(profile);
+      await syncLivePublicTemplate({ ...profile, card_height: savedCardHeight });
     } catch (syncErr) {
       console.error("[syncLivePublicTemplate]", syncErr);
     }
+    setProfile((p) => (p ? { ...p, card_height: savedCardHeight } : p));
     setSaving(false);
     toast.success("Perfil salvo!");
   };

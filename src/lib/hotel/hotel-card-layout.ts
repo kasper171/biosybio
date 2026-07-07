@@ -4,8 +4,6 @@ import {
   DEFAULT_CARD_WIDTH,
   type Profile,
 } from "@/lib/profile-storage";
-import { resolveCardHeight } from "@/lib/card-min-height";
-import type { ProfileBlock } from "@/lib/profile-blocks";
 
 export type HotelCardPlacement = "inside" | "outside";
 export type HotelCardRow = "same_row" | "separate_row";
@@ -196,13 +194,10 @@ export type HotelBelowSlot = {
   gapPx?: number;
 };
 
-export function getMainCardDimensions(
-  profile: Profile,
-  opts?: { blocks?: ProfileBlock[] },
-): { width: number; height: number } {
+export function getMainCardDimensions(profile: Profile): { width: number; height: number } {
   return {
     width: Number(profile.card_width ?? DEFAULT_CARD_WIDTH) || DEFAULT_CARD_WIDTH,
-    height: resolveCardHeight(profile, opts),
+    height: Number(profile.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT,
   };
 }
 

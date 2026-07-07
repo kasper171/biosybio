@@ -159,11 +159,3 @@ export function clampCardHeight(
   const stepped = roundCardHeight(height);
   return Math.min(CARD_HEIGHT_SLIDER_MAX, Math.max(min, stepped));
 }
-
-export function resolveCardHeight(
-  profile: Profile,
-  opts?: { blocks?: ProfileBlock[] },
-): number {
-  const stored = Number(profile.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT;
-  return clampCardHeight(profile, stored, opts?.blocks);
-}

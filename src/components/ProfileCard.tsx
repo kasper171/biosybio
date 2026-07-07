@@ -4,8 +4,6 @@ import { Eye, Hash, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { buildCardBorderChrome, normalizeCardBorderStyle } from "@/lib/card-border";
-import { resolveCardHeight } from "@/lib/card-min-height";
-import type { ProfileBlock } from "@/lib/profile-blocks";
 import {
   getBadgeStyle,
   getBodyBaseStyle,
@@ -73,7 +71,6 @@ type LayoutContentProps = {
   footer?: ReactNode;
   children?: ReactNode;
   socialIcons?: ReactNode;
-  contentBlocks?: ProfileBlock[];
 };
 
 function AvatarBlock({
@@ -461,10 +458,8 @@ type Props = {
   animateNameText?: boolean;
   animateBioText?: boolean;
   animationSeed?: number;
-  /** Altura exata do card (ex.: hotel ao lado) — evita crescer além de card_height */
+  /** Altura exata do card — respeita card_height salvo no perfil */
   enforceCardHeight?: boolean;
-  /** Blocos dentro do card — usados para garantir altura mínima sem scroll */
-  contentBlocks?: ProfileBlock[];
 };
 
 export function ProfileCard({
@@ -477,7 +472,6 @@ export function ProfileCard({
   animateBioText = false,
   animationSeed = 0,
   enforceCardHeight = true,
-  contentBlocks,
 }: Props) {
   const [hovering, setHovering] = useState(false);
   const fullName = profile.display_name || profile.username;
@@ -547,7 +541,7 @@ export function ProfileCard({
   const borderWidth = profile.card_border_width ?? 0;
   const borderColor = profile.card_border_color;
   const radius = profile.card_border_radius ?? 16;
-  const cardH = resolveCardHeight(profile, { blocks: contentBlocks });
+  const cardH = Number(profile.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT;
 
   const borderChrome = buildCardBorderChrome({
     borderWidth,
