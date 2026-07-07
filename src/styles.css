@@ -632,17 +632,18 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-phone-cut-feather {
   pointer-events: none;
   position: absolute;
-  right: -2px;
+  right: -3px;
   bottom: var(--phone-cut);
-  left: -2px;
+  left: -3px;
   z-index: 10;
-  height: 24%;
+  height: 30%;
   background: linear-gradient(
     to top,
     var(--biosy-bg-base) 0%,
-    var(--biosy-bg-base) 12%,
-    color-mix(in srgb, var(--biosy-bg-base) 82%, transparent) 36%,
-    color-mix(in srgb, var(--biosy-bg-base) 42%, transparent) 64%,
+    var(--biosy-bg-base) 30%,
+    color-mix(in srgb, var(--biosy-bg-base) 96%, transparent) 50%,
+    color-mix(in srgb, var(--biosy-bg-base) 78%, transparent) 68%,
+    color-mix(in srgb, var(--biosy-bg-base) 48%, transparent) 84%,
     transparent 100%
   );
 }
@@ -651,14 +652,15 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-phone-cut-blur {
   pointer-events: none;
   position: absolute;
-  right: -4px;
-  bottom: calc(var(--phone-cut) - 3px);
-  left: -4px;
+  right: -6px;
+  bottom: calc(var(--phone-cut) - 5px);
+  left: -6px;
   z-index: 11;
-  height: 1.5rem;
+  height: 2.25rem;
   background: var(--biosy-bg-base);
-  transform: translateY(50%);
-  filter: blur(18px);
+  opacity: 1;
+  transform: translateY(55%);
+  filter: blur(24px);
 }
 
 .home-phone-shot {
