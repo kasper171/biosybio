@@ -94,11 +94,10 @@ function Index() {
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
         <Logo />
         <nav className="hidden items-center gap-8 text-sm text-white/70 lg:flex">
+          <a href="#inicio" className="hover:text-white">Início</a>
           <a href="#recursos" className="hover:text-white">Recursos</a>
-          <a href="#modelos" className="hover:text-white">Modelos</a>
-          <a href="#precos" className="hover:text-white">Preços</a>
-          <a href="#blog" className="hover:text-white">Blog</a>
-          <a href="#empresa" className="hover:text-white">Empresa</a>
+          <a href="#creators" className="hover:text-white">Creators</a>
+          <a href="#precos" className="hover:text-white">Planos</a>
         </nav>
         <div className="flex items-center gap-3">
           <SiteAuthButtons />
@@ -106,7 +105,7 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section className="relative mx-auto max-w-7xl px-6 pt-8 pb-16">
+      <section id="inicio" className="relative mx-auto max-w-7xl px-6 pt-8 pb-16">
         <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_1.15fr]">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-pink-hot/40 bg-pink-hot/10 px-3 py-1 text-xs">

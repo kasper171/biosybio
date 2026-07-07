@@ -73,7 +73,7 @@ export function HomeCreatorsCarousel() {
   const marqueeDuration = Math.max(marqueeTrack.length * 3.5, 24);
 
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-20">
+    <section id="creators" className="mx-auto max-w-7xl px-6 pb-20">
       <div className="grid gap-8 lg:grid-cols-[1fr_2.5fr]">
         <div>
           <HomeScrollReveal variant="up">
