@@ -578,7 +578,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 .home-phone-card-clip {
   position: relative;
-  clip-path: inset(-2% -4% var(--phone-cut) -4%);
+  clip-path: inset(-2% -4% calc(var(--phone-cut) + 1px) -4%);
 }
 
 .home-phone-shot-wrap {
@@ -588,7 +588,24 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   overflow: hidden;
   border-radius: 1.85rem;
   transform-style: preserve-3d;
-  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 12px 32px -18px rgba(0, 0, 0, 0.5);
+}
+
+.home-phone-shot-wrap::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  height: 18%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--biosy-bg-base) 55%, transparent) 55%,
+    var(--biosy-bg-base) 100%
+  );
 }
 
 /* Borda superior 1.5px — tema Biosy, visível só no topo */
@@ -628,22 +645,34 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
     drop-shadow(0 0 32px oklch(0.55 0.27 10 / 0.24));
 }
 
+/* Faixa sólida — tapa o risco claro do anti-alias do clip */
+.home-phone-cut-seal {
+  pointer-events: none;
+  position: absolute;
+  right: -5px;
+  bottom: calc(var(--phone-cut) - 4px);
+  left: -5px;
+  z-index: 12;
+  height: 10px;
+  background: var(--biosy-bg-base);
+}
+
 /* Feather — cobre corte + bordas na base */
 .home-phone-cut-feather {
   pointer-events: none;
   position: absolute;
-  right: -3px;
-  bottom: var(--phone-cut);
-  left: -3px;
+  right: -5px;
+  bottom: calc(var(--phone-cut) - 8px);
+  left: -5px;
   z-index: 10;
-  height: 30%;
+  height: 32%;
   background: linear-gradient(
     to top,
     var(--biosy-bg-base) 0%,
-    var(--biosy-bg-base) 30%,
-    color-mix(in srgb, var(--biosy-bg-base) 96%, transparent) 50%,
-    color-mix(in srgb, var(--biosy-bg-base) 78%, transparent) 68%,
-    color-mix(in srgb, var(--biosy-bg-base) 48%, transparent) 84%,
+    var(--biosy-bg-base) 42%,
+    color-mix(in srgb, var(--biosy-bg-base) 98%, transparent) 58%,
+    color-mix(in srgb, var(--biosy-bg-base) 82%, transparent) 74%,
+    color-mix(in srgb, var(--biosy-bg-base) 52%, transparent) 90%,
     transparent 100%
   );
 }
@@ -652,15 +681,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-phone-cut-blur {
   pointer-events: none;
   position: absolute;
-  right: -6px;
-  bottom: calc(var(--phone-cut) - 5px);
-  left: -6px;
+  right: -8px;
+  bottom: calc(var(--phone-cut) - 8px);
+  left: -8px;
   z-index: 11;
-  height: 2.25rem;
+  height: 2.5rem;
   background: var(--biosy-bg-base);
-  opacity: 1;
-  transform: translateY(55%);
-  filter: blur(24px);
+  transform: translateY(40%);
+  filter: blur(28px);
 }
 
 .home-phone-shot {
