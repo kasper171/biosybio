@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { FaDiscord } from "react-icons/fa";
 import type { Profile } from "@/lib/profile-storage";
 import {
@@ -14,6 +14,10 @@ import {
   getTextGlowStyle,
   hexToRgba,
 } from "@/lib/profile-colors";
+import { cn } from "@/lib/utils";
+
+/** Abaixo desta largura, a atividade (Spotify etc.) encolhe para não sobrepor o perfil */
+const ACTIVITY_COMPACT_WIDTH_PX = 400;
 
 type DiscordUser = {
   id: string;
@@ -242,6 +246,28 @@ export function DiscordPresenceCard({
     ? `${spotify.artist} — ${spotify.album}`
     : (richActivity?.state ?? "");
   const activityArt = spotify?.album_art_url ?? (richActivity ? getActivityArt(richActivity) : null);
+
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(ACTIVITY_COMPACT_WIDTH_PX);
+
+  useEffect(() => {
+    const el = layoutRef.current;
+    if (!el) return;
+
+    const update = () => {
+      setContainerWidth(el.getBoundingClientRect().width);
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [hasActivity, variant]);
+
+  const isCompactActivity = hasActivity && containerWidth < ACTIVITY_COMPACT_WIDTH_PX;
+  const activityCompactRatio = isCompactActivity
+    ? Math.max(0.62, containerWidth / ACTIVITY_COMPACT_WIDTH_PX)
+    : 1;
   const spotifyStart = spotify?.timestamps?.start ?? null;
   const spotifyEnd = spotify?.timestamps?.end ?? null;
   const spotifyDuration = spotifyStart && spotifyEnd ? Math.max(spotifyEnd - spotifyStart, 0) : 0;
@@ -296,6 +322,11 @@ export function DiscordPresenceCard({
   const activityTitlePx = Math.round(14 * scaleFactor);
   const activitySubPx = Math.round(12 * scaleFactor);
   const activityArtPx = Math.round(48 * scaleFactor);
+  const effActivityTitlePx = Math.max(10, Math.round(activityTitlePx * activityCompactRatio));
+  const effActivitySubPx = Math.max(9, Math.round(activitySubPx * activityCompactRatio));
+  const effActivityArtPx = Math.max(28, Math.round(activityArtPx * activityCompactRatio));
+  const effProgressW = Math.max(64, Math.round(170 * scaleFactor * activityCompactRatio));
+  const showProgressTimes = !isCompactActivity || containerWidth >= 300;
   const profileLinkPx = Math.round(14 * scaleFactor);
   const iconPx = Math.round(12 * scaleFactor);
 
@@ -321,8 +352,19 @@ export function DiscordPresenceCard({
           Discord
         </span>
       </div>
-      <div className="relative z-[1] flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+      <div
+        ref={layoutRef}
+        className={cn(
+          "relative z-[1] flex min-w-0 items-center",
+          hasActivity ? (isCompactActivity ? "gap-1.5" : "justify-between gap-3") : "justify-between gap-3",
+        )}
+      >
+        <div
+          className={cn(
+            "flex min-w-0 items-center gap-3",
+            hasActivity && "min-w-0 flex-1 overflow-hidden",
+          )}
+        >
           <img
             src={getAvatarUrl(safeUser)}
             alt={safeUser.username}
@@ -370,24 +412,49 @@ export function DiscordPresenceCard({
             href={`https://discord.com/users/${userId}`}
             target="_blank"
             rel="noreferrer"
-            className="ml-auto flex min-w-0 items-center gap-3 pr-0 transition opacity-95 hover:opacity-100"
+            className={cn(
+              "flex min-w-0 shrink items-center transition opacity-95 hover:opacity-100",
+              isCompactActivity ? "max-w-[48%] gap-1" : "ml-auto gap-3",
+            )}
             title="Ver perfil no Discord"
           >
-            <div className="min-w-0 text-right">
-              <p className="truncate font-semibold" style={{ ...titleFallback, ...titleGlowFallback, fontSize: activityTitlePx }}>{activityTitle}</p>
-              <p className="truncate" style={{ ...mutedFallback, ...discordMutedGlow, fontSize: activitySubPx }}>{activitySubtitle}</p>
+            <div className="min-w-0 flex-1 overflow-hidden text-right">
+              <p
+                className="truncate font-semibold"
+                style={{ ...titleFallback, ...titleGlowFallback, fontSize: effActivityTitlePx }}
+              >
+                {activityTitle}
+              </p>
+              <p
+                className="truncate"
+                style={{ ...mutedFallback, ...discordMutedGlow, fontSize: effActivitySubPx }}
+              >
+                {activitySubtitle}
+              </p>
               {spotify && spotifyDuration > 0 && (
-                <div className="mt-1.5 w-[170px] max-w-full ml-auto" style={{ width: Math.round(170 * scaleFactor) }}>
+                <div
+                  className="mt-1 ml-auto max-w-full"
+                  style={{ width: effProgressW, maxWidth: "100%" }}
+                >
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/20">
                     <div
                       className="h-full rounded-full bg-white/80 transition-[width] duration-700 ease-linear"
                       style={{ width: `${spotifyProgress * 100}%` }}
                     />
                   </div>
-                  <div className="mt-1 flex items-center justify-between" style={{ ...mutedFallback, ...discordMutedGlow, fontSize: Math.round(10 * scaleFactor) }}>
-                    <span>{formatMs(Math.min(spotifyElapsed, spotifyDuration))}</span>
-                    <span>{formatMs(spotifyDuration)}</span>
-                  </div>
+                  {showProgressTimes && (
+                    <div
+                      className="mt-1 flex items-center justify-between"
+                      style={{
+                        ...mutedFallback,
+                        ...discordMutedGlow,
+                        fontSize: Math.max(8, Math.round(10 * scaleFactor * activityCompactRatio)),
+                      }}
+                    >
+                      <span>{formatMs(Math.min(spotifyElapsed, spotifyDuration))}</span>
+                      <span>{formatMs(spotifyDuration)}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -396,12 +463,12 @@ export function DiscordPresenceCard({
                 src={activityArt}
                 alt={activityTitle}
                 className="shrink-0 rounded-md object-cover"
-                style={{ width: activityArtPx, height: activityArtPx }}
+                style={{ width: effActivityArtPx, height: effActivityArtPx }}
               />
             ) : (
               <div
                 className="grid shrink-0 place-items-center rounded-md border border-white/15 text-white/70"
-                style={{ width: activityArtPx, height: activityArtPx, fontSize: activitySubPx }}
+                style={{ width: effActivityArtPx, height: effActivityArtPx, fontSize: effActivitySubPx }}
               >
                 Ativo
               </div>
