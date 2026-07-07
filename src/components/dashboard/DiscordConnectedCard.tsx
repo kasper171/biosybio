@@ -34,7 +34,7 @@ export function DiscordConnectedCard({ userId, onDisconnect }: Props) {
   const avatarUrl = user ? getDiscordAvatarUrl(user) : getDiscordAvatarUrl({ id: userId, username: "discord", global_name: null, avatar: null });
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#5865F2]/30 bg-gradient-to-br from-[#5865F2]/12 via-[#12121a] to-[#12121a]">
+    <div className="overflow-hidden rounded-xl border border-[#5865F2]/30 bg-gradient-to-br from-[#5865F2]/12 via-[var(--biosy-bg-base)] to-[var(--biosy-bg-base)]">
       <div className="flex items-start gap-3 p-3.5">
         <div className="relative shrink-0">
           <div className="absolute -inset-0.5 rounded-full bg-[#5865F2]/40 blur-sm" aria-hidden />

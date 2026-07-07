@@ -37,10 +37,11 @@
 
 :root {
   --radius: 0.875rem;
-  --biosy-bg-base: #121318;
-  --biosy-bg-raised: #17171d;
-  --biosy-bg-surface: #1b1b22;
-  --biosy-hero-mask: #0a0a0a;
+  --biosy-bg-base: #0a0a0a;
+  --biosy-bg-raised: #111111;
+  --biosy-bg-surface: #161616;
+  --biosy-bg-elevated: #1c1c1c;
+  --biosy-hero-mask: #070707;
   --background: var(--biosy-bg-base);
   --foreground: oklch(0.98 0.005 0);
   --card: var(--biosy-bg-surface);
@@ -475,7 +476,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
     transparent 0%,
     rgba(8, 8, 8, 0.42) 38%,
     rgba(6, 6, 6, 0.82) 72%,
-    var(--biosy-hero-mask) 100%
+    var(--biosy-bg-base) 100%
   );
 }
 
@@ -852,8 +853,13 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   text-shadow: 0 0 30px oklch(0.65 0.28 0 / 0.4);
 }
 @utility card-surface {
-  background: linear-gradient(180deg, var(--biosy-bg-surface), var(--biosy-bg-raised));
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(
+    165deg,
+    var(--biosy-bg-surface) 0%,
+    var(--biosy-bg-raised) 52%,
+    var(--biosy-bg-base) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(10px);
 }
 @utility phone-frame {
@@ -1370,7 +1376,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   width: min(640px, calc(100% - 1.25rem));
   padding: 0.625rem 1rem;
   border-radius: 9999px;
-  background-color: rgba(14, 14, 17, 0.82);
+  background-color: rgba(10, 10, 10, 0.88);
   border-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(20px);

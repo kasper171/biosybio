@@ -138,7 +138,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                   </div>
                 )}
                 {completion === 100 && (
-                  <span className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full border-2 border-[#12121a] bg-emerald-500 text-white">
+                  <span className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full border-2 border-[var(--biosy-bg-base)] bg-emerald-500 text-white">
                     <Sparkles className="h-3.5 w-3.5" />
                   </span>
                 )}
