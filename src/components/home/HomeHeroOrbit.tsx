@@ -186,8 +186,6 @@ function OrbitWidgetSlot({ slot }: { slot: OrbitSlot }) {
     <div
       className={cn(
         "home-orbit-widget",
-        `home-orbit-widget--float-${slot.float}`,
-        `home-orbit-widget--drift-${slot.drift}`,
         slot.z <= 10 && "home-orbit-widget--back",
         slot.z >= 24 && "home-orbit-widget--front",
       )}
@@ -207,7 +205,15 @@ function OrbitWidgetSlot({ slot }: { slot: OrbitSlot }) {
         } as CSSProperties
       }
     >
-      <div className="home-orbit-widget__motion">{slot.content}</div>
+      <div className="home-orbit-widget__pose">
+        <div className={cn("home-orbit-widget__path", `home-orbit-widget__path--${slot.float}`)}>
+          <div className={cn("home-orbit-widget__bob", `home-orbit-widget__bob--${slot.float}`)}>
+            <div className={cn("home-orbit-widget__drift", `home-orbit-widget__drift--${slot.drift}`)}>
+              {slot.content}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -244,8 +250,9 @@ export function HomeHeroOrbit() {
           <div className="home-orbit__phone-wrap">
             <div className="home-orbit__phone-glow" aria-hidden />
             <div className="home-orbit__phone-orbit">
-              <div className="home-orbit__phone">
-                <div className="home-orbit__phone-glass">
+              <div className="home-orbit__phone-float">
+                <div className="home-orbit__phone">
+                  <div className="home-orbit__phone-glass">
                   <div className="home-phone-card-3d home-orbit__phone-card">
                     <div className="home-phone-card-clip">
                       <div className="home-phone-top-border home-phone-neon-bright" />
