@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getTurnstileUserMessage } from "@/lib/turnstile/errors";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify.server";
 
 const tokenInput = z.object({
@@ -12,20 +13,20 @@ const profileViewInput = z.object({
 });
 
 export const verifyTurnstileFn = createServerFn({ method: "POST" })
-  .validator(tokenInput)
+  .inputValidator(tokenInput)
   .handler(async ({ data }) => {
-    const ok = await verifyTurnstileToken(data.token);
-    if (!ok) {
-      throw new Error("Verificação de segurança falhou. Marque o check e tente novamente.");
+    const verified = await verifyTurnstileToken(data.token);
+    if (!verified.ok) {
+      throw new Error(getTurnstileUserMessage(verified.code));
     }
     return { ok: true as const };
   });
 
 export const incrementProfileViewFn = createServerFn({ method: "POST" })
-  .validator(profileViewInput)
+  .inputValidator(profileViewInput)
   .handler(async ({ data }) => {
-    const ok = await verifyTurnstileToken(data.token);
-    if (!ok) {
+    const verified = await verifyTurnstileToken(data.token);
+    if (!verified.ok) {
       return { ok: false as const, viewCount: null };
     }
 
