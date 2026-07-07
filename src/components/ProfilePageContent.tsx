@@ -20,6 +20,7 @@ import {
 import { SOCIAL_MAP, resolveSocialUrl } from "@/lib/socials";
 import { FaGlobe } from "react-icons/fa";
 import { motion } from "motion/react";
+import type { CSSProperties } from "react";
 
 type Props = {
   profile: Profile;
@@ -247,15 +248,6 @@ export function ProfilePageContent({
     </ProfileCard>
   );
 
-  const outsideDiscord = profile.discord_user_id && discordMode === "outside" && (
-    <DiscordPresenceCard
-      userId={profile.discord_user_id}
-      variant="outside"
-      profileTheme={profile}
-      showBadges={profile.discord_show_badges !== false}
-    />
-  );
-
   const mainCardBesideClass = hotelOutsideBeside
     ? isEditor
       ? "w-full min-w-0 shrink-0"
@@ -287,7 +279,7 @@ export function ProfilePageContent({
 
   const hotelDelay = discordOutside ? discordDelay + 60 : discordDelay;
   const showMusicCard = Boolean(profile.music_url) && profile.music_card_enabled !== false;
-  const musicCardDelay = hotelDelay + (hotelOutsideBelow ? 80 : 0) + (outsideDiscord ? 40 : 0);
+  const musicCardDelay = hotelDelay + (hotelOutsideBelow ? 80 : 0) + (discordOutside ? 40 : 0);
   const musicCardWidthPct = getMusicCardWidthPct(profile.music_card_width_pct);
 
   const musicCardInner = showMusicCard ? (
@@ -313,16 +305,58 @@ export function ProfilePageContent({
     </div>
   ) : null;
 
+  const mainCardWidth = mainCardDims.width;
+  const mainColumnStyle: CSSProperties = hotelOutsideBeside
+    ? {
+        width: mainCardWidth,
+        maxWidth: mainCardWidth,
+        minWidth: 0,
+        flexShrink: 0,
+      }
+    : {
+        width: "100%",
+        maxWidth: mainCardWidth,
+      };
+
+  const outsideDiscordInner =
+    profile.discord_user_id && discordMode === "outside" ? (
+      <DiscordPresenceCard
+        userId={profile.discord_user_id}
+        variant="outside"
+        profileTheme={profile}
+        showBadges={profile.discord_show_badges !== false}
+      />
+    ) : null;
+
+  const outsideDiscordWrapped = outsideDiscordInner ? (
+    <div className="mt-4 w-full min-w-0" style={{ maxWidth: mainCardWidth }}>
+      {animate && discordOutside ? (
+        <motion.div
+          key={`discord-${animKey}`}
+          initial={cardInitial}
+          animate={cardAnimate}
+          transition={{ ...cardTransition, delay: discordDelay / 1000 }}
+          className="relative mx-auto w-full min-w-0"
+          style={{ maxWidth: mainCardWidth, willChange: "transform" }}
+        >
+          {outsideDiscordInner}
+        </motion.div>
+      ) : (
+        <div className="mx-auto w-full min-w-0" style={{ maxWidth: mainCardWidth }}>
+          {outsideDiscordInner}
+        </div>
+      )}
+    </div>
+  ) : null;
+
   const mainCardColumn = (
     <div
-      className={`flex w-full flex-col ${hotelOutsideBeside ? "mx-auto shrink-0 lg:mx-0" : "mx-auto"}`}
-      style={{
-        width: "100%",
-        maxWidth: mainCardDims.width,
-      }}
+      className={`flex flex-col ${hotelOutsideBeside ? "mx-auto shrink-0 self-start lg:mx-0" : "mx-auto w-full"}`}
+      style={mainColumnStyle}
     >
       {mainCardWrapped}
       {musicCardInner}
+      {outsideDiscordWrapped}
     </div>
   );
 
@@ -396,25 +430,6 @@ export function ProfilePageContent({
               </div>
             )}
           </div>
-
-          {outsideDiscord && (
-            <div className="mt-4">
-              {animate && discordOutside ? (
-                <motion.div
-                  key={`discord-${animKey}`}
-                  initial={cardInitial}
-                  animate={cardAnimate}
-                  transition={{ ...cardTransition, delay: discordDelay / 1000 }}
-                  className="relative"
-                  style={{ willChange: "transform" }}
-                >
-                  {outsideDiscord}
-                </motion.div>
-              ) : (
-                outsideDiscord
-              )}
-            </div>
-          )}
 
           {hotelOutsideBelow && hotelCardsOutside && (
             <div
