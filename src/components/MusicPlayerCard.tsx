@@ -19,7 +19,9 @@ function getMusicCardChrome(profile: Profile): {
 } {
   const borderWidth = Number(profile.card_border_width ?? 0) || 0;
   const borderColor = profile.card_border_color ?? "#ffffff";
-  const radius = Number(profile.card_border_radius ?? 16) || 16;
+  // Arredondamento GLOBAL — 0 deve permanecer 0
+  const radiusRaw = Number(profile.card_border_radius ?? 16);
+  const radius = Number.isFinite(radiusRaw) ? radiusRaw : 16;
 
   const borderChrome = buildCardBorderChrome({
     borderWidth,
