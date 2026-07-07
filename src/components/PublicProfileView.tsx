@@ -6,6 +6,7 @@ import { TapToRevealOverlay } from "@/components/TapToRevealOverlay";
 import { ProfileMusicPlayerFloating } from "@/components/ProfileMusicPlayer";
 import { ProfileMusicProvider } from "@/contexts/ProfileMusicContext";
 import { useProfileBlocks } from "@/hooks/useProfileBlocks";
+import { useProfileHotelSync } from "@/hooks/useProfileHotelSync";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 
 type Props = {
@@ -14,38 +15,51 @@ type Props = {
   isEditor?: boolean;
   /** Blocos injetados pelo dashboard (evita fetch duplicado). */
   blocks?: ProfileBlock[];
+  onProfileChange?: (profile: Profile) => void;
 };
 
-export function PublicProfileView({ profile, isEditor, blocks: blocksProp }: Props) {
+export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onProfileChange }: Props) {
   const { blocks: fetchedBlocks } = useProfileBlocks(blocksProp ? null : profile.id);
   const blocks = blocksProp ?? fetchedBlocks;
-  const hasMusic = Boolean(profile.music_url);
-  const musicCardMode = hasMusic && profile.music_card_enabled !== false;
-  const tapEnabled = hasMusic || profile.tap_to_reveal_enabled === true;
+  const [liveProfile, setLiveProfile] = useState(profile);
+  const hasMusic = Boolean(liveProfile.music_url);
+  const musicCardMode = hasMusic && liveProfile.music_card_enabled !== false;
+  const tapEnabled = hasMusic || liveProfile.tap_to_reveal_enabled === true;
   const [revealed, setRevealed] = useState(!tapEnabled);
   const [animKey, setAnimKey] = useState(0);
 
   useEffect(() => {
+    setLiveProfile(profile);
+  }, [profile]);
+
+  useProfileHotelSync(liveProfile, {
+    onProfileChange: (next) => {
+      setLiveProfile(next);
+      onProfileChange?.(next);
+    },
+  });
+
+  useEffect(() => {
     ensureProfileFontsLoaded(
-      profile.page_font_family ?? "",
-      profile.name_font_family ?? "inherit",
+      liveProfile.page_font_family ?? "",
+      liveProfile.name_font_family ?? "inherit",
     );
-  }, [profile.page_font_family, profile.name_font_family]);
+  }, [liveProfile.page_font_family, liveProfile.name_font_family]);
 
   useEffect(() => {
     setRevealed(!tapEnabled);
     setAnimKey((k) => k + 1);
   }, [
     tapEnabled,
-    profile.tap_reveal_blur,
-    profile.tap_reveal_brightness,
-    profile.tap_reveal_mode,
-    profile.tap_reveal_text,
-    profile.card_reveal_effect,
-    profile.music_url,
-    profile.music_start_sec,
-    profile.music_end_sec,
-    profile.music_card_enabled,
+    liveProfile.tap_reveal_blur,
+    liveProfile.tap_reveal_brightness,
+    liveProfile.tap_reveal_mode,
+    liveProfile.tap_reveal_text,
+    liveProfile.card_reveal_effect,
+    liveProfile.music_url,
+    liveProfile.music_start_sec,
+    liveProfile.music_end_sec,
+    liveProfile.music_card_enabled,
   ]);
 
   const showOverlay = tapEnabled && !revealed;
@@ -58,7 +72,7 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp }: Pro
 
   const pageContent = showContent ? (
     <ProfilePageContent
-      profile={profile}
+      profile={liveProfile}
       blocks={blocks}
       animate={!isEditor}
       animKey={animKey}
@@ -72,15 +86,15 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp }: Pro
   return (
     <div
       className="relative min-h-screen w-full"
-      style={{ fontFamily: profile.page_font_family }}
+      style={{ fontFamily: liveProfile.page_font_family }}
     >
       {hasMusic ? (
         <ProfileMusicProvider
           config={{
-            musicUrl: profile.music_url!,
-            title: profile.music_title ?? undefined,
-            startSec: profile.music_start_sec ?? 0,
-            endSec: profile.music_end_sec,
+            musicUrl: liveProfile.music_url!,
+            title: liveProfile.music_title ?? undefined,
+            startSec: liveProfile.music_start_sec ?? 0,
+            endSec: liveProfile.music_end_sec,
             autoplay: !isEditor,
             enabled: showContent,
           }}
@@ -93,7 +107,7 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp }: Pro
       )}
       {showOverlay && (
         <TapToRevealOverlay
-          profile={profile}
+          profile={liveProfile}
           onReveal={handleReveal}
           zIndex={isEditor ? 20 : 50}
         />

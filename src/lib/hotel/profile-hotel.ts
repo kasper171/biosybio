@@ -114,6 +114,7 @@ export function clearHabboProfilePatch(): Partial<Profile> {
     habbo_figure: null,
     habbo_motto: null,
     habbo_level: null,
+    habbo_synced_at: null,
   };
 }
 
@@ -123,6 +124,7 @@ export function clearHabbletProfilePatch(): Partial<Profile> {
     habblet_figure: null,
     habblet_motto: null,
     habblet_achievement_points: null,
+    habblet_synced_at: null,
   };
 }
 

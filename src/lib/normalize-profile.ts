@@ -64,6 +64,8 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     habblet_motto: (p.habblet_motto as string | null) ?? null,
     habblet_achievement_points:
       p.habblet_achievement_points == null ? null : Number(p.habblet_achievement_points),
+    habbo_synced_at: (p.habbo_synced_at as string | null) ?? null,
+    habblet_synced_at: (p.habblet_synced_at as string | null) ?? null,
     hotel_card_placement:
       (p.hotel_card_placement as "inside" | "outside") === "outside" ? "outside" : "inside",
     hotel_card_row:

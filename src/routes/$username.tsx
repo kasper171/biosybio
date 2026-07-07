@@ -122,5 +122,5 @@ function PublicProfile() {
     return <div className="grid min-h-screen place-items-center text-white/60">Carregando...</div>;
   }
 
-  return <PublicProfileView profile={profile} />;
+  return <PublicProfileView profile={profile} onProfileChange={setProfile} />;
 }

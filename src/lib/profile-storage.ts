@@ -81,6 +81,10 @@ export type Profile = {
   habblet_figure: string | null;
   habblet_motto: string | null;
   habblet_achievement_points: number | null;
+  /** Última sincronização automática com a API do Habbo */
+  habbo_synced_at: string | null;
+  /** Última sincronização automática com a API do Habblet */
+  habblet_synced_at: string | null;
   /** Layout compartilhado dos cards Habbo/Habblet */
   hotel_card_placement: "inside" | "outside";
   hotel_card_row: "same_row" | "separate_row";

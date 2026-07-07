@@ -19,6 +19,10 @@ import {
 import type { HotelProfileData } from "@/lib/hotel/types";
 import { getHotelPlatformLabel } from "@/lib/hotel/hotels";
 import {
+  HOTEL_BORDER_LABEL_SIZE,
+  HOTEL_USERNAME_SIZE,
+} from "@/lib/hotel/hotel-display";
+import {
   getDiscordMutedStyle,
   getDiscordTitleStyle,
   hexToRgba,
@@ -75,10 +79,13 @@ function HotelBorderLabel({
   return (
     <span
       aria-hidden
-      className={`pointer-events-none absolute top-0 z-[5] max-w-[calc(100%-10px)] truncate rounded-full border border-white/[0.1] px-1.5 py-px font-medium leading-none text-white/50 backdrop-blur-sm ${
-        compact ? "text-[7px] tracking-wide" : "text-[8px] tracking-wide"
-      } ${align === "center" ? "left-1/2 -translate-x-1/2 -translate-y-1/2" : "left-2 -translate-y-1/2"}`}
-      style={{ background: bg }}
+      className={`pointer-events-none absolute top-0 z-[5] max-w-[calc(100%-10px)] truncate rounded-full border border-white/[0.1] px-1.5 py-px font-medium leading-none text-white/50 backdrop-blur-sm tracking-wide ${
+        align === "center" ? "left-1/2 -translate-x-1/2 -translate-y-1/2" : "left-2 -translate-y-1/2"
+      }`}
+      style={{
+        background: bg,
+        fontSize: compact ? HOTEL_BORDER_LABEL_SIZE.compact : HOTEL_BORDER_LABEL_SIZE.default,
+      }}
     >
       {label}
     </span>
@@ -132,14 +139,13 @@ function PortraitBesideContent({
 }) {
   const titleStyle = getDiscordTitleStyle(profile);
   const mutedStyle = getDiscordMutedStyle(profile);
-  const nameSize = compact ? "text-xs" : "text-sm";
   const bodySize = compact ? "text-[10px]" : "text-xs";
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <p
-        className={`shrink-0 truncate px-2 pb-0.5 pt-3 text-center font-semibold leading-tight ${nameSize}`}
-        style={titleStyle}
+        className="shrink-0 truncate px-2 pb-0.5 pt-3 text-center font-semibold leading-tight"
+        style={{ ...titleStyle, fontSize: compact ? HOTEL_USERNAME_SIZE.portraitCompact : HOTEL_USERNAME_SIZE.portrait }}
       >
         {data.username}
       </p>
@@ -180,7 +186,12 @@ function LandscapeContent({
   const mutedStyle = getDiscordMutedStyle(profile);
   const slot = HOTEL_AVATAR_SLOT[layout.size];
   const horizontal = layout.shape === "rectangle";
-  const nameSize = layout.size === "lg" ? "text-lg" : layout.size === "md" ? "text-base" : "text-sm";
+  const nameFontSize =
+    layout.size === "lg"
+      ? HOTEL_USERNAME_SIZE.lg
+      : layout.size === "md"
+        ? HOTEL_USERNAME_SIZE.md
+        : HOTEL_USERNAME_SIZE.sm;
   const bodySize = layout.size === "lg" ? "text-sm" : "text-xs";
 
   const avatar = (
@@ -199,7 +210,10 @@ function LandscapeContent({
 
   const text = (
     <div className={`min-w-0 flex-1 ${horizontal ? "text-left" : "text-center"}`}>
-      <p className={`truncate font-semibold leading-tight ${nameSize}`} style={titleStyle}>
+      <p
+        className="truncate font-semibold leading-tight"
+        style={{ ...titleStyle, fontSize: nameFontSize }}
+      >
         {data.username}
       </p>
       <HotelStats data={data} mutedStyle={mutedStyle} bodySize={bodySize} />

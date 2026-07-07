@@ -485,7 +485,12 @@ function Dashboard() {
         }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
-        <PublicProfileView profile={profile} blocks={blocks} isEditor />
+        <PublicProfileView
+          profile={profile}
+          blocks={blocks}
+          isEditor
+          onProfileChange={setProfile}
+        />
       </motion.div>
 
       <DashboardAccountLayout
