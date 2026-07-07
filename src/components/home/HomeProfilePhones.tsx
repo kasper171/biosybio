@@ -46,9 +46,9 @@ type Pose = {
 
 /** Esquerda atrás → direita meio → centro na frente (hero) */
 const PHONE_POSE: Record<Layer, Pose> = {
-  "home-phone-fan-1": { y: 8, z: -70, rotateX: 5, rotateY: -14, rotateZ: -3, scale: 1.05 },
-  "home-phone-fan-2": { y: 0, z: 65, rotateX: 4, rotateY: 0, rotateZ: 0, scale: 1 },
-  "home-phone-fan-3": { y: 12, z: -15, rotateX: 5, rotateY: 14, rotateZ: 3, scale: 1.07 },
+  "home-phone-fan-1": { y: 22, z: -70, rotateX: 5, rotateY: -14, rotateZ: -3, scale: 1.05 },
+  "home-phone-fan-2": { y: 14, z: 65, rotateX: 4, rotateY: 0, rotateZ: 0, scale: 1 },
+  "home-phone-fan-3": { y: 26, z: -15, rotateX: 5, rotateY: 14, rotateZ: 3, scale: 1.07 },
 };
 
 /** Pintura DOM: fundo → frente (evita z-index vs 3D) */
@@ -221,9 +221,8 @@ function PhonePreview({
             <div className="home-phone-shot-wrap">
               <img src={src} alt={alt} className="home-phone-shot" draggable={false} />
             </div>
+            <div aria-hidden className="home-phone-cut-mask" />
           </div>
-          <div aria-hidden className="home-phone-ground-shadow" />
-          <div aria-hidden className="home-phone-bottom-fade" />
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ export function HomeHeroVisual() {
       <div className="home-phone-stage relative w-full">
         <HomeProfilePhones />
       </div>
-      <div className="home-phone-stage-fade" aria-hidden />
     </div>
   );
 }
