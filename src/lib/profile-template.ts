@@ -65,7 +65,6 @@ export type ProfileTheme = {
   tap_reveal_blur: number;
   tap_reveal_brightness: number;
   tap_reveal_mode: Profile["tap_reveal_mode"];
-  tap_reveal_text: string;
   card_reveal_effect: Profile["card_reveal_effect"];
   text_typing_name_effect: boolean;
   text_typing_bio_effect: boolean;
@@ -151,19 +150,30 @@ export function extractThemeFromProfile(profile: Profile): ProfileTheme {
     tap_reveal_blur: profile.tap_reveal_blur ?? 20,
     tap_reveal_brightness: profile.tap_reveal_brightness ?? 55,
     tap_reveal_mode: profile.tap_reveal_mode ?? "avatar_text",
-    tap_reveal_text: profile.tap_reveal_text ?? "Tap to reveal",
     card_reveal_effect: profile.card_reveal_effect ?? "fade",
     text_typing_name_effect: profile.text_typing_name_effect !== false,
     text_typing_bio_effect: profile.text_typing_bio_effect !== false,
   };
 }
 
+/** Campos pessoais que nunca devem ser copiados ao aplicar um template */
+const PERSONAL_THEME_KEYS = ["tap_reveal_text"] as const;
+
+function stripPersonalThemeFields<T extends Record<string, unknown>>(theme: T): Omit<T, (typeof PERSONAL_THEME_KEYS)[number]> {
+  const next = { ...theme };
+  for (const key of PERSONAL_THEME_KEYS) {
+    delete next[key];
+  }
+  return next;
+}
+
 export function applyThemeToProfile(profile: Profile, theme: ProfileTheme): Profile {
-  return { ...profile, ...theme };
+  const styleOnly = stripPersonalThemeFields(theme as ProfileTheme & Record<string, unknown>);
+  return { ...profile, ...styleOnly };
 }
 
 export function themeToProfileUpdate(theme: ProfileTheme): Record<string, unknown> {
-  return { ...theme };
+  return stripPersonalThemeFields({ ...theme });
 }
 
 export function liveTemplateName(profile: Profile): string {
@@ -368,7 +378,7 @@ export async function applyTemplateToProfile(
   if (error) throw error;
   if (!data) throw new Error("Template not found");
 
-  const theme = data.theme as ProfileTheme;
+  const theme = stripPersonalThemeFields(data.theme as ProfileTheme & Record<string, unknown>) as ProfileTheme;
   const updated = applyThemeToProfile(profile, theme);
 
   const { error: updateError } = await db

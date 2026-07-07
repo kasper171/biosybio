@@ -94,7 +94,7 @@ function buildTemplatePreviewProfile(template: ProfileTemplateWithAuthor): Profi
     tap_reveal_blur: t.tap_reveal_blur,
     tap_reveal_brightness: t.tap_reveal_brightness,
     tap_reveal_mode: t.tap_reveal_mode,
-    tap_reveal_text: t.tap_reveal_text,
+    tap_reveal_text: "Tap to reveal",
     card_reveal_effect: t.card_reveal_effect,
     text_typing_effect: false,
     text_typing_name_effect: false,
