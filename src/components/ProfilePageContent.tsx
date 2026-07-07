@@ -299,20 +299,40 @@ export function ProfilePageContent({
 
   const showMusicCard = Boolean(profile.music_url) && profile.music_card_enabled !== false;
 
-  /** Ordem: hotel ao lado → música → Discord separado → hotel abaixo → blocos externos */
-  let secondaryRevealOrder = 0;
-  const nextSecondaryRevealDelay = () =>
-    getSecondaryRevealDelayMs(revealEffect, secondaryRevealOrder++);
+  /**
+   * Sequência do efeito "Lento" (fade):
+   * - 0ms: card principal
+   * - 1000ms: Discord (se separado)
+   * - 1500ms: Habbo/Habblet (se separado)
+   * - +500ms por grupo extra (música, blocos, etc.)
+   */
+  const FADE_SECONDARY_START_MS = 1000;
+  const FADE_GROUP_STEP_MS = 500;
+  const FADE_GROUP_STAGGER_MS = 80;
+
+  const hasHotelOutsideGroup = (hotelOutsideBeside || hotelOutsideBelow) && hotelConnections.length > 0;
+
+  const nextSecondaryGroupDelay = (() => {
+    if (revealEffect !== "fade") {
+      let secondaryRevealOrder = 0;
+      return () => getSecondaryRevealDelayMs(revealEffect, secondaryRevealOrder++);
+    }
+    let groupIndex = 0;
+    return () => FADE_SECONDARY_START_MS + groupIndex++ * FADE_GROUP_STEP_MS;
+  })();
+
+  // Ordem: Discord separado -> Hotel (Habbo/Habblet) -> Música -> Blocos externos
+  const discordOutsideRevealDelay = discordOutside ? nextSecondaryGroupDelay() : 0;
+  const hotelGroupDelay = hasHotelOutsideGroup ? nextSecondaryGroupDelay() : 0;
+  const musicCardDelay = showMusicCard ? nextSecondaryGroupDelay() : 0;
+  const outsideBlockDelay = outsideBlocks.length > 0 ? nextSecondaryGroupDelay() : 0;
 
   const hotelBesideRevealDelays = hotelOutsideBeside
-    ? hotelConnections.map(() => nextSecondaryRevealDelay())
+    ? hotelConnections.map((_, index) => hotelGroupDelay + index * FADE_GROUP_STAGGER_MS)
     : [];
-  const musicCardDelay = showMusicCard ? nextSecondaryRevealDelay() : 0;
-  const discordOutsideRevealDelay = discordOutside ? nextSecondaryRevealDelay() : 0;
   const hotelBelowRevealDelays = hotelOutsideBelow
-    ? hotelConnections.map(() => nextSecondaryRevealDelay())
+    ? hotelConnections.map((_, index) => hotelGroupDelay + index * FADE_GROUP_STAGGER_MS)
     : [];
-  const outsideBlockDelay = outsideBlocks.length > 0 ? nextSecondaryRevealDelay() : 0;
   const musicCardWidthPct = getMusicCardWidthPct(profile.music_card_width_pct);
 
   const musicCardInner = showMusicCard ? (

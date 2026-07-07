@@ -157,6 +157,8 @@ export function ProfileMusicProvider({
 
   const setVolume = (v: number) => {
     const clamped = Math.min(1, Math.max(0, v));
+    const audio = audioRef.current;
+    if (audio) audio.volume = clamped;
     setVolumeState(clamped);
     if (clamped > 0.001) lastVolumeRef.current = clamped;
   };

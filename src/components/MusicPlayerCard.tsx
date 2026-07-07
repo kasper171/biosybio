@@ -1,11 +1,10 @@
 import type { CSSProperties } from "react";
-import { Music2, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { Music2, Pause, Play } from "lucide-react";
 import type { Profile } from "@/lib/profile-storage";
 import { resolveMusicCardTitle } from "@/lib/profile-music";
 import { useProfileMusic } from "@/contexts/ProfileMusicContext";
-import {
-  buildCardSurfaceChrome,
-} from "@/lib/card-border";
+import { MusicVolumeControl } from "@/components/MusicVolumeControl";
+import { buildCardSurfaceChrome } from "@/lib/card-border";
 import { getDiscordMutedStyle, getDiscordTitleStyle, hexToRgba } from "@/lib/profile-colors";
 
 type Props = {
@@ -23,7 +22,8 @@ function getMusicCardChrome(profile: Profile): { style: CSSProperties; className
     glowColor: profile.effect_glow_color ?? profile.card_border_color,
     glowSize: profile.effect_glow_size ?? 24,
     background: hexToRgba(profile.card_color, profile.card_opacity),
-    backdropBlur: profile.card_blur,
+    // backdrop-filter quebra sliders de range no Windows — blur só na camada visual
+    backdropBlur: 0,
   });
 }
 
@@ -53,13 +53,31 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
   const titleStyle = getDiscordTitleStyle(profile);
   const mutedStyle = getDiscordMutedStyle(profile);
   const iconColor = profile.icon_color ?? "rgba(255,255,255,0.85)";
+  const cardBlur = profile.card_blur ?? 0;
 
   return (
     <div
-      className={`relative mx-auto w-full px-3 py-2.5 sm:px-4 sm:py-3 ${chrome.className} ${className}`}
-      style={chrome.style}
+      className={`relative mx-auto w-full overflow-hidden px-3 py-2.5 sm:px-4 sm:py-3 ${chrome.className} ${className}`}
     >
-      <div className="flex items-center gap-3 sm:gap-4">
+      {cardBlur > 0 ? (
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 ${chrome.className}`}
+          style={{
+            ...chrome.style,
+            backdropFilter: `blur(${cardBlur}px)`,
+            WebkitBackdropFilter: `blur(${cardBlur}px)`,
+          }}
+        />
+      ) : (
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 ${chrome.className}`}
+          style={chrome.style}
+        />
+      )}
+
+      <div className="relative z-10 flex items-center gap-3 sm:gap-4 pointer-events-auto">
         <button
           type="button"
           onClick={togglePlay}
@@ -73,7 +91,7 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
           ) : (
             <Music2 className="h-6 w-6 sm:h-7 sm:w-7" style={{ color: iconColor }} />
           )}
-          <span className="absolute inset-0 grid place-items-center bg-black/35 opacity-0 transition hover:opacity-100">
+          <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/35 opacity-0 transition hover:opacity-100">
             {isPlaying ? (
               <Pause className="h-5 w-5 text-white" />
             ) : (
@@ -116,30 +134,11 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
             <span className="shrink-0 text-[10px] tabular-nums sm:text-xs" style={mutedStyle}>
               {formatTime(seekMax)}
             </span>
-          </div>
-
-          <div className="mt-1.5 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleMute}
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
-              title="Mutar / desmutar"
-            >
-              {volume <= 0.001 ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-            </button>
-            <div className="biosy-range-wrap min-w-0 flex-1 py-0">
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.01}
-                value={volume}
-                onInput={(e) => setVolume(Number(e.currentTarget.value))}
-                onChange={(e) => setVolume(Number(e.currentTarget.value))}
-                className="biosy-range-input w-full"
-                aria-label="Volume"
-              />
-            </div>
+            <MusicVolumeControl
+              volume={volume}
+              onVolumeChange={setVolume}
+              onToggleMute={toggleMute}
+            />
           </div>
         </div>
 

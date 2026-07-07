@@ -939,6 +939,73 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   cursor: grab;
 }
 
+/* Volume minimalista no player de música */
+.biosy-music-volume-wrap {
+  position: relative;
+  z-index: 2;
+  width: 3.25rem;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.biosy-music-volume-input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.biosy-music-volume-input:focus {
+  outline: none;
+}
+
+.biosy-music-volume-input::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.biosy-music-volume-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+}
+
+.biosy-music-volume-input:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+.biosy-music-volume-input::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+}
+
+.biosy-music-volume-input::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+}
+
 /* Aba para reabrir painel de ferramentas (editor) */
 .biosy-tools-reveal-tab {
   position: relative;

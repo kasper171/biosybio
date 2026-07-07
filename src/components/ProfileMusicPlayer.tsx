@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Music2, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
+import { Music2, Pause, Play, X } from "lucide-react";
 import { useProfileMusic } from "@/contexts/ProfileMusicContext";
+import { MusicVolumeControl } from "@/components/MusicVolumeControl";
 
 export function ProfileMusicPlayerFloating() {
   const {
@@ -23,7 +24,7 @@ export function ProfileMusicPlayerFloating() {
     <div className="fixed bottom-4 right-4 z-[60]">
       <div className="flex flex-col items-end gap-2">
         {open && (
-          <div className="w-[min(320px,calc(100vw-1rem))] rounded-lg border border-white/20 bg-transparent px-2 py-1.5 text-white">
+          <div className="w-[min(320px,calc(100vw-1rem))] rounded-lg border border-white/20 bg-black/55 px-2 py-1.5 text-white backdrop-blur-md">
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -40,14 +41,12 @@ export function ProfileMusicPlayerFloating() {
 
               <p className="min-w-0 flex-1 truncate text-sm text-white/90">{trackTitle}</p>
 
-              <button
-                type="button"
-                onClick={toggleMute}
-                className="grid h-7 w-7 place-items-center rounded-sm text-white/80 transition hover:bg-white/10"
-                title="Mutar / desmutar"
-              >
-                {volume <= 0.001 ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-              </button>
+              <MusicVolumeControl
+                volume={volume}
+                onVolumeChange={setVolume}
+                onToggleMute={toggleMute}
+              />
+
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -58,8 +57,8 @@ export function ProfileMusicPlayerFloating() {
               </button>
             </div>
 
-            <div className="mt-1.5 flex items-center gap-2">
-              <div className="biosy-range-wrap min-w-0 flex-1 py-0">
+            <div className="mt-1.5">
+              <div className="biosy-range-wrap py-0">
                 <input
                   type="range"
                   min={seekMin}
@@ -70,19 +69,6 @@ export function ProfileMusicPlayerFloating() {
                   onChange={(e) => seek(Number(e.currentTarget.value))}
                   className="biosy-range-input w-full"
                   aria-label="Progresso da faixa"
-                />
-              </div>
-              <div className="biosy-range-wrap w-20 shrink-0 py-0">
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={volume}
-                  onInput={(e) => setVolume(Number(e.currentTarget.value))}
-                  onChange={(e) => setVolume(Number(e.currentTarget.value))}
-                  className="biosy-range-input w-full"
-                  aria-label="Volume"
                 />
               </div>
             </div>
