@@ -44,11 +44,15 @@ type Pose = {
   scale: number;
 };
 
+/** Esquerda atrás → direita meio → centro na frente (hero) */
 const PHONE_POSE: Record<Layer, Pose> = {
-  "home-phone-fan-1": { y: 2, z: -24, rotateX: 7, rotateY: -20, rotateZ: -4, scale: 0.94 },
-  "home-phone-fan-2": { y: 8, z: 8, rotateX: 8, rotateY: 0, rotateZ: 0, scale: 1 },
-  "home-phone-fan-3": { y: 14, z: 44, rotateX: 8, rotateY: 20, rotateZ: 3, scale: 1.04 },
+  "home-phone-fan-1": { y: 8, z: -70, rotateX: 5, rotateY: -14, rotateZ: -3, scale: 0.91 },
+  "home-phone-fan-2": { y: 0, z: 65, rotateX: 4, rotateY: 0, rotateZ: 0, scale: 1.05 },
+  "home-phone-fan-3": { y: 12, z: -15, rotateX: 5, rotateY: 14, rotateZ: 3, scale: 0.93 },
 };
+
+/** Pintura DOM: fundo → frente (evita z-index vs 3D) */
+const FAN_RENDER_ORDER: Layer[] = ["home-phone-fan-1", "home-phone-fan-3", "home-phone-fan-2"];
 
 /** Leque coordenado: esquerda → direita → meio (direita na frente antes do meio abrir) */
 const ENTRANCE_BASE_DELAY_MS = 300;
@@ -65,9 +69,9 @@ const ENTRANCE_DELAY_MS: Record<Layer, number> = {
 };
 
 const ENTRANCE_START_ANGLES: Record<Layer, { rotateY: number; rotateZ: number }> = {
-  "home-phone-fan-1": { rotateY: -24, rotateZ: -5 },
+  "home-phone-fan-1": { rotateY: -18, rotateZ: -4 },
   "home-phone-fan-2": { rotateY: 0, rotateZ: 0 },
-  "home-phone-fan-3": { rotateY: 24, rotateZ: 5 },
+  "home-phone-fan-3": { rotateY: 18, rotateZ: 4 },
 };
 
 type Pointer = { x: number; y: number };
@@ -135,15 +139,15 @@ function buildTransform(
   let { y, z, rotateX, rotateY, rotateZ, scale } = pose;
 
   if (mode === "hover") {
-    y -= 26;
-    z += 55;
-    rotateX += 4;
-    scale += 0.09;
+    y -= 16;
+    z = 95;
+    rotateX += 2;
+    scale = pose.scale + 0.05;
   } else if (mode === "dim") {
-    y += 14;
-    z -= 28;
-    scale -= 0.05;
-    rotateX -= 2;
+    y += 10;
+    z -= 40;
+    scale -= 0.04;
+    rotateX -= 1;
   }
 
   return [
@@ -213,14 +217,11 @@ function PhonePreview({
       >
         <div className="home-phone-card-3d">
           <div className="home-phone-card-clip">
-            <div aria-hidden className="home-phone-shadow-plate" />
             <div className={cn("home-phone-neon-ring", neon)} />
             <div className="home-phone-shot-wrap">
               <img src={src} alt={alt} className="home-phone-shot" draggable={false} />
             </div>
           </div>
-          <div aria-hidden className="home-phone-cut-shadow" />
-          <div aria-hidden className="home-phone-bottom-fade" />
         </div>
       </div>
     </div>
@@ -310,18 +311,23 @@ export function HomeProfilePhones() {
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
-      {PHONES.map((phone) => (
-        <PhonePreview
-          key={phone.id}
-          {...phone}
-          isHovered={activeId === phone.id}
-          isDimmed={activeId !== null && activeId !== phone.id}
-          motionReady={motionReady}
-          entranceMs={entranceMs}
-          pointer={pointer}
-          onHover={setUserHoveredId}
-        />
-      ))}
+      {FAN_RENDER_ORDER.map((layer) => {
+        const phone = PHONES.find((entry) => entry.layer === layer);
+        if (!phone) return null;
+
+        return (
+          <PhonePreview
+            key={phone.id}
+            {...phone}
+            isHovered={activeId === phone.id}
+            isDimmed={activeId !== null && activeId !== phone.id}
+            motionReady={motionReady}
+            entranceMs={entranceMs}
+            pointer={pointer}
+            onHover={setUserHoveredId}
+          />
+        );
+      })}
     </div>
   );
 }
