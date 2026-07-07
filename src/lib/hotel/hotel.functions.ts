@@ -16,5 +16,5 @@ export const fetchHotelProfileFn = createServerFn({ method: "POST" })
     if (data.platform === "habblet") {
       return fetchHabbletProfile(data.username);
     }
-    return fetchHabboProfile(data.username, data.hotelDomain ?? "com");
+    return fetchHabboProfile(data.username, data.hotelDomain ?? "com.br");
   });

@@ -14,7 +14,7 @@ export async function fetchHabbletProfile(username: string): Promise<HotelFetchR
     return { ok: false, error: "invalid_username", message: "Nome inválido" };
   }
 
-  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}?_cb=${Date.now()}`;
+  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}`;
 
   let response: Response;
   try {

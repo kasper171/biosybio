@@ -242,34 +242,31 @@ function CardLayoutContent({
     const frameOverflow = profile.avatar_frame_id
       ? Math.ceil(avatarSize * (AVATAR_FRAME_SCALE - 1) / 2)
       : 0;
+    const avatarVisualH = avatarSize + frameOverflow * 2;
 
     return (
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden text-left">
         {overlayBadges}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex shrink-0 items-start gap-4 overflow-visible px-6 pt-4 pb-2">
+          <div
+            className="grid shrink-0 gap-x-4 gap-y-2 overflow-visible px-6 pt-4 pb-2"
+            style={{ gridTemplateColumns: `${avatarSize}px minmax(0, 1fr)` }}
+          >
             <div
-              className="flex shrink-0 flex-col items-center gap-2 overflow-visible"
-              style={{ width: avatarSize, maxWidth: avatarSize }}
+              className="flex items-center justify-center self-center overflow-visible"
+              style={{ height: avatarVisualH }}
             >
-              <div
-                className="overflow-visible"
-                style={{ paddingTop: frameOverflow, paddingBottom: frameOverflow }}
-              >
-                <AvatarBlock
-                  profile={profile}
-                  size={avatarSize}
-                  ringWidth={avatarRingWidth}
-                  ringColor={avatarRingColor}
-                />
-              </div>
-              {socialIcons && (
-                <div className="flex w-max flex-nowrap items-center justify-center gap-1">
-                  {socialIcons}
-                </div>
-              )}
+              <AvatarBlock
+                profile={profile}
+                size={avatarSize}
+                ringWidth={avatarRingWidth}
+                ringColor={avatarRingColor}
+              />
             </div>
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col items-start overflow-hidden text-left">
+            <div
+              className="flex min-h-0 flex-col justify-center self-center overflow-hidden text-left"
+              style={{ minHeight: avatarVisualH }}
+            >
               <h3
                 className={cn(
                   "w-full shrink-0 text-left text-xl font-bold leading-tight",
@@ -307,6 +304,11 @@ function CardLayoutContent({
                 particleColor={bioParticleColor}
               />
             </div>
+            {socialIcons && (
+              <div className="col-start-1 flex w-max max-w-full flex-nowrap items-center justify-center gap-1 justify-self-center">
+                {socialIcons}
+              </div>
+            )}
           </div>
           {children && <div className="shrink-0 px-6 pb-2 text-left">{children}</div>}
         </div>

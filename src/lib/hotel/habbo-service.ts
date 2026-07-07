@@ -23,7 +23,7 @@ export async function fetchHabboProfile(
     return { ok: false, error: "invalid_hotel", message: "Hotel inválido" };
   }
 
-  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}&_cb=${Date.now()}`;
+  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}`;
 
   let response: Response;
   try {
