@@ -12,6 +12,7 @@ type HabboApiUser = {
 export async function fetchHabboProfile(
   username: string,
   hotelDomain: string,
+  options?: { fresh?: boolean },
 ): Promise<HotelFetchResult> {
   const name = username.trim();
   if (!name) {
@@ -23,7 +24,8 @@ export async function fetchHabboProfile(
     return { ok: false, error: "invalid_hotel", message: "Hotel inválido" };
   }
 
-  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}`;
+  const cacheBust = options?.fresh ? `&_=${Date.now()}` : "";
+  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}${cacheBust}`;
 
   let response: Response;
   try {

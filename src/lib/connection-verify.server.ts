@@ -90,8 +90,8 @@ export async function verifyHotelOwnershipServer(
   try {
     const result =
       platform === "habblet"
-        ? await fetchHabbletProfile(trimmed)
-        : await fetchHabboProfile(trimmed, hotelDomain ?? "com.br");
+        ? await fetchHabbletProfile(trimmed, { fresh: true })
+        : await fetchHabboProfile(trimmed, hotelDomain ?? "com.br", { fresh: true });
 
     if (!result.ok) {
       if (result.error === "user_not_found") return { ok: false, error: "user_not_found" };

@@ -8,13 +8,17 @@ type HabbletApiUser = {
   achievementPoints?: number;
 };
 
-export async function fetchHabbletProfile(username: string): Promise<HotelFetchResult> {
+export async function fetchHabbletProfile(
+  username: string,
+  options?: { fresh?: boolean },
+): Promise<HotelFetchResult> {
   const name = username.trim();
   if (!name) {
     return { ok: false, error: "invalid_username", message: "Nome inválido" };
   }
 
-  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}`;
+  const cacheBust = options?.fresh ? `?_=${Date.now()}` : "";
+  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}${cacheBust}`;
 
   let response: Response;
   try {

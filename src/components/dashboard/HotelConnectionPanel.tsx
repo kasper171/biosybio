@@ -193,9 +193,27 @@ function PlatformConnectSection({
     return () => clearInterval(timer);
   }, [validateUnlockAt, otpExpiresAt]);
 
-  const startVerification = () => {
+  const startVerification = async () => {
     if (!preview) return;
     clearHotelCache(platform, preview.username, platform === "habbo" ? hotelDomain : null);
+
+    setLoading(true);
+    try {
+      const result = await fetchHotelProfile(
+        platform,
+        preview.username,
+        platform === "habbo" ? hotelDomain : null,
+        { bypassCache: true, fresh: true },
+      );
+      if (!result.ok) {
+        toast.error(HOTEL_FETCH_MESSAGES[result.error]);
+        return;
+      }
+      setPreview(result.data);
+    } finally {
+      setLoading(false);
+    }
+
     const now = Date.now();
     setOtp(generateHotelOtp());
     setValidateUnlockAt(now + HOTEL_OTP_WAIT_MS);
@@ -216,6 +234,20 @@ function PlatformConnectSection({
     try {
       setVerifying(true);
       clearHotelCache(platform, preview.username, platform === "habbo" ? hotelDomainValue : null);
+
+      const freshProfile = await fetchHotelProfile(
+        platform,
+        preview.username,
+        platform === "habbo" ? hotelDomainValue : null,
+        { bypassCache: true, fresh: true },
+      );
+
+      if (!freshProfile.ok) {
+        toast.error(HOTEL_FETCH_MESSAGES[freshProfile.error]);
+        return;
+      }
+
+      setPreview(freshProfile.data);
 
       const mottoCheck = await verifyHotelMottoFn({
         data:
@@ -418,7 +450,7 @@ function PlatformConnectSection({
           {preview && !verificationPending && (
             <button
               type="button"
-              onClick={startVerification}
+              onClick={() => void startVerification()}
               disabled={loading}
               className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -445,8 +477,14 @@ function PlatformConnectSection({
               </button>
               <p className="text-[11px] leading-relaxed text-white/50">
                 No jogo, abra o perfil do personagem e edite a missão. Cole o código, salve e aguarde
-                50s para validar.
+                50s. Ao clicar em Validar, buscamos a missão atualizada na API do hotel.
               </p>
+              {preview.motto ? (
+                <p className="rounded-md border border-white/10 bg-black/30 px-2.5 py-2 text-[11px] text-white/55">
+                  <span className="font-medium text-white/70">Missão na API agora: </span>
+                  {preview.motto}
+                </p>
+              ) : null}
               <button
                 type="button"
                 onClick={() => void runHotelLink(false)}

@@ -8,13 +8,15 @@ const fetchHotelInput = z.object({
   platform: z.enum(["habbo", "habblet"]),
   username: z.string().min(1).max(64),
   hotelDomain: z.string().optional(),
+  fresh: z.boolean().optional(),
 });
 
 export const fetchHotelProfileFn = createServerFn({ method: "POST" })
   .inputValidator(fetchHotelInput)
   .handler(async ({ data }): Promise<HotelFetchResult> => {
+    const fresh = data.fresh === true;
     if (data.platform === "habblet") {
-      return fetchHabbletProfile(data.username);
+      return fetchHabbletProfile(data.username, { fresh });
     }
-    return fetchHabboProfile(data.username, data.hotelDomain ?? "com.br");
+    return fetchHabboProfile(data.username, data.hotelDomain ?? "com.br", { fresh });
   });
