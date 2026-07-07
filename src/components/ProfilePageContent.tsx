@@ -312,6 +312,12 @@ export function ProfilePageContent({
     maxWidth: "100%",
     minWidth: 0,
   };
+  const mainProfileColumnStyle: CSSProperties = {
+    width: mainCardWidth,
+    maxWidth: "100%",
+    minWidth: 0,
+    flexShrink: 0,
+  };
 
   const outsideDiscordInner =
     profile.discord_user_id && discordMode === "outside" ? (
@@ -354,11 +360,12 @@ export function ProfilePageContent({
   const hotelBesideColumn =
     hotelOutsideBeside && hotelCardsOutside ? (
       <div
-        className={`flex min-h-0 shrink-0 flex-col ${isEditor ? "" : "w-full lg:w-auto"}`}
+        className={`flex shrink-0 flex-col ${isEditor ? "" : "w-full lg:w-auto"}`}
         style={{
           width: besideColumnDims.width,
           maxWidth: besideColumnDims.width,
           minWidth: besideColumnDims.width,
+          height: besideColumnDims.height,
           gap: HOTEL_BESIDE_GAP_PX,
         }}
       >
@@ -402,30 +409,25 @@ export function ProfilePageContent({
       </div>
     ) : null;
 
-  const cardAndHotelRow =
-    hotelOutsideBeside && hotelCardsOutside ? (
-      <div
-        className={
-          isEditor
-            ? "flex w-full flex-row flex-nowrap items-stretch justify-center gap-4"
-            : "flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-stretch lg:justify-center"
-        }
-      >
-        <div
-          className="min-w-0 shrink-0"
-          style={{ width: mainCardWidth, maxWidth: "100%" }}
-        >
-          {mainCardWrapped}
-        </div>
-        {hotelBesideColumn}
-      </div>
-    ) : null;
-
-  const profileContent = hotelOutsideBeside ? (
-    <div className="mx-auto flex w-full flex-col items-center gap-4" style={mainSlotStyle}>
-      {cardAndHotelRow}
+  /** Coluna principal: card + música + Discord — largura fixa; hotel ao lado só acompanha a altura do card */
+  const mainProfileColumn = (
+    <div className="flex min-w-0 shrink-0 flex-col" style={mainProfileColumnStyle}>
+      {mainCardWrapped}
       {musicCardInner}
       {outsideDiscordWrapped}
+    </div>
+  );
+
+  const profileContent = hotelOutsideBeside ? (
+    <div
+      className={
+        isEditor
+          ? "flex w-full flex-row flex-nowrap items-start justify-center gap-4"
+          : "flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:justify-center"
+      }
+    >
+      {mainProfileColumn}
+      {hotelBesideColumn}
     </div>
   ) : (
     <div className="mx-auto w-full" style={mainSlotStyle}>
