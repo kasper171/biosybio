@@ -5,8 +5,8 @@ export function HomeHeroVisual() {
     <div className="home-hero-stage relative mx-auto flex w-full max-w-[920px] items-center justify-center lg:max-w-[980px]">
       <div className="home-phone-stage relative w-full">
         <HomeProfilePhones />
-        <div className="home-phone-stage-fade" aria-hidden />
       </div>
+      <div className="home-phone-stage-fade" aria-hidden />
     </div>
   );
 }
