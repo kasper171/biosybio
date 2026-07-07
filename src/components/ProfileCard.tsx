@@ -32,6 +32,61 @@ const BANNER_VISIBLE_RATIO = 0.34;
 /** Quanto o banner sobe atrás do avatar (px fixo) */
 const BANNER_BEHIND_AVATAR_PX = 44;
 
+type CardLayoutDensity = "comfortable" | "compact" | "tight";
+
+function getCardLayoutDensity(
+  cardH: number,
+  opts: { hasFooter: boolean; hasBanner: boolean },
+): CardLayoutDensity {
+  const reserved = (opts.hasFooter ? 130 : 0) + (opts.hasBanner ? 80 : 0);
+  const body = cardH - reserved;
+  if (body >= 280) return "comfortable";
+  if (body >= 180) return "compact";
+  return "tight";
+}
+
+function densityAvatarScale(density: CardLayoutDensity): number {
+  if (density === "compact") return 0.88;
+  if (density === "tight") return 0.74;
+  return 1;
+}
+
+function densityMainPadding(density: CardLayoutDensity): string {
+  if (density === "compact") return "px-5 py-4";
+  if (density === "tight") return "px-4 py-2";
+  return "px-6 py-8";
+}
+
+function densityBioClamp(density: CardLayoutDensity, hasBioFx: boolean): string {
+  if (density === "comfortable") return hasBioFx ? "" : "line-clamp-4";
+  if (density === "compact") return hasBioFx ? "max-h-16 overflow-hidden" : "line-clamp-3";
+  return hasBioFx ? "max-h-10 overflow-hidden" : "line-clamp-2";
+}
+
+function densityTitleMargin(density: CardLayoutDensity): string {
+  if (density === "tight") return "mt-2";
+  if (density === "compact") return "mt-3";
+  return "mt-4";
+}
+
+function CardFooter({ dividerStyle, children, density }: {
+  dividerStyle: CSSProperties;
+  children: ReactNode;
+  density: CardLayoutDensity;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative z-[6] shrink-0 border-t",
+        density === "tight" ? "px-4 pb-3 pt-2" : density === "compact" ? "px-5 pb-4 pt-2.5" : "px-6 pb-5 pt-3",
+      )}
+      style={dividerStyle}
+    >
+      {children}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Componentes de layout reutilizáveis
 // ---------------------------------------------------------------------------
@@ -57,6 +112,7 @@ type LayoutContentProps = {
   footer?: ReactNode;
   children?: ReactNode;
   socialIcons?: ReactNode;
+  layoutDensity: CardLayoutDensity;
 };
 
 function AvatarBlock({
@@ -171,7 +227,7 @@ function CardLayoutContent({
   profile, layout, avatarSize, avatarRingWidth, avatarRingColor,
   hasBanner, bannerStripH, bannerTotalH, bannerPosX, bannerPosY,
   typedName, typedBio, fullName, fullBio, fullUsername,
-  animateNameText, animateBioText, footer, children, socialIcons,
+  animateNameText, animateBioText, footer, children, socialIcons, layoutDensity,
 }: LayoutContentProps) {
   const titleBase = getTitleBaseStyle(profile);
   const titleGlow = getTextGlowStyle(profile, 1, "display_name");
@@ -194,6 +250,12 @@ function CardLayoutContent({
     animateNameText && nameTextEffect === "none";
   const bioAnimates =
     animateBioText && bioTextEffect === "none";
+  const avScale = densityAvatarScale(layoutDensity);
+  const effAvatarSize = Math.max(48, Math.round(avatarSize * avScale));
+  const mainPad = densityMainPadding(layoutDensity);
+  const bioClamp = densityBioClamp(layoutDensity, hasBioFx);
+  const titleMargin = densityTitleMargin(layoutDensity);
+  const mainJustify = layoutDensity === "comfortable" ? "justify-center" : "justify-start";
 
   const roleBadgeAlign = layout === "aligned" ? "left" : "center";
 
@@ -227,31 +289,33 @@ function CardLayoutContent({
     return (
       <div className="relative flex min-h-0 flex-1 flex-col text-left">
         {overlayBadges}
-        <div className="flex items-start gap-4 px-6 pt-6 pb-3">
-          <div
-            className="flex shrink-0 flex-col items-center gap-3.5"
-            style={{ width: avatarSize, maxWidth: avatarSize }}
-          >
-            <AvatarBlock
-              profile={profile}
-              size={avatarSize}
-              ringWidth={avatarRingWidth}
-              ringColor={avatarRingColor}
-            />
-            {socialIcons && (
-              <div className="flex w-full flex-wrap items-center justify-center gap-2.5">
-                {socialIcons}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain">
+            <div className="flex items-start gap-4 px-6 pt-6 pb-3">
+              <div
+                className="flex shrink-0 flex-col items-center gap-3.5"
+                style={{ width: effAvatarSize, maxWidth: effAvatarSize }}
+              >
+                <AvatarBlock
+                  profile={profile}
+                  size={effAvatarSize}
+                  ringWidth={avatarRingWidth}
+                  ringColor={avatarRingColor}
+                />
+                {socialIcons && (
+                  <div className="flex w-full flex-wrap items-center justify-center gap-2.5">
+                    {socialIcons}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col items-start text-left">
-            <h3
-              className={cn(
-                "w-full text-left text-xl font-bold leading-tight",
-                hasNameFx ? "py-2" : "truncate",
-              )}
-              style={titleBase}
-            >
+              <div className="flex min-w-0 flex-1 flex-col items-start text-left">
+                <h3
+                  className={cn(
+                    "w-full text-left text-xl font-bold leading-tight",
+                    hasNameFx ? "py-2" : "truncate",
+                  )}
+                  style={titleBase}
+                >
               <NameBlock
                 animate={nameAnimates}
                 typedName={typedName}
@@ -275,19 +339,21 @@ function CardLayoutContent({
               textEffect={bioTextEffect}
               className={cn(
                 "mt-2 text-left text-xs",
-                hasBioFx ? "py-2" : "line-clamp-2",
+                hasBioFx ? "py-2" : bioClamp,
               )}
               bodyStyle={{ ...bodyBase, ...bodyGlow }}
               accentColor={bodyAccent}
               particleColor={bioParticleColor}
             />
+              </div>
+            </div>
+            {children && <div className="px-6 pb-3 text-left">{children}</div>}
           </div>
         </div>
-        {children && <div className="px-6 pb-3 text-left">{children}</div>}
         {footer && (
-          <div className="mt-auto border-t px-6 pt-3 pb-4" style={dividerStyle}>
+          <CardFooter dividerStyle={dividerStyle} density={layoutDensity}>
             {footer}
-          </div>
+          </CardFooter>
         )}
       </div>
     );
@@ -295,49 +361,78 @@ function CardLayoutContent({
 
   // ── LAYOUT CENTRALIZADO ────────────────────────────────────────────────────
   if (layout === "centered") {
-    const centeredAvatarSize = Math.round(avatarSize * 1.1);
+    const centeredAvatarSize = Math.max(52, Math.round(avatarSize * 1.1 * avScale));
     return (
       <div className="relative flex min-h-0 flex-1 flex-col">
         {overlayBadges}
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 py-8 text-center">
-          <AvatarBlock profile={profile} size={centeredAvatarSize} ringWidth={avatarRingWidth} ringColor={avatarRingColor} />
-          <h3
-            className={cn("mt-4 text-xl font-bold", hasNameFx && "py-2")}
-            style={titleBase}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col items-center overflow-y-auto overflow-x-hidden overscroll-contain text-center",
+              mainPad,
+              mainJustify,
+            )}
           >
-            <NameBlock
-              animate={nameAnimates}
-              typedName={typedName}
-              fullName={fullName}
-              glowStyle={titleGlow}
-              textEffect={nameTextEffect}
-              accentColor={titleAccent}
-              particleColor={nameParticleColor}
+            <AvatarBlock
+              profile={profile}
+              size={centeredAvatarSize}
+              ringWidth={avatarRingWidth}
+              ringColor={avatarRingColor}
             />
-          </h3>
-          <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5" />
-          {profile.show_username !== false && (
-            <p className="mt-1 text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
-              {fullUsername}
-            </p>
-          )}
-          <BioBlock
-            animate={bioAnimates}
-            typedBio={typedBio}
-            fullBio={fullBio}
-            textEffect={bioTextEffect}
-            className={cn("mt-2 text-sm text-center", hasBioFx && "py-2")}
-            bodyStyle={{ ...bodyBase, ...bodyGlow }}
-            accentColor={bodyAccent}
-            particleColor={bioParticleColor}
-          />
-          {socialIcons && <div className="mt-4 flex flex-wrap justify-center gap-2.5">{socialIcons}</div>}
-          {children}
+            <h3
+              className={cn(
+                "w-full max-w-full text-xl font-bold",
+                titleMargin,
+                hasNameFx ? "py-2" : "truncate",
+              )}
+              style={titleBase}
+            >
+              <NameBlock
+                animate={nameAnimates}
+                typedName={typedName}
+                fullName={fullName}
+                glowStyle={titleGlow}
+                textEffect={nameTextEffect}
+                accentColor={titleAccent}
+                particleColor={nameParticleColor}
+              />
+            </h3>
+            <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5" />
+            {profile.show_username !== false && (
+              <p className="mt-1 max-w-full truncate text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
+                {fullUsername}
+              </p>
+            )}
+            <BioBlock
+              animate={bioAnimates}
+              typedBio={typedBio}
+              fullBio={fullBio}
+              textEffect={bioTextEffect}
+              className={cn(
+                "mt-2 w-full max-w-full text-center text-sm",
+                hasBioFx ? "py-2" : bioClamp,
+              )}
+              bodyStyle={{ ...bodyBase, ...bodyGlow }}
+              accentColor={bodyAccent}
+              particleColor={bioParticleColor}
+            />
+            {socialIcons && (
+              <div
+                className={cn(
+                  "flex w-full max-w-full flex-wrap justify-center gap-2.5",
+                  layoutDensity === "tight" ? "mt-2" : layoutDensity === "compact" ? "mt-3" : "mt-4",
+                )}
+              >
+                {socialIcons}
+              </div>
+            )}
+            {children}
+          </div>
         </div>
         {footer && (
-          <div className="border-t px-6 pb-5 pt-3" style={dividerStyle}>
+          <CardFooter dividerStyle={dividerStyle} density={layoutDensity}>
             {footer}
-          </div>
+          </CardFooter>
         )}
       </div>
     );
@@ -354,50 +449,85 @@ function CardLayoutContent({
       )}
       {hasBanner && <div className="relative z-[2] shrink-0" style={{ height: bannerStripH }} aria-hidden />}
       <div
-        className="relative z-[3] flex min-h-0 flex-1 flex-col px-6 pb-6"
-        style={{ marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0, paddingTop: hasBanner ? 20 : 24 }}
+        className={cn(
+          "relative z-[3] flex min-h-0 flex-1 flex-col",
+          layoutDensity === "tight" ? "px-4 pb-4" : layoutDensity === "compact" ? "px-5 pb-5" : "px-6 pb-6",
+        )}
+        style={{
+          marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0,
+          paddingTop: hasBanner
+            ? layoutDensity === "tight" ? 12 : layoutDensity === "compact" ? 16 : 20
+            : layoutDensity === "tight" ? 16 : layoutDensity === "compact" ? 20 : 24,
+        }}
       >
-        <div className={cn("flex min-h-0 flex-1 flex-col", !footer && !hasBanner && "justify-center")}>
-          <div className="relative z-[5] mx-auto mb-3 flex justify-center">
-            <AvatarBlock profile={profile} size={avatarSize} ringWidth={avatarRingWidth} ringColor={avatarRingColor} />
-          </div>
-          <h3
-            className={cn("text-center text-lg font-bold", hasNameFx && "py-2")}
-            style={titleBase}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain",
+              !footer && !hasBanner && layoutDensity === "comfortable" && "justify-center",
+            )}
           >
-            <NameBlock
-              animate={nameAnimates}
-              typedName={typedName}
-              fullName={fullName}
-              glowStyle={titleGlow}
-              textEffect={nameTextEffect}
-              accentColor={titleAccent}
-              particleColor={nameParticleColor}
+            <div className="relative z-[5] mx-auto mb-3 flex shrink-0 justify-center">
+              <AvatarBlock
+                profile={profile}
+                size={effAvatarSize}
+                ringWidth={avatarRingWidth}
+                ringColor={avatarRingColor}
+              />
+            </div>
+            <h3
+              className={cn(
+                "text-center text-lg font-bold",
+                hasNameFx ? "py-2" : "truncate",
+              )}
+              style={titleBase}
+            >
+              <NameBlock
+                animate={nameAnimates}
+                typedName={typedName}
+                fullName={fullName}
+                glowStyle={titleGlow}
+                textEffect={nameTextEffect}
+                accentColor={titleAccent}
+                particleColor={nameParticleColor}
+              />
+            </h3>
+            <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5" />
+            {profile.show_username !== false && (
+              <p className="mt-1 truncate text-center text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
+                {fullUsername}
+              </p>
+            )}
+            <BioBlock
+              animate={bioAnimates}
+              typedBio={typedBio}
+              fullBio={fullBio}
+              textEffect={bioTextEffect}
+              className={cn(
+                "mt-2 text-center text-sm",
+                hasBioFx ? "py-2" : bioClamp,
+              )}
+              bodyStyle={{ ...bodyBase, ...bodyGlow }}
+              accentColor={bodyAccent}
+              particleColor={bioParticleColor}
             />
-          </h3>
-          <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5" />
-          {profile.show_username !== false && (
-            <p className="mt-1 text-center text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
-              {fullUsername}
-            </p>
-          )}
-          <BioBlock
-            animate={bioAnimates}
-            typedBio={typedBio}
-            fullBio={fullBio}
-            textEffect={bioTextEffect}
-            className={cn("mt-2 text-center text-sm", hasBioFx && "py-2")}
-            bodyStyle={{ ...bodyBase, ...bodyGlow }}
-            accentColor={bodyAccent}
-            particleColor={bioParticleColor}
-          />
-          {socialIcons && <div className="mt-4 flex flex-wrap justify-center gap-2.5">{socialIcons}</div>}
-          {children}
+            {socialIcons && (
+              <div
+                className={cn(
+                  "flex flex-wrap justify-center gap-2.5",
+                  layoutDensity === "tight" ? "mt-2" : layoutDensity === "compact" ? "mt-3" : "mt-4",
+                )}
+              >
+                {socialIcons}
+              </div>
+            )}
+            {children}
+          </div>
         </div>
         {footer && (
-          <div className="mt-auto w-full shrink-0 border-t pt-3" style={dividerStyle}>
+          <CardFooter dividerStyle={dividerStyle} density={layoutDensity}>
             {footer}
-          </div>
+          </CardFooter>
         )}
       </div>
     </div>
@@ -437,7 +567,7 @@ export function ProfileCard({
   animateNameText = false,
   animateBioText = false,
   animationSeed = 0,
-  enforceCardHeight = false,
+  enforceCardHeight = true,
 }: Props) {
   const [hovering, setHovering] = useState(false);
   const fullName = profile.display_name || profile.username;
@@ -530,6 +660,7 @@ export function ProfileCard({
   const hasBanner = Boolean(profile.inner_banner_url);
   const bannerStripH = Math.round(cardH * BANNER_VISIBLE_RATIO);
   const bannerTotalH = bannerStripH + BANNER_BEHIND_AVATAR_PX;
+  const layoutDensity = getCardLayoutDensity(cardH, { hasFooter: Boolean(footer), hasBanner });
   const nameTextEffect = normalizeTextAnimationId(profile.name_text_animation);
   const bioTextEffect = normalizeTextAnimationId(profile.bio_text_animation);
 
@@ -641,6 +772,7 @@ export function ProfileCard({
               animateBioText={animateBioText}
               footer={footer}
               socialIcons={socialIcons}
+              layoutDensity={layoutDensity}
             >
               {children}
             </CardLayoutContent>
