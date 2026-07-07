@@ -312,56 +312,57 @@ function CardLayoutContent({
     return (
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {overlayBadges}
-        <div
-          className={cn(
-            "flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-6 py-8 text-center",
-          )}
-        >
-          <AvatarBlock
-            profile={profile}
-            size={centeredAvatarSize}
-            ringWidth={avatarRingWidth}
-            ringColor={avatarRingColor}
-          />
-          <h3
-            className={cn(
-              "mt-4 w-full max-w-full text-xl font-bold",
-              hasNameFx ? "py-2" : "truncate",
-            )}
-            style={titleBase}
-          >
-            <NameBlock
-              animate={nameAnimates}
-              typedName={typedName}
-              fullName={fullName}
-              glowStyle={titleGlow}
-              textEffect={nameTextEffect}
-              accentColor={titleAccent}
-              particleColor={nameParticleColor}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-4">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-start overflow-hidden text-center">
+            <AvatarBlock
+              profile={profile}
+              size={centeredAvatarSize}
+              ringWidth={avatarRingWidth}
+              ringColor={avatarRingColor}
             />
-          </h3>
-          <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5" />
-          {profile.show_username !== false && (
-            <p className="mt-1 max-w-full truncate text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
-              {fullUsername}
-            </p>
-          )}
-          <BioBlock
-            animate={bioAnimates}
-            typedBio={typedBio}
-            fullBio={fullBio}
-            textEffect={bioTextEffect}
-            className={cn("mt-2 w-full max-w-full text-center text-sm", hasBioFx && "py-2")}
-            bodyStyle={{ ...bodyBase, ...bodyGlow }}
-            accentColor={bodyAccent}
-            particleColor={bioParticleColor}
-          />
+            <h3
+              className={cn(
+                "mt-3 w-full max-w-full shrink-0 text-xl font-bold",
+                hasNameFx ? "py-2" : "truncate",
+              )}
+              style={titleBase}
+            >
+              <NameBlock
+                animate={nameAnimates}
+                typedName={typedName}
+                fullName={fullName}
+                glowStyle={titleGlow}
+                textEffect={nameTextEffect}
+                accentColor={titleAccent}
+                particleColor={nameParticleColor}
+              />
+            </h3>
+            <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5 shrink-0" />
+            {profile.show_username !== false && (
+              <p className="mt-1 max-w-full shrink-0 truncate text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
+                {fullUsername}
+              </p>
+            )}
+            <BioBlock
+              animate={bioAnimates}
+              typedBio={typedBio}
+              fullBio={fullBio}
+              textEffect={bioTextEffect}
+              className={cn(
+                "mt-2 min-h-0 w-full max-w-full overflow-hidden text-center text-sm",
+                hasBioFx ? "py-2" : "line-clamp-3",
+              )}
+              bodyStyle={{ ...bodyBase, ...bodyGlow }}
+              accentColor={bodyAccent}
+              particleColor={bioParticleColor}
+            />
+          </div>
           {socialIcons && (
-            <div className="mt-4 flex w-full max-w-full flex-wrap justify-center gap-2.5">
+            <div className="mt-3 flex w-full max-w-full shrink-0 flex-wrap justify-center gap-2.5">
               {socialIcons}
             </div>
           )}
-          {children}
+          {children && <div className="mt-3 w-full shrink-0">{children}</div>}
         </div>
         {footer && (
           <CardFooter dividerStyle={dividerStyle}>
@@ -383,50 +384,57 @@ function CardLayoutContent({
       )}
       {hasBanner && <div className="relative z-[2] shrink-0" style={{ height: bannerStripH }} aria-hidden />}
       <div
-        className="relative z-[3] flex min-h-0 flex-1 flex-col overflow-hidden px-6 pb-6"
-        style={{ marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0, paddingTop: hasBanner ? 20 : 24 }}
+        className="relative z-[3] flex min-h-0 flex-1 flex-col overflow-hidden px-6 pb-4"
+        style={{ marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0, paddingTop: hasBanner ? 16 : 20 }}
       >
-        <div className={cn("flex min-h-0 flex-1 flex-col overflow-hidden", !footer && !hasBanner && "justify-center")}>
-          <div className="relative z-[5] mx-auto mb-3 flex shrink-0 justify-center">
-            <AvatarBlock
-              profile={profile}
-              size={avatarSize}
-              ringWidth={avatarRingWidth}
-              ringColor={avatarRingColor}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-start overflow-hidden text-center">
+            <div className="relative z-[5] mx-auto mb-2 flex shrink-0 justify-center">
+              <AvatarBlock
+                profile={profile}
+                size={avatarSize}
+                ringWidth={avatarRingWidth}
+                ringColor={avatarRingColor}
+              />
+            </div>
+            <h3
+              className={cn("w-full shrink-0 text-center text-lg font-bold", hasNameFx ? "py-2" : "truncate")}
+              style={titleBase}
+            >
+              <NameBlock
+                animate={nameAnimates}
+                typedName={typedName}
+                fullName={fullName}
+                glowStyle={titleGlow}
+                textEffect={nameTextEffect}
+                accentColor={titleAccent}
+                particleColor={nameParticleColor}
+              />
+            </h3>
+            <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5 shrink-0" />
+            {profile.show_username !== false && (
+              <p className="mt-1 shrink-0 truncate text-center text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
+                {fullUsername}
+              </p>
+            )}
+            <BioBlock
+              animate={bioAnimates}
+              typedBio={typedBio}
+              fullBio={fullBio}
+              textEffect={bioTextEffect}
+              className={cn(
+                "mt-2 min-h-0 w-full overflow-hidden text-center text-sm",
+                hasBioFx ? "py-2" : "line-clamp-3",
+              )}
+              bodyStyle={{ ...bodyBase, ...bodyGlow }}
+              accentColor={bodyAccent}
+              particleColor={bioParticleColor}
             />
           </div>
-          <h3
-            className={cn("text-center text-lg font-bold", hasNameFx ? "py-2" : "truncate")}
-            style={titleBase}
-          >
-            <NameBlock
-              animate={nameAnimates}
-              typedName={typedName}
-              fullName={fullName}
-              glowStyle={titleGlow}
-              textEffect={nameTextEffect}
-              accentColor={titleAccent}
-              particleColor={nameParticleColor}
-            />
-          </h3>
-          <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5" />
-          {profile.show_username !== false && (
-            <p className="mt-1 truncate text-center text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
-              {fullUsername}
-            </p>
+          {socialIcons && (
+            <div className="mt-3 flex shrink-0 flex-wrap justify-center gap-2.5">{socialIcons}</div>
           )}
-          <BioBlock
-            animate={bioAnimates}
-            typedBio={typedBio}
-            fullBio={fullBio}
-            textEffect={bioTextEffect}
-            className={cn("mt-2 text-center text-sm", hasBioFx && "py-2")}
-            bodyStyle={{ ...bodyBase, ...bodyGlow }}
-            accentColor={bodyAccent}
-            particleColor={bioParticleColor}
-          />
-          {socialIcons && <div className="mt-4 flex flex-wrap justify-center gap-2.5">{socialIcons}</div>}
-          {children}
+          {children && <div className="mt-3 w-full shrink-0">{children}</div>}
         </div>
         {footer && (
           <CardFooter dividerStyle={dividerStyle}>

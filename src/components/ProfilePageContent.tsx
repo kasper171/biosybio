@@ -438,9 +438,7 @@ export function ProfilePageContent({
   );
 
   return (
-    <div
-      className={`relative min-h-screen w-full ${isEditor ? "overflow-x-auto overflow-y-visible" : "overflow-hidden"}`}
-    >
+    <div className="relative min-h-screen w-full overflow-x-auto overflow-y-visible">
       <div
         aria-hidden
         className={`pointer-events-none z-0 ${isEditor ? "absolute inset-0" : "fixed inset-0"}`}
