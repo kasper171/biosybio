@@ -77,6 +77,18 @@ export function ProfilePageContent({
             y: { type: "spring", visualDuration: 0.62, bounce: 0.1 },
             scale: { type: "spring", visualDuration: 0.62, bounce: 0.08 },
           };
+  /** No efeito Lento, cards secundários ficam invisíveis até a vez deles (principal primeiro). */
+  const secondaryInitial =
+    revealEffect === "fade" ? { ...cardInitial, opacity: 0 } : cardInitial;
+  const secondaryAnimate =
+    revealEffect === "fade" ? { ...cardAnimate, opacity: 1 } : cardAnimate;
+  const secondaryTransition =
+    revealEffect === "fade"
+      ? {
+          ...cardTransition,
+          opacity: { type: "spring", visualDuration: 0.62, bounce: 0.08 },
+        }
+      : cardTransition;
 
   const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const { inside: insideBlocks, outside: outsideBlocks } = splitBlocksByPlacement(blocks);
@@ -270,7 +282,7 @@ export function ProfilePageContent({
       key={`main-${animKey}`}
       initial={cardInitial}
       animate={cardAnimate}
-      transition={cardTransition}
+      transition={{ ...cardTransition, delay: 0 }}
       className={`relative ${mainCardBesideClass}`}
       style={mainCardBesideStyle}
     >
@@ -309,9 +321,9 @@ export function ProfilePageContent({
         {animate ? (
           <motion.div
             key={`music-card-${animKey}`}
-            initial={cardInitial}
-            animate={cardAnimate}
-            transition={{ ...cardTransition, delay: musicCardDelay / 1000 }}
+            initial={secondaryInitial}
+            animate={secondaryAnimate}
+            transition={{ ...secondaryTransition, delay: musicCardDelay / 1000 }}
             className="relative mx-auto w-full"
             style={{ willChange: "transform" }}
           >
@@ -354,9 +366,9 @@ export function ProfilePageContent({
       {animate && discordOutside ? (
         <motion.div
           key={`discord-${animKey}`}
-          initial={cardInitial}
-          animate={cardAnimate}
-          transition={{ ...cardTransition, delay: discordOutsideRevealDelay / 1000 }}
+          initial={secondaryInitial}
+          animate={secondaryAnimate}
+          transition={{ ...secondaryTransition, delay: discordOutsideRevealDelay / 1000 }}
           className="relative w-full min-w-0 max-w-full"
           style={{ willChange: "transform" }}
         >
@@ -393,10 +405,10 @@ export function ProfilePageContent({
           ? hotelCardsOutside.map((card, index) => (
               <motion.div
                 key={`hotel-beside-${animKey}-${index}`}
-                initial={cardInitial}
-                animate={cardAnimate}
+                initial={secondaryInitial}
+                animate={secondaryAnimate}
                 transition={{
-                  ...cardTransition,
+                  ...secondaryTransition,
                   delay: (hotelBesideRevealDelays[index] ?? 0) / 1000,
                 }}
                 className="relative flex min-h-0 w-full flex-1 flex-col"
@@ -498,10 +510,10 @@ export function ProfilePageContent({
                 ? hotelCardsOutside.map((card, index) => (
                     <motion.div
                       key={`hotel-below-${animKey}-${index}`}
-                      initial={cardInitial}
-                      animate={cardAnimate}
+                      initial={secondaryInitial}
+                      animate={secondaryAnimate}
                       transition={{
-                        ...cardTransition,
+                        ...secondaryTransition,
                         delay: (hotelBelowRevealDelays[index] ?? 0) / 1000,
                       }}
                       className="relative min-w-0 flex-1"
@@ -525,9 +537,9 @@ export function ProfilePageContent({
               placement="outside"
               animate={animate}
               animKey={animKey}
-              cardInitial={cardInitial}
-              cardAnimate={cardAnimate}
-              cardTransition={cardTransition}
+              cardInitial={secondaryInitial}
+              cardAnimate={secondaryAnimate}
+              cardTransition={secondaryTransition}
               revealDelayMs={outsideBlockDelay}
             />
           )}
