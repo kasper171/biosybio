@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SiteAuthButtons } from "@/components/SiteAuthButtons";
 import { SiteLogo } from "@/components/SiteLogo";
@@ -24,7 +23,7 @@ export function SiteNavbar({ children }: SiteNavbarProps) {
 
   useEffect(() => {
     const el = headerRef.current;
-    if (!el || scrolled) return;
+    if (!el) return;
 
     const measure = () => setSpacerHeight(el.offsetHeight);
     measure();
@@ -36,35 +35,22 @@ export function SiteNavbar({ children }: SiteNavbarProps) {
 
   return (
     <>
-      {scrolled ? (
-        <div style={{ height: spacerHeight }} aria-hidden className="pointer-events-none" />
-      ) : null}
+      <div style={{ height: spacerHeight }} aria-hidden className="pointer-events-none" />
       <header
         ref={headerRef}
-        className={cn(
-          "z-50 flex items-center justify-between transition-[width,padding,border-radius,background,box-shadow,transform] duration-300 ease-out",
-          scrolled
-            ? "site-navbar-bubble fixed top-3 left-1/2 w-[min(640px,calc(100%-1.25rem))] -translate-x-1/2 rounded-full border border-white/10 bg-[#0e0e11]/82 px-3.5 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:w-[min(720px,calc(100%-2rem))] sm:px-5 sm:py-2.5"
-            : "relative mx-auto max-w-7xl px-6 py-5",
-        )}
+        data-scrolled={scrolled ? "" : undefined}
+        className="site-navbar"
       >
         <SiteLogo
           size={scrolled ? 28 : 36}
-          className="shrink-0 transition-all duration-300"
+          className="site-navbar__logo shrink-0"
         />
         {children ? (
-          <nav
-            className={cn(
-              "hidden items-center text-sm text-white/70 lg:flex",
-              scrolled ? "gap-5" : "gap-8",
-            )}
-          >
+          <nav className="site-navbar__links hidden items-center text-sm text-white/70 lg:flex">
             {children}
           </nav>
         ) : null}
-        <SiteAuthButtons
-          className={cn(scrolled && "[&_a]:px-4 [&_a]:py-2 [&_a]:text-xs [&_button]:px-4 [&_button]:py-2 [&_button]:text-xs")}
-        />
+        <SiteAuthButtons className="site-navbar__actions" />
       </header>
     </>
   );
