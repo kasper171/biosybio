@@ -68,8 +68,8 @@ export const SOCIALS: SocialDef[] = [
     prefix: "pinterest.com/", placeholder: "seunome",
     build: (h) => `https://pinterest.com/${h}` },
   { key: "imgur", label: "Imgur", icon: SiImgur, brandColor: "#1BB76E",
-    prefix: "imgur.com/user/", placeholder: "seunome",
-    build: (h) => `https://imgur.com/user/${h}` },
+    prefix: "imgur.com/", placeholder: "user/seunome ou a/yPwlQKk",
+    build: (h) => buildImgurUrl(h) },
   { key: "vsco", label: "VSCO", icon: SiVsco, brandColor: "#000000",
     prefix: "https://", placeholder: "vsco.co/seunome ou link do álbum",
     build: (h) => (h.startsWith("http") ? h : `https://${h.replace(/^\/+/, "")}`),
@@ -130,10 +130,50 @@ export const SOCIAL_MAP: Record<string, SocialDef> = Object.fromEntries(
   SOCIALS.map((s) => [s.key, s]),
 );
 
+function isImgurHost(hostname: string): boolean {
+  const host = hostname.replace(/^www\./i, "").toLowerCase();
+  return host === "imgur.com" || host.endsWith(".imgur.com");
+}
+
+/** Aceita user/seunome, a/álbum, gallery/… ou URL completa com imgur.com */
+function normalizeImgurHandle(raw: string): string {
+  let v = raw.trim();
+  if (!v) return "";
+
+  try {
+    const withProto = /^https?:\/\//i.test(v) ? v : v.includes("imgur.com") ? `https://${v.replace(/^\/+/, "")}` : null;
+    if (withProto) {
+      const u = new URL(withProto);
+      if (isImgurHost(u.hostname)) {
+        const path = `${u.pathname}${u.search}`.replace(/^\/+/, "").replace(/\/+$/, "");
+        return path;
+      }
+    }
+  } catch {
+    // segue para tratar como caminho relativo
+  }
+
+  v = v.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+  if (v.toLowerCase().startsWith("imgur.com/")) {
+    v = v.slice("imgur.com/".length);
+  }
+  return v.replace(/^\/+/, "").replace(/^@+/, "").replace(/\/+$/, "");
+}
+
+function buildImgurUrl(handle: string): string {
+  const path = normalizeImgurHandle(handle);
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+  // legado: só o username → /user/seunome
+  const finalPath = path.includes("/") ? path : `user/${path}`;
+  return `https://imgur.com/${finalPath}`;
+}
+
 /** Normalize what user types: strip @, leading slashes, or the URL prefix. */
 export function normalizeHandle(def: SocialDef, raw: string): string {
   let v = raw.trim();
   if (!v) return "";
+  if (def.key === "imgur") return normalizeImgurHandle(v);
   if (def.isFreeform) return v;
   // If they pasted the full URL, keep only what's after the known prefix.
   try {
@@ -153,6 +193,7 @@ export function resolveSocialUrl(key: string, value: string): string | null {
   if (!value) return null;
   const def = SOCIAL_MAP[key];
   if (!def) return value.startsWith("http") ? value : `https://${value}`;
+  if (key === "imgur") return buildImgurUrl(value);
   if (value.startsWith("http") || value.startsWith("mailto:")) return value;
   return def.build(value);
 }

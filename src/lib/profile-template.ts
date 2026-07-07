@@ -1,5 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Profile } from "@/lib/profile-storage";
+import {
+  DEFAULT_CARD_HEIGHT,
+  DEFAULT_CARD_LAYOUT,
+  DEFAULT_CARD_WIDTH,
+  type Profile,
+} from "@/lib/profile-storage";
 
 /** Tabelas novas ainda não estão no types.ts gerado */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,9 +125,9 @@ export function extractThemeFromProfile(profile: Profile): ProfileTheme {
     card_border_width: profile.card_border_width,
     card_border_radius: profile.card_border_radius,
     card_border_style: profile.card_border_style,
-    card_width: profile.card_width ?? 400,
-    card_height: profile.card_height ?? 500,
-    card_layout: profile.card_layout ?? "default",
+    card_width: profile.card_width ?? DEFAULT_CARD_WIDTH,
+    card_height: profile.card_height ?? DEFAULT_CARD_HEIGHT,
+    card_layout: profile.card_layout ?? DEFAULT_CARD_LAYOUT,
     avatar_border_color: profile.avatar_border_color,
     avatar_border_width: profile.avatar_border_width,
     avatar_size: profile.avatar_size,

@@ -1,5 +1,9 @@
 import type { CSSProperties } from "react";
-import type { Profile } from "@/lib/profile-storage";
+import {
+  DEFAULT_CARD_HEIGHT,
+  DEFAULT_CARD_WIDTH,
+  type Profile,
+} from "@/lib/profile-storage";
 
 export type HotelCardPlacement = "inside" | "outside";
 export type HotelCardRow = "same_row" | "separate_row";
@@ -192,8 +196,8 @@ export type HotelBelowSlot = {
 
 export function getMainCardDimensions(profile: Profile): { width: number; height: number } {
   return {
-    width: Number(profile.card_width ?? 400) || 400,
-    height: Number(profile.card_height ?? 500) || 500,
+    width: Number(profile.card_width ?? DEFAULT_CARD_WIDTH) || DEFAULT_CARD_WIDTH,
+    height: Number(profile.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT,
   };
 }
 

@@ -2,11 +2,7 @@ import type { CSSProperties } from "react";
 import { motion } from "motion/react";
 import type { Profile } from "@/lib/profile-storage";
 import {
-  buildCardGlowShadow,
-  buildCardSolidBorderShadow,
-  cardBorderStyleClass,
-  combineBoxShadows,
-  normalizeCardBorderStyle,
+  buildCardSurfaceChrome,
 } from "@/lib/card-border";
 import {
   getHotelBesideFrameStyle,
@@ -48,36 +44,18 @@ function getCardChrome(
 ): { style: CSSProperties; className: string } {
   const bw = Number(profile.card_border_width ?? 0);
   const bc = profile.card_border_color ?? "#ffffff";
-  const borderStyle = normalizeCardBorderStyle(profile.card_border_style);
   const radius = borderRadius ?? getHotelCardBorderRadius(size, shape);
-  const useCssBorder = bw > 0;
-
-  const style: CSSProperties = {
+  return buildCardSurfaceChrome({
+    borderWidth: bw,
+    borderColor: bc,
     borderRadius: radius,
+    borderStyle: profile.card_border_style,
+    glowEnabled: Boolean(profile.effect_glow),
+    glowColor: profile.effect_glow_color ?? profile.card_border_color,
+    glowSize: profile.effect_glow_size ?? 24,
     background: hexToRgba(profile.card_color, profile.card_opacity),
-    backdropFilter: `blur(${profile.card_blur}px)`,
-    WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-    boxSizing: "border-box",
-    boxShadow: combineBoxShadows(
-      useCssBorder ? null : buildCardSolidBorderShadow(bw, bc),
-      buildCardGlowShadow(
-        Boolean(profile.effect_glow),
-        profile.effect_glow_color ?? profile.card_border_color,
-        profile.effect_glow_size ?? 24,
-      ),
-    ),
-  };
-
-  if (useCssBorder) {
-    style.borderWidth = bw;
-    style.borderStyle = borderStyle;
-    style.borderColor = bc;
-  }
-
-  return {
-    style,
-    className: useCssBorder ? cardBorderStyleClass(borderStyle) : "",
-  };
+    backdropBlur: profile.card_blur,
+  });
 }
 
 function HotelBorderLabel({

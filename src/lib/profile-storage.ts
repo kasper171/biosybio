@@ -5,6 +5,10 @@ import {
   markProfileViewCounted,
 } from "@/lib/profile-views";
 
+export const DEFAULT_CARD_WIDTH = 600;
+export const DEFAULT_CARD_HEIGHT = 400;
+export const DEFAULT_CARD_LAYOUT = "centered" as const;
+
 export type Profile = {
   id: string;
   public_uid: number | null;

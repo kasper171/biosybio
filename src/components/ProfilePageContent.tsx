@@ -1,5 +1,8 @@
-import type { Profile } from "@/lib/profile-storage";
-import { logProfileLinkClick } from "@/lib/profile-storage";
+import {
+  DEFAULT_CARD_LAYOUT,
+  logProfileLinkClick,
+  type Profile,
+} from "@/lib/profile-storage";
 import { ProfileCard } from "@/components/ProfileCard";
 import { DiscordPresenceCard } from "@/components/DiscordPresenceCard";
 import { HotelProfileCard } from "@/components/HotelProfileCard";
@@ -74,7 +77,7 @@ export function ProfilePageContent({
             scale: { type: "spring", visualDuration: 0.62, bounce: 0.08 },
           };
 
-  const cardLayout = profile.card_layout ?? "default";
+  const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const { inside: insideBlocks, outside: outsideBlocks } = splitBlocksByPlacement(blocks);
   const outsideBlockDelay = discordOutside ? discordDelay + 80 : discordDelay;
 

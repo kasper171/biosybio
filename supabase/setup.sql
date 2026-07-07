@@ -102,7 +102,16 @@ BEGIN
     final_username := base_username || suffix::text;
   END LOOP;
 
-  INSERT INTO public.profiles (id, username, display_name, avatar_url, public_template_enabled)
+  INSERT INTO public.profiles (
+    id,
+    username,
+    display_name,
+    avatar_url,
+    public_template_enabled,
+    card_layout,
+    card_width,
+    card_height
+  )
   VALUES (
     NEW.id,
     final_username,
@@ -110,7 +119,10 @@ BEGIN
              NEW.raw_user_meta_data->>'full_name',
              final_username),
     NEW.raw_user_meta_data->>'avatar_url',
-    true
+    true,
+    'centered',
+    600,
+    400
   );
   RETURN NEW;
 END;
@@ -126,8 +138,10 @@ REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authentic
 
 -- 3) Colunas extras
 ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS card_width integer NOT NULL DEFAULT 400,
-  ADD COLUMN IF NOT EXISTS card_height integer NOT NULL DEFAULT 500,
+  ADD COLUMN IF NOT EXISTS card_width integer NOT NULL DEFAULT 600,
+  ADD COLUMN IF NOT EXISTS card_height integer NOT NULL DEFAULT 400,
+  ADD COLUMN IF NOT EXISTS card_layout text NOT NULL DEFAULT 'centered'
+    CHECK (card_layout IN ('default', 'centered', 'aligned')),
   ADD COLUMN IF NOT EXISTS inner_banner_url text,
   ADD COLUMN IF NOT EXISTS effect_tilt boolean NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS effect_hover boolean NOT NULL DEFAULT false,

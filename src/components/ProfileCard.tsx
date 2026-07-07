@@ -3,7 +3,7 @@ import Tilt from "react-parallax-tilt";
 import { Eye, Hash, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { buildCardGlowShadow, normalizeCardBorderStyle } from "@/lib/card-border";
+import { buildCardBorderChrome } from "@/lib/card-border";
 import {
   getBadgeStyle,
   getBodyBaseStyle,
@@ -14,7 +14,12 @@ import {
   getTitleBaseStyle,
   hexToRgba,
 } from "@/lib/profile-colors";
-import type { Profile } from "@/lib/profile-storage";
+import {
+  DEFAULT_CARD_HEIGHT,
+  DEFAULT_CARD_LAYOUT,
+  DEFAULT_CARD_WIDTH,
+  type Profile,
+} from "@/lib/profile-storage";
 import type { TextAnimationId } from "@/lib/text-animations";
 import { normalizeTextAnimationId, hasActiveTextAnimation } from "@/lib/text-animations";
 import { ProfileAnimatedText } from "@/components/text-animations/ProfileAnimatedText";
@@ -499,22 +504,17 @@ export function ProfileCard({
   const borderWidth = profile.card_border_width ?? 0;
   const borderColor = profile.card_border_color;
   const radius = profile.card_border_radius ?? 16;
-  const cardH = profile.card_height ?? 500;
+  const cardH = profile.card_height ?? DEFAULT_CARD_HEIGHT;
 
-  // Borda sólida padrão via box-shadow (sem anti-aliasing de border nativa)
-  const solidBorderShadow = borderWidth > 0
-    ? `0 0 0 ${borderWidth}px ${borderColor}`
-    : null;
-
-  // Glow externo (efeito ativável)
-  const glowShadow = buildCardGlowShadow(
-    Boolean(profile.effect_glow),
-    profile.effect_glow_color ?? profile.card_border_color,
-    profile.effect_glow_size ?? 24,
-  );
-
-  // Box-shadow final: borda sólida + glow combinados
-  const combinedShadow = [solidBorderShadow, glowShadow].filter(Boolean).join(", ") || undefined;
+  const borderChrome = buildCardBorderChrome({
+    borderWidth,
+    borderColor,
+    borderRadius: radius,
+    borderStyle: profile.card_border_style,
+    glowEnabled: profile.effect_glow,
+    glowColor: profile.effect_glow_color ?? profile.card_border_color,
+    glowSize: profile.effect_glow_size ?? 24,
+  });
 
   const avatarRingColor = profile.avatar_border_color ?? profile.card_border_color;
   const avatarRingWidth = profile.avatar_border_width ?? 4;
@@ -543,12 +543,11 @@ export function ProfileCard({
   const frameStyle: CSSProperties = {
     position: "relative",
     width: "100%",
-    borderRadius: radius,
-    boxShadow: combinedShadow,
+    ...borderChrome.style,
   };
 
   // Content wrapper: overflow:hidden para clips do banner/conteúdo
-  const cardLayout = profile.card_layout ?? "default";
+  const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const contentWrapStyle: CSSProperties = {
     overflow: "hidden",
     borderRadius: radius,
@@ -567,7 +566,7 @@ export function ProfileCard({
       style={{
         position: "relative",
         width: "100%",
-        maxWidth: (profile.card_width ?? 400) + "px",
+        maxWidth: (profile.card_width ?? DEFAULT_CARD_WIDTH) + "px",
         // Hover lift no wrapper externo — o Tilt fica dentro e cuida só do 3D
         transition: "transform 400ms cubic-bezier(0.03, 0.98, 0.52, 0.99)",
         transform: profile.effect_hover && hovering ? "translateY(-6px)" : undefined,
@@ -589,7 +588,7 @@ export function ProfileCard({
         style={{ width: "100%" }}
       >
         {/* Frame: border-radius + box-shadow (borda sólida + glow externo) */}
-        <div style={frameStyle}>
+        <div style={frameStyle} className={borderChrome.className}>
           {/* GlowingEffect: efeito de borda animado — só quando effect_border_glow está ativo */}
           {profile.effect_border_glow && borderWidth > 0 && (
             <GlowingEffect
@@ -608,7 +607,7 @@ export function ProfileCard({
             <div aria-hidden style={blurLayerStyle} />
             <CardLayoutContent
               profile={profile}
-              layout={profile.card_layout ?? "default"}
+              layout={profile.card_layout ?? DEFAULT_CARD_LAYOUT}
               avatarSize={avatarSize}
               avatarRingWidth={avatarRingWidth}
               avatarRingColor={avatarRingColor}

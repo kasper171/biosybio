@@ -2,9 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { FaDiscord } from "react-icons/fa";
 import type { Profile } from "@/lib/profile-storage";
 import {
-  buildCardGlowShadow,
-  buildCardSolidBorderShadow,
-  combineBoxShadows,
+  buildCardBorderChrome,
 } from "@/lib/card-border";
 import {
   getDiscordBodyStyle,
@@ -266,7 +264,11 @@ export function DiscordPresenceCard({
 
   const isCompactActivity = hasActivity && containerWidth < ACTIVITY_COMPACT_WIDTH_PX;
   const activityCompactRatio = isCompactActivity
-    ? Math.max(0.62, containerWidth / ACTIVITY_COMPACT_WIDTH_PX)
+    ? Math.max(0.45, containerWidth / ACTIVITY_COMPACT_WIDTH_PX)
+    : 1;
+  /** Perfil Discord encolhe levemente só para caber; nomes nunca são cortados */
+  const profileCompactRatio = isCompactActivity
+    ? Math.max(0.82, containerWidth / ACTIVITY_COMPACT_WIDTH_PX)
     : 1;
   const spotifyStart = spotify?.timestamps?.start ?? null;
   const spotifyEnd = spotify?.timestamps?.end ?? null;
@@ -280,19 +282,22 @@ export function DiscordPresenceCard({
   const outsideBr = profileTheme?.card_border_radius ?? 16;
   const outsideBc = profileTheme?.card_border_color ?? "#ffffff";
 
-  const outsideShellStyle: CSSProperties | undefined =
+  const outsideBorderChrome =
     variant === "outside" && profileTheme
-      ? {
+      ? buildCardBorderChrome({
+          borderWidth: outsideBw,
+          borderColor: outsideBc,
           borderRadius: outsideBr,
-          boxShadow: combineBoxShadows(
-            buildCardSolidBorderShadow(outsideBw, outsideBc),
-            buildCardGlowShadow(
-              Boolean(profileTheme.effect_glow),
-              profileTheme.effect_glow_color ?? profileTheme.card_border_color,
-              profileTheme.effect_glow_size ?? 24,
-            ),
-          ),
-        }
+          borderStyle: profileTheme.card_border_style,
+          glowEnabled: Boolean(profileTheme.effect_glow),
+          glowColor: profileTheme.effect_glow_color ?? profileTheme.card_border_color,
+          glowSize: profileTheme.effect_glow_size ?? 24,
+        })
+      : null;
+
+  const outsideShellStyle: CSSProperties | undefined =
+    outsideBorderChrome
+      ? outsideBorderChrome.style
       : undefined;
 
   const outsideSurfaceStyle: CSSProperties | undefined =
@@ -322,11 +327,16 @@ export function DiscordPresenceCard({
   const activityTitlePx = Math.round(14 * scaleFactor);
   const activitySubPx = Math.round(12 * scaleFactor);
   const activityArtPx = Math.round(48 * scaleFactor);
-  const effActivityTitlePx = Math.max(10, Math.round(activityTitlePx * activityCompactRatio));
-  const effActivitySubPx = Math.max(9, Math.round(activitySubPx * activityCompactRatio));
-  const effActivityArtPx = Math.max(28, Math.round(activityArtPx * activityCompactRatio));
-  const effProgressW = Math.max(64, Math.round(170 * scaleFactor * activityCompactRatio));
-  const showProgressTimes = !isCompactActivity || containerWidth >= 300;
+  const effAvatarPx = Math.max(40, Math.round(avatarPx * profileCompactRatio));
+  const effNamePx = Math.max(12, Math.round(namePx * profileCompactRatio));
+  const effUserPx = Math.max(11, Math.round(userPx * profileCompactRatio));
+  const effBadgePx = Math.max(11, Math.round(badgePx * profileCompactRatio));
+  const effActivityTitlePx = Math.max(8, Math.round(activityTitlePx * activityCompactRatio));
+  const effActivitySubPx = Math.max(7, Math.round(activitySubPx * activityCompactRatio));
+  const effActivityArtPx = Math.max(22, Math.round(activityArtPx * activityCompactRatio));
+  const effProgressW = Math.max(48, Math.round(170 * scaleFactor * activityCompactRatio));
+  const showProgressTimes = !isCompactActivity || containerWidth >= 320;
+  const showActivitySubtitle = !isCompactActivity || containerWidth >= 260;
   const profileLinkPx = Math.round(14 * scaleFactor);
   const iconPx = Math.round(12 * scaleFactor);
 
@@ -361,23 +371,31 @@ export function DiscordPresenceCard({
       >
         <div
           className={cn(
-            "flex min-w-0 items-center gap-3",
-            hasActivity && "min-w-0 flex-1 overflow-hidden",
+            "flex shrink-0 items-center",
+            isCompactActivity ? "gap-2" : "gap-3",
           )}
         >
           <img
             src={getAvatarUrl(safeUser)}
             alt={safeUser.username}
             className="shrink-0 rounded-full border border-white/20 object-cover"
-            style={{ width: avatarPx, height: avatarPx }}
+            style={{ width: effAvatarPx, height: effAvatarPx }}
           />
-          <div className="min-w-0 text-left">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <p className="truncate font-semibold" style={{ ...titleFallback, ...titleGlowFallback, fontSize: namePx }}>
+          <div className="text-left">
+            <div
+              className={cn(
+                "flex items-center",
+                isCompactActivity ? "flex-wrap gap-x-1 gap-y-0.5" : "min-w-0 gap-1.5",
+              )}
+            >
+              <p
+                className="font-semibold leading-tight"
+                style={{ ...titleFallback, ...titleGlowFallback, fontSize: effNamePx }}
+              >
                 {safeUser.global_name || safeUser.username}
               </p>
               {showBadges && badges.length > 0 && (
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 items-center gap-0.5">
                   {badges.slice(0, 5).map((badge) => (
                     <img
                       key={badge.id}
@@ -385,13 +403,18 @@ export function DiscordPresenceCard({
                       alt={badge.description}
                       title={badge.description}
                       className="shrink-0 rounded-sm object-contain"
-                      style={{ width: badgePx, height: badgePx }}
+                      style={{ width: effBadgePx, height: effBadgePx }}
                     />
                   ))}
                 </div>
               )}
             </div>
-            <p className="truncate" style={{ ...mutedFallback, ...discordMutedGlow, fontSize: userPx }}>@{safeUser.username}</p>
+            <p
+              className="leading-tight"
+              style={{ ...mutedFallback, ...discordMutedGlow, fontSize: effUserPx }}
+            >
+              @{safeUser.username}
+            </p>
           </div>
         </div>
 
@@ -401,7 +424,7 @@ export function DiscordPresenceCard({
             target="_blank"
             rel="noreferrer"
             className="shrink-0 -translate-y-[15%] font-semibold leading-none transition hover:opacity-100"
-            style={{ ...bodyFallback, ...discordBodyGlow, fontSize: profileLinkPx, height: avatarPx, opacity: 0.9 }}
+            style={{ ...bodyFallback, ...discordBodyGlow, fontSize: profileLinkPx, height: effAvatarPx, opacity: 0.9 }}
           >
             Profile
           </a>
@@ -413,24 +436,26 @@ export function DiscordPresenceCard({
             target="_blank"
             rel="noreferrer"
             className={cn(
-              "flex min-w-0 shrink items-center transition opacity-95 hover:opacity-100",
-              isCompactActivity ? "max-w-[48%] gap-1" : "ml-auto gap-3",
+              "ml-auto flex min-w-0 shrink items-center transition opacity-95 hover:opacity-100",
+              isCompactActivity ? "max-w-[36%] gap-0.5" : "gap-3",
             )}
             title="Ver perfil no Discord"
           >
             <div className="min-w-0 flex-1 overflow-hidden text-right">
               <p
-                className="truncate font-semibold"
+                className="truncate font-semibold leading-tight"
                 style={{ ...titleFallback, ...titleGlowFallback, fontSize: effActivityTitlePx }}
               >
                 {activityTitle}
               </p>
-              <p
-                className="truncate"
-                style={{ ...mutedFallback, ...discordMutedGlow, fontSize: effActivitySubPx }}
-              >
-                {activitySubtitle}
-              </p>
+              {showActivitySubtitle && (
+                <p
+                  className="truncate leading-tight"
+                  style={{ ...mutedFallback, ...discordMutedGlow, fontSize: effActivitySubPx }}
+                >
+                  {activitySubtitle}
+                </p>
+              )}
               {spotify && spotifyDuration > 0 && (
                 <div
                   className="mt-1 ml-auto max-w-full"
@@ -481,7 +506,7 @@ export function DiscordPresenceCard({
 
   if (variant === "outside") {
     return (
-      <div className={rootClass} style={outsideShellStyle}>
+      <div className={cn(rootClass, outsideBorderChrome?.className)} style={outsideShellStyle}>
         <div className={contentClass} style={outsideSurfaceStyle}>
           {cardBody}
         </div>

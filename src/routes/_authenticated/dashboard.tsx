@@ -8,7 +8,13 @@ import {
   X, Check, Trash2, Play, Pause, MessageSquare,
   PanelLeftClose, ChevronRight, LayoutTemplate,
 } from "lucide-react";
-import { uploadProfileAsset, type Profile } from "@/lib/profile-storage";
+import {
+  DEFAULT_CARD_HEIGHT,
+  DEFAULT_CARD_LAYOUT,
+  DEFAULT_CARD_WIDTH,
+  uploadProfileAsset,
+  type Profile,
+} from "@/lib/profile-storage";
 import { PublicProfileView } from "@/components/PublicProfileView";
 import { DashboardOverviewPage } from "@/components/dashboard/DashboardOverviewPage";
 import { DashboardEstatisticasPage } from "@/components/dashboard/DashboardEstatisticasPage";
@@ -55,8 +61,9 @@ import {
   DISCORD_VERIFY_MESSAGES,
   LANYARD_INVITE_URL,
   generateDiscordOtp,
-  verifyDiscordOwnership,
 } from "@/lib/discord-verify";
+import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
+import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions";
 
 type PanelKey = PersonalizePanelKey;
 
@@ -190,6 +197,9 @@ function Dashboard() {
             username: cleanUser,
             display_name: fallbackUser,
             public_template_enabled: true,
+            card_layout: DEFAULT_CARD_LAYOUT,
+            card_width: DEFAULT_CARD_WIDTH,
+            card_height: DEFAULT_CARD_HEIGHT,
           },
           { onConflict: "id", ignoreDuplicates: true },
         );
@@ -381,7 +391,7 @@ function Dashboard() {
         comments_enabled: profile.comments_enabled !== false,
         effect_border_glow: profile.effect_border_glow === true,
         effect_tilt_strength: profile.effect_tilt_strength ?? 5,
-        card_layout: profile.card_layout ?? "default",
+        card_layout: profile.card_layout ?? DEFAULT_CARD_LAYOUT,
         public_template_enabled: profile.public_template_enabled === true,
         page_font_family: profile.page_font_family,
         name_font_family: profile.name_font_family,
@@ -1119,7 +1129,7 @@ function AparenciaPanel({ profile, update }: { profile: Profile; update: <K exte
     <div className="space-y-4">
       {/* Layout do card */}
       <LayoutPickerField
-        value={profile.card_layout ?? "default"}
+        value={profile.card_layout ?? DEFAULT_CARD_LAYOUT}
         onChange={(v) => {
           const next = v as Profile["card_layout"];
           update("card_layout", next);
@@ -1171,8 +1181,8 @@ function AparenciaPanel({ profile, update }: { profile: Profile; update: <K exte
         )}
       </div>
 
-      <SliderField label="Largura do card" min={280} max={1200} step={10} value={profile.card_width ?? 400} onChange={(v) => update("card_width", v)} display={`${profile.card_width ?? 400}px`} />
-      <SliderField label="Altura do card" min={300} max={800} step={10} value={profile.card_height ?? 500} onChange={(v) => update("card_height", v)} display={`${profile.card_height ?? 500}px`} />
+      <SliderField label="Largura do card" min={280} max={1200} step={10} value={profile.card_width ?? DEFAULT_CARD_WIDTH} onChange={(v) => update("card_width", v)} display={`${profile.card_width ?? DEFAULT_CARD_WIDTH}px`} />
+      <SliderField label="Altura do card" min={300} max={800} step={10} value={profile.card_height ?? DEFAULT_CARD_HEIGHT} onChange={(v) => update("card_height", v)} display={`${profile.card_height ?? DEFAULT_CARD_HEIGHT}px`} />
 
       <div className="border-t border-white/10 pt-4">
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">Efeitos</h3>
@@ -1716,6 +1726,13 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
   const [validateUnlockAt, setValidateUnlockAt] = useState<number | null>(null);
   const [otpExpiresAt, setOtpExpiresAt] = useState<number | null>(null);
   const [waitSecondsLeft, setWaitSecondsLeft] = useState(0);
+  const [transferPending, setTransferPending] = useState(false);
+
+  const applyPatch = (patch: Partial<Profile>) => {
+    (Object.entries(patch) as [keyof Profile, Profile[keyof Profile]][]).forEach(([k, v]) =>
+      update(k, v),
+    );
+  };
 
   useEffect(() => {
     setDiscordInput(profile.discord_user_id ?? "");
@@ -1753,10 +1770,11 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
     setOtp(code);
     setValidateUnlockAt(now + DISCORD_OTP_WAIT_MS);
     setOtpExpiresAt(now + DISCORD_OTP_WAIT_MS + DISCORD_OTP_VALIDATE_WINDOW_MS);
+    setTransferPending(false);
     toast.success("Código gerado — coloque na descrição do Discord");
   };
 
-  const validateDiscord = async () => {
+  const runDiscordLink = async (forceTransfer: boolean) => {
     const userId = discordInput.trim();
     if (!otp || !validateUnlockAt || !otpExpiresAt) return;
     if (waitSecondsLeft > 0) {
@@ -1765,25 +1783,46 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
     }
     try {
       setDiscordLoading(true);
-      const result = await verifyDiscordOwnership(userId, otp, validateUnlockAt, otpExpiresAt);
-      if (!result.ok) {
-        toast.error(DISCORD_VERIFY_MESSAGES[result.error]);
-        if (result.error === "expired") {
-          setOtp(null);
-          setValidateUnlockAt(null);
-          setOtpExpiresAt(null);
-        }
+      const result = await linkVerifiedConnectionFn({
+        data: {
+          type: "discord",
+          discordUserId: userId,
+          otp,
+          unlockAt: validateUnlockAt,
+          expiresAt: otpExpiresAt,
+          forceTransfer,
+        },
+      });
+      if (result.ok) {
+        applyPatch(result.patch as Partial<Profile>);
+        setOtp(null);
+        setValidateUnlockAt(null);
+        setOtpExpiresAt(null);
+        setTransferPending(false);
+        toast.success(
+          forceTransfer
+            ? "Discord transferido e conectado neste perfil!"
+            : "Discord verificado e conectado!",
+        );
         return;
       }
-      update("discord_user_id", userId);
-      setOtp(null);
-      setValidateUnlockAt(null);
-      setOtpExpiresAt(null);
-      toast.success("Discord verificado e conectado!");
+      if (result.needsTransfer) {
+        setTransferPending(true);
+        return;
+      }
+      toast.error(result.error ?? "Falha ao validar.");
+      if (result.code === "expired") {
+        setOtp(null);
+        setValidateUnlockAt(null);
+        setOtpExpiresAt(null);
+        setTransferPending(false);
+      }
     } finally {
       setDiscordLoading(false);
     }
   };
+
+  const validateDiscord = () => void runDiscordLink(false);
 
   const copyOtp = async () => {
     if (!otp) return;
@@ -1801,6 +1840,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
     setOtp(null);
     setValidateUnlockAt(null);
     setOtpExpiresAt(null);
+    setTransferPending(false);
     toast.success("Discord desconectado");
   };
 
@@ -1880,6 +1920,21 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
                       ? `Aguarde ${waitSecondsLeft}s`
                       : "Validar"}
                 </button>
+                {transferPending && (
+                  <div className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                    <p className="text-xs leading-relaxed text-amber-100/90">
+                      {CONNECTION_ALREADY_LINKED_MESSAGE}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void runDiscordLink(true)}
+                      disabled={discordLoading || !canValidate}
+                      className="w-full rounded-lg border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-50 transition hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {discordLoading ? "Transferindo..." : "Continuar e vincular aqui"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -1936,7 +1991,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
         />
       )}
 
-      <HotelConnectionPanel profile={profile} update={update} />
+      <HotelConnectionPanel profile={profile} update={update} onBatchUpdate={applyPatch} />
     </div>
   );
 }

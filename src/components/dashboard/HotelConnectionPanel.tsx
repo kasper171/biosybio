@@ -3,6 +3,14 @@ import { Loader2, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import type { Profile } from "@/lib/profile-storage";
 import { HotelProfileCard } from "@/components/HotelProfileCard";
+import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
+import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions";
+import {
+  HOTEL_OTP_VALIDATE_WINDOW_MS,
+  HOTEL_OTP_WAIT_MS,
+  HOTEL_VERIFY_MESSAGES,
+  generateHotelOtp,
+} from "@/lib/hotel-verify";
 import {
   clearHotelProfilePatch,
   fetchHotelProfile,
@@ -110,8 +118,21 @@ function PlatformConnectSection({
     platform === "habbo" ? (profile.habbo_username ?? "") : (profile.habblet_username ?? ""),
   );
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<HotelProfileData | null>(null);
+  const [otp, setOtp] = useState<string | null>(null);
+  const [validateUnlockAt, setValidateUnlockAt] = useState<number | null>(null);
+  const [otpExpiresAt, setOtpExpiresAt] = useState<number | null>(null);
+  const [waitSecondsLeft, setWaitSecondsLeft] = useState(0);
+  const [transferPending, setTransferPending] = useState(false);
+
+  const resetVerification = () => {
+    setOtp(null);
+    setValidateUnlockAt(null);
+    setOtpExpiresAt(null);
+    setTransferPending(false);
+  };
 
   const runLookup = useCallback(
     async (name: string) => {
@@ -152,12 +173,101 @@ function PlatformConnectSection({
     return () => clearTimeout(timer);
   }, [username, hotelDomain, connecting, runLookup]);
 
-  const confirmConnect = () => {
+  useEffect(() => {
+    if (!validateUnlockAt && !otpExpiresAt) {
+      setWaitSecondsLeft(0);
+      return;
+    }
+    const tick = () => {
+      const now = Date.now();
+      if (validateUnlockAt) {
+        setWaitSecondsLeft(Math.max(0, Math.ceil((validateUnlockAt - now) / 1000)));
+      }
+      if (otpExpiresAt && now > otpExpiresAt) {
+        resetVerification();
+      }
+    };
+    tick();
+    const timer = setInterval(tick, 250);
+    return () => clearInterval(timer);
+  }, [validateUnlockAt, otpExpiresAt]);
+
+  const startVerification = () => {
     if (!preview) return;
-    applyPatch(update, onBatchUpdate, hotelDataToProfilePatch(preview));
-    setConnecting(false);
-    setPreview(null);
-    toast.success(`${PLATFORM_LABELS[platform]} conectado!`);
+    const now = Date.now();
+    setOtp(generateHotelOtp());
+    setValidateUnlockAt(now + HOTEL_OTP_WAIT_MS);
+    setOtpExpiresAt(now + HOTEL_OTP_WAIT_MS + HOTEL_OTP_VALIDATE_WINDOW_MS);
+    setTransferPending(false);
+    toast.success("Código gerado — coloque na missão do personagem");
+  };
+
+  const runHotelLink = async (forceTransfer: boolean) => {
+    if (!preview || !otp || !validateUnlockAt || !otpExpiresAt) return;
+    if (waitSecondsLeft > 0) {
+      toast.error(HOTEL_VERIFY_MESSAGES.waiting);
+      return;
+    }
+
+    try {
+      setVerifying(true);
+      const result = await linkVerifiedConnectionFn({
+        data:
+          platform === "habbo"
+            ? {
+                type: "habbo",
+                username: preview.username,
+                hotelDomain: preview.hotelDomain ?? hotelDomain,
+                otp,
+                unlockAt: validateUnlockAt,
+                expiresAt: otpExpiresAt,
+                forceTransfer,
+              }
+            : {
+                type: "habblet",
+                username: preview.username,
+                otp,
+                unlockAt: validateUnlockAt,
+                expiresAt: otpExpiresAt,
+                forceTransfer,
+              },
+      });
+
+      if (result.ok) {
+        applyPatch(update, onBatchUpdate, result.patch as Partial<Profile>);
+        setConnecting(false);
+        setPreview(null);
+        resetVerification();
+        toast.success(
+          forceTransfer
+            ? `${PLATFORM_LABELS[platform]} transferido e conectado!`
+            : `${PLATFORM_LABELS[platform]} verificado e conectado!`,
+        );
+        return;
+      }
+
+      if (result.needsTransfer) {
+        setTransferPending(true);
+        return;
+      }
+
+      toast.error(result.error ?? "Falha ao validar.");
+      if (result.code === "expired") {
+        resetVerification();
+      }
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const copyOtp = async () => {
+    if (!otp) return;
+    try {
+      await navigator.clipboard.writeText(otp);
+      toast.success("Código copiado");
+    } catch {
+      toast.error("Não foi possível copiar o código");
+    }
   };
 
   const disconnect = () => {
@@ -165,10 +275,13 @@ function PlatformConnectSection({
     setUsername("");
     setPreview(null);
     setConnecting(false);
+    resetVerification();
     toast.success(`${PLATFORM_LABELS[platform]} desconectado`);
   };
 
   const displayData = preview ?? storedData;
+  const verificationPending = Boolean(otp && otpExpiresAt);
+  const canValidate = Boolean(otp && waitSecondsLeft <= 0 && verificationPending);
 
   return (
     <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
@@ -209,8 +322,11 @@ function PlatformConnectSection({
               <span className="mb-1 block text-xs text-white/50">Hotel</span>
               <select
                 value={hotelDomain}
-                onChange={(e) => setHotelDomain(e.target.value)}
-                disabled={loading}
+                onChange={(e) => {
+                  setHotelDomain(e.target.value);
+                  resetVerification();
+                }}
+                disabled={loading || verificationPending}
                 className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white"
               >
                 {HABBO_HOTELS.map((h) => (
@@ -230,12 +346,20 @@ function PlatformConnectSection({
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={loading}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                resetVerification();
+              }}
+              disabled={loading || verificationPending}
               placeholder="Ex: Grabando"
               className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 disabled:opacity-60"
             />
           </label>
+
+          <p className="text-[11px] leading-relaxed text-white/45">
+            Gere um código e coloque na <strong className="font-medium text-white/60">missão</strong> do
+            personagem no {PLATFORM_LABELS[platform]} para provar que a conta é sua.
+          </p>
 
           {error && (
             <p className="rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs text-red-300">
@@ -257,27 +381,80 @@ function PlatformConnectSection({
             </div>
           )}
 
-          <div className="flex gap-2">
+          {preview && !verificationPending && (
             <button
               type="button"
-              onClick={confirmConnect}
-              disabled={loading || !preview}
-              className="flex-1 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={startVerification}
+              disabled={loading}
+              className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Buscando..." : "Confirmar"}
+              Gerar código de verificação
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setConnecting(false);
-                setPreview(null);
-                setError(null);
-              }}
-              className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"
-            >
-              Cancelar
-            </button>
-          </div>
+          )}
+
+          {verificationPending && (
+            <div className="space-y-3 rounded-lg border border-pink-500/30 bg-pink-500/10 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-white/70">Coloque este código na missão do personagem:</p>
+                {waitSecondsLeft > 0 ? (
+                  <span className="text-xs font-semibold text-pink-200">{waitSecondsLeft}s</span>
+                ) : (
+                  <span className="text-xs font-semibold text-emerald-300">Pronto</span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={copyOtp}
+                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-center font-mono text-lg font-bold tracking-widest text-white transition hover:bg-black/55"
+              >
+                {otp}
+              </button>
+              <p className="text-[11px] leading-relaxed text-white/50">
+                No jogo, abra o perfil do personagem e edite a missão. Cole o código, salve e aguarde
+                50s para validar.
+              </p>
+              <button
+                type="button"
+                onClick={() => void runHotelLink(false)}
+                disabled={verifying || !canValidate}
+                className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {verifying
+                  ? "Validando..."
+                  : waitSecondsLeft > 0
+                    ? `Aguarde ${waitSecondsLeft}s`
+                    : "Validar"}
+              </button>
+              {transferPending && (
+                <div className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                  <p className="text-xs leading-relaxed text-amber-100/90">
+                    {CONNECTION_ALREADY_LINKED_MESSAGE}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void runHotelLink(true)}
+                    disabled={verifying || !canValidate}
+                    className="w-full rounded-lg border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-50 transition hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {verifying ? "Transferindo..." : "Continuar e vincular aqui"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setConnecting(false);
+              setPreview(null);
+              setError(null);
+              resetVerification();
+            }}
+            className="w-full rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"
+          >
+            Cancelar
+          </button>
         </div>
       )}
 
@@ -314,7 +491,8 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
         Habbo & Habblet
       </p>
       <p className="text-[11px] leading-relaxed text-white/40">
-        Você pode conectar Habbo Hotel e Habblet ao mesmo tempo — são perfis separados.
+        Você pode conectar Habbo Hotel e Habblet ao mesmo tempo — são perfis separados. A verificação
+        exige colocar um código na missão do personagem.
       </p>
 
       <PlatformConnectSection

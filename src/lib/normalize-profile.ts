@@ -1,4 +1,9 @@
-import type { Profile } from "@/lib/profile-storage";
+import {
+  DEFAULT_CARD_HEIGHT,
+  DEFAULT_CARD_LAYOUT,
+  DEFAULT_CARD_WIDTH,
+  type Profile,
+} from "@/lib/profile-storage";
 import { normalizeCardBorderStyle } from "@/lib/card-border";
 import { TEXT_GLOW_MAX_PX, normalizeTextGlowScope } from "@/lib/profile-colors";
 import { normalizeTextAnimationId } from "@/lib/text-animations";
@@ -11,8 +16,8 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     ...p,
     card_border_style: borderStyle,
     card_border_width: Number(p.card_border_width) || 0,
-    card_width: Number(p.card_width ?? 400) || 400,
-    card_height: Number(p.card_height ?? 500) || 500,
+    card_width: Number(p.card_width ?? DEFAULT_CARD_WIDTH) || DEFAULT_CARD_WIDTH,
+    card_height: Number(p.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT,
     card_opacity: Number(p.card_opacity) ?? 0.7,
     effect_glow_size: Number(p.effect_glow_size) || 24,
     effect_glow_color: p.effect_glow_color ?? p.card_border_color ?? "#ff2d7a",
@@ -20,7 +25,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     effect_tilt_strength: Math.min(10, Math.max(1, Number(p.effect_tilt_strength ?? 5) || 5)),
     card_layout: (["default", "centered", "aligned"] as const).includes(p.card_layout as "default" | "centered" | "aligned")
       ? (p.card_layout as "default" | "centered" | "aligned")
-      : "default",
+      : DEFAULT_CARD_LAYOUT,
     social_icon_color: p.social_icon_color ?? "#ffffff",
     social_icon_style: (p.social_icon_style as "boxed" | "logo") === "logo" ? "logo" : "boxed",
     avatar_border_color: (p.avatar_border_color as string) ?? p.card_border_color ?? "#ff2d7a",

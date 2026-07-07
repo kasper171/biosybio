@@ -4,11 +4,7 @@ import type { Profile } from "@/lib/profile-storage";
 import { resolveMusicCardTitle } from "@/lib/profile-music";
 import { useProfileMusic } from "@/contexts/ProfileMusicContext";
 import {
-  buildCardGlowShadow,
-  buildCardSolidBorderShadow,
-  cardBorderStyleClass,
-  combineBoxShadows,
-  normalizeCardBorderStyle,
+  buildCardSurfaceChrome,
 } from "@/lib/card-border";
 import { getDiscordMutedStyle, getDiscordTitleStyle, hexToRgba } from "@/lib/profile-colors";
 
@@ -18,38 +14,17 @@ type Props = {
 };
 
 function getMusicCardChrome(profile: Profile): { style: CSSProperties; className: string } {
-  const bw = Number(profile.card_border_width ?? 0);
-  const bc = profile.card_border_color ?? "#ffffff";
-  const borderStyle = normalizeCardBorderStyle(profile.card_border_style);
-  const radius = Math.min(Number(profile.card_border_radius ?? 16), 20);
-  const useCssBorder = bw > 0;
-
-  const style: CSSProperties = {
-    borderRadius: radius,
+  return buildCardSurfaceChrome({
+    borderWidth: Number(profile.card_border_width ?? 0),
+    borderColor: profile.card_border_color ?? "#ffffff",
+    borderRadius: Math.min(Number(profile.card_border_radius ?? 16), 20),
+    borderStyle: profile.card_border_style,
+    glowEnabled: Boolean(profile.effect_glow),
+    glowColor: profile.effect_glow_color ?? profile.card_border_color,
+    glowSize: profile.effect_glow_size ?? 24,
     background: hexToRgba(profile.card_color, profile.card_opacity),
-    backdropFilter: `blur(${profile.card_blur}px)`,
-    WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-    boxSizing: "border-box",
-    boxShadow: combineBoxShadows(
-      useCssBorder ? null : buildCardSolidBorderShadow(bw, bc),
-      buildCardGlowShadow(
-        Boolean(profile.effect_glow),
-        profile.effect_glow_color ?? profile.card_border_color,
-        profile.effect_glow_size ?? 24,
-      ),
-    ),
-  };
-
-  if (useCssBorder) {
-    style.borderWidth = bw;
-    style.borderStyle = borderStyle;
-    style.borderColor = bc;
-  }
-
-  return {
-    style,
-    className: useCssBorder ? cardBorderStyleClass(borderStyle) : "",
-  };
+    backdropBlur: profile.card_blur,
+  });
 }
 
 export function MusicPlayerCard({ profile, className = "" }: Props) {

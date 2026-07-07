@@ -11,11 +11,7 @@ import {
 } from "@/lib/block-frame";
 import { hexToRgba } from "@/lib/profile-colors";
 import {
-  buildCardGlowShadow,
-  buildCardSolidBorderShadow,
-  cardBorderStyleClass,
-  combineBoxShadows,
-  normalizeCardBorderStyle,
+  buildCardSurfaceChrome,
 } from "@/lib/card-border";
 
 type BlockFrameProps = {
@@ -37,38 +33,21 @@ function getProfileCardChrome(
 ) {
   const bw = Number(profile.card_border_width ?? 0);
   const bc = profile.card_border_color ?? "#ffffff";
-  const borderStyle = normalizeCardBorderStyle(profile.card_border_style);
   const borderRadius = getBlockShapeBorderRadius(size, shape);
-  const useCssBorder = bw > 0;
 
-  const style: CSSProperties = {
+  const chrome = buildCardSurfaceChrome({
+    borderWidth: bw,
+    borderColor: bc,
     borderRadius,
-    backdropFilter: options?.transparentFill ? undefined : `blur(${profile.card_blur}px)`,
-    WebkitBackdropFilter: options?.transparentFill ? undefined : `blur(${profile.card_blur}px)`,
-    boxSizing: "border-box",
-    boxShadow: combineBoxShadows(
-      useCssBorder ? null : buildCardSolidBorderShadow(bw, bc),
-      buildCardGlowShadow(
-        Boolean(profile.effect_glow),
-        profile.effect_glow_color ?? profile.card_border_color,
-        profile.effect_glow_size ?? 24,
-      ),
-    ),
-  };
+    borderStyle: profile.card_border_style,
+    glowEnabled: Boolean(profile.effect_glow),
+    glowColor: profile.effect_glow_color ?? profile.card_border_color,
+    glowSize: profile.effect_glow_size ?? 24,
+    background: options?.transparentFill ? undefined : hexToRgba(profile.card_color, profile.card_opacity),
+    backdropBlur: options?.transparentFill ? undefined : profile.card_blur,
+  });
 
-  if (!options?.transparentFill) {
-    style.background = hexToRgba(profile.card_color, profile.card_opacity);
-  }
-
-  if (useCssBorder) {
-    style.borderWidth = bw;
-    style.borderStyle = borderStyle;
-    style.borderColor = bc;
-  }
-
-  const className = useCssBorder ? cardBorderStyleClass(borderStyle) : "";
-
-  return { style, className };
+  return chrome;
 }
 
 export function BlockFrame({
