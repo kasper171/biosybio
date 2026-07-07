@@ -31,7 +31,7 @@ export function mapCloudflareTurnstileError(
 export function getTurnstileUserMessage(code: TurnstileVerifyErrorCode): string {
   switch (code) {
     case "missing_secret":
-      return "Verificação de segurança indisponível no servidor. Tente novamente mais tarde.";
+      return "Chave TURNSTILE_SECRET_KEY ausente no servidor. O cadastro tentará via Supabase; se falhar, configure a variável na Vercel.";
     case "hostname_mismatch":
       return "Este domínio não está autorizado no Cloudflare Turnstile. Avise o suporte do site.";
     case "timeout_or_duplicate":

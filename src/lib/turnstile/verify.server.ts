@@ -1,3 +1,4 @@
+import { getTurnstileSecretKey } from "@/lib/turnstile/config.server";
 import {
   mapCloudflareTurnstileError,
   type TurnstileVerifyErrorCode,
@@ -18,7 +19,7 @@ export async function verifyTurnstileToken(
   token: string,
   remoteIp?: string,
 ): Promise<TurnstileVerifyResult> {
-  const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
+  const secret = getTurnstileSecretKey();
   if (!secret) {
     console.error("[Turnstile] TURNSTILE_SECRET_KEY não configurada no servidor.");
     return { ok: false, code: "missing_secret" };

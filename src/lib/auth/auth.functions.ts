@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getTurnstileSecretKey } from "@/lib/turnstile/config.server";
 import { getTurnstileUserMessage } from "@/lib/turnstile/errors";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify.server";
 import { cleanUsername, usernameLengthError } from "@/lib/username";
@@ -13,7 +14,7 @@ const signUpInput = z.object({
 
 function isTurnstileRequiredOnServer(): boolean {
   return Boolean(
-    process.env.TURNSTILE_SECRET_KEY?.trim() || process.env.VITE_TURNSTILE_SITE_KEY?.trim(),
+    getTurnstileSecretKey() || process.env.VITE_TURNSTILE_SITE_KEY?.trim(),
   );
 }
 

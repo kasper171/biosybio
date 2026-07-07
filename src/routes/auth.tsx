@@ -153,6 +153,43 @@ function AuthPage() {
             },
           });
 
+          if (!result.ok && result.code === "missing_secret") {
+            const { data, error } = await supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                emailRedirectTo: `${window.location.origin}/dashboard`,
+                data: { username: cleanUser, display_name: cleanUser },
+                captchaToken: turnstileToken,
+              },
+            });
+            if (error) throw error;
+
+            if (isExistingEmailSignup(data.user)) {
+              notify({
+                title: "Este email já está cadastrado",
+                description: "Tente entrar com sua senha ou use outro email.",
+              });
+              setMode("signin");
+              return;
+            }
+
+            if (!data.session) {
+              notify(
+                {
+                  title: "Conta criada!",
+                  description: `Enviamos um link de confirmação para ${email}. Confira sua caixa de entrada.`,
+                },
+                "success",
+              );
+              return;
+            }
+
+            notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
+            navigate({ to: "/dashboard" });
+            return;
+          }
+
           if (!result.ok) {
             notify({ title: "Não foi possível criar a conta", description: result.error });
             return;
