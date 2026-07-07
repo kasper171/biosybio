@@ -4,7 +4,7 @@ import type { Profile } from "@/lib/profile-storage";
 import { resolveMusicCardTitle } from "@/lib/profile-music";
 import { useProfileMusic } from "@/contexts/ProfileMusicContext";
 import { MusicVolumeControl } from "@/components/MusicVolumeControl";
-import { buildCardSurfaceChrome } from "@/lib/card-border";
+import { buildCardBorderChrome, normalizeCardBorderStyle } from "@/lib/card-border";
 import { getDiscordMutedStyle, getDiscordTitleStyle, hexToRgba } from "@/lib/profile-colors";
 
 type Props = {
@@ -12,19 +12,41 @@ type Props = {
   className?: string;
 };
 
-function getMusicCardChrome(profile: Profile): { style: CSSProperties; className: string } {
-  return buildCardSurfaceChrome({
-    borderWidth: Number(profile.card_border_width ?? 0),
-    borderColor: profile.card_border_color ?? "#ffffff",
-    borderRadius: Math.min(Number(profile.card_border_radius ?? 16), 20),
+function getMusicCardChrome(profile: Profile): {
+  outer: { style: CSSProperties; className: string };
+  innerRadius: number;
+  surfaceBg: string;
+} {
+  const borderWidth = Number(profile.card_border_width ?? 0) || 0;
+  const borderColor = profile.card_border_color ?? "#ffffff";
+  const radius = Number(profile.card_border_radius ?? 16) || 16;
+
+  const borderChrome = buildCardBorderChrome({
+    borderWidth,
+    borderColor,
+    borderRadius: radius,
     borderStyle: profile.card_border_style,
     glowEnabled: Boolean(profile.effect_glow),
     glowColor: profile.effect_glow_color ?? profile.card_border_color,
     glowSize: profile.effect_glow_size ?? 24,
-    background: hexToRgba(profile.card_color, profile.card_opacity),
-    // backdrop-filter quebra sliders de range no Windows — blur só na camada visual
-    backdropBlur: 0,
   });
+
+  const useCssBorder = borderWidth > 0 && normalizeCardBorderStyle(profile.card_border_style) !== "solid";
+  const innerRadius = useCssBorder ? Math.max(0, radius - borderWidth) : radius;
+  const surfaceBg = hexToRgba(profile.card_color, profile.card_opacity);
+
+  return {
+    outer: {
+      className: borderChrome.className,
+      style: {
+        ...borderChrome.style,
+        // background/blur ficam na camada interna (evita blur afetar glow)
+        background: "transparent",
+      },
+    },
+    innerRadius,
+    surfaceBg,
+  };
 }
 
 export function MusicPlayerCard({ profile, className = "" }: Props) {
@@ -53,31 +75,33 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
   const titleStyle = getDiscordTitleStyle(profile);
   const mutedStyle = getDiscordMutedStyle(profile);
   const iconColor = profile.icon_color ?? "rgba(255,255,255,0.85)";
-  const cardBlur = profile.card_blur ?? 0;
+  const cardBlur = Number(profile.card_blur ?? 0) || 0;
 
   return (
     <div
-      className={`relative mx-auto w-full overflow-hidden px-3 py-2.5 sm:px-4 sm:py-3 ${chrome.className} ${className}`}
+      className={`relative mx-auto w-full ${chrome.outer.className} ${className}`}
+      style={chrome.outer.style}
     >
-      {cardBlur > 0 ? (
+      <div
+        className="relative overflow-hidden px-3 py-2.5 sm:px-4 sm:py-3"
+        style={{ borderRadius: chrome.innerRadius }}
+      >
         <div
           aria-hidden
-          className={`pointer-events-none absolute inset-0 ${chrome.className}`}
+          className="pointer-events-none absolute inset-0"
           style={{
-            ...chrome.style,
-            backdropFilter: `blur(${cardBlur}px)`,
-            WebkitBackdropFilter: `blur(${cardBlur}px)`,
+            borderRadius: chrome.innerRadius,
+            background: chrome.surfaceBg,
+            ...(cardBlur > 0
+              ? {
+                  backdropFilter: `blur(${cardBlur}px)`,
+                  WebkitBackdropFilter: `blur(${cardBlur}px)`,
+                }
+              : {}),
           }}
         />
-      ) : (
-        <div
-          aria-hidden
-          className={`pointer-events-none absolute inset-0 ${chrome.className}`}
-          style={chrome.style}
-        />
-      )}
 
-      <div className="relative z-10 flex items-center gap-3 sm:gap-4 pointer-events-auto">
+        <div className="relative z-10 flex items-center gap-3 sm:gap-4 pointer-events-auto">
         <button
           type="button"
           onClick={togglePlay}
@@ -152,6 +176,7 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
