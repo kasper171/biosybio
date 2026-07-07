@@ -36,6 +36,7 @@ const AUTO_HOVER_SLOT_MS = AUTO_HOVER_CYCLE_MS / AUTO_HOVER_ORDER.length;
 type Layer = (typeof PHONES)[number]["layer"];
 
 type Pose = {
+  x: number;
   y: number;
   z: number;
   rotateX: number;
@@ -44,11 +45,11 @@ type Pose = {
   scale: number;
 };
 
-/** Esquerda atrás → direita meio → centro na frente (hero) */
+/** Stack premium — leque vertical com inclinação (offsets em px) */
 const PHONE_POSE: Record<Layer, Pose> = {
-  "home-phone-fan-1": { y: 4, z: -70, rotateX: 5, rotateY: -14, rotateZ: -3, scale: 1.05 },
-  "home-phone-fan-2": { y: 0, z: 65, rotateX: 4, rotateY: 0, rotateZ: 0, scale: 1 },
-  "home-phone-fan-3": { y: 6, z: -15, rotateX: 5, rotateY: 14, rotateZ: 3, scale: 1.07 },
+  "home-phone-fan-1": { x: -38, y: 0, z: -18, rotateX: 2, rotateY: 0, rotateZ: -8, scale: 1.02 },
+  "home-phone-fan-2": { x: 0, y: 40, z: 8, rotateX: 2, rotateY: 0, rotateZ: 0, scale: 1 },
+  "home-phone-fan-3": { x: 38, y: 80, z: 16, rotateX: 2, rotateY: 0, rotateZ: 8, scale: 1.02 },
 };
 
 /** Pintura DOM: fundo → frente (evita z-index vs 3D) */
@@ -69,9 +70,9 @@ const ENTRANCE_DELAY_MS: Record<Layer, number> = {
 };
 
 const ENTRANCE_START_ANGLES: Record<Layer, { rotateY: number; rotateZ: number }> = {
-  "home-phone-fan-1": { rotateY: -18, rotateZ: -4 },
+  "home-phone-fan-1": { rotateY: 0, rotateZ: -12 },
   "home-phone-fan-2": { rotateY: 0, rotateZ: 0 },
-  "home-phone-fan-3": { rotateY: 18, rotateZ: 4 },
+  "home-phone-fan-3": { rotateY: 0, rotateZ: 12 },
 };
 
 type Pointer = { x: number; y: number };
@@ -103,6 +104,7 @@ function buildEntranceTransform(layer: Layer, elapsedMs: number) {
   const t = easeOutQuart(raw);
   const scaleT = easeOutBack(raw);
 
+  const x = lerp(0, pose.x, t);
   const y = lerp(ENTRANCE_Y_LIFT, pose.y, t);
   const z = pose.z;
   const rotateX = lerp(ENTRANCE_START_ROTATE_X, pose.rotateX, t);
@@ -110,7 +112,7 @@ function buildEntranceTransform(layer: Layer, elapsedMs: number) {
   const rotateZ = lerp(start.rotateZ, pose.rotateZ, t);
   const scale = lerp(ENTRANCE_START_SCALE, pose.scale, scaleT);
 
-  return `translate3d(0, ${y}px, ${z}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`;
+  return `translate3d(${x}px, ${y}px, ${z}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`;
 }
 
 function entranceOpacity(progress: number) {
@@ -136,7 +138,7 @@ function buildTransform(
   const prx = (pointer.y - 0.5) * -5 * parallaxStrength;
   const pry = (pointer.x - 0.5) * 7 * parallaxStrength;
 
-  let { y, z, rotateX, rotateY, rotateZ, scale } = pose;
+  let { x, y, z, rotateX, rotateY, rotateZ, scale } = pose;
 
   if (mode === "hover") {
     y -= 16;
@@ -151,7 +153,7 @@ function buildTransform(
   }
 
   return [
-    `translate3d(${px}px, ${y + py}px, ${z}px)`,
+    `translate3d(${x + px}px, ${y + py}px, ${z}px)`,
     `rotateX(${rotateX + prx}deg)`,
     `rotateY(${rotateY + pry}deg)`,
     `rotateZ(${rotateZ}deg)`,

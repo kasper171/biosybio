@@ -240,15 +240,15 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-phone-fan-1 .home-phone-motion {
-    transform: translate3d(0, 4px, -70px) rotateX(5deg) rotateY(-14deg) rotateZ(-3deg) scale(1.05);
+    transform: translate3d(-38px, 0, -18px) rotateX(2deg) rotateY(0deg) rotateZ(-8deg) scale(1.02);
   }
 
   .home-phone-fan-2 .home-phone-motion {
-    transform: translate3d(0, 0, 65px) rotateX(4deg) rotateY(0deg) rotateZ(0deg) scale(1);
+    transform: translate3d(0, 40px, 8px) rotateX(2deg) rotateY(0deg) rotateZ(0deg) scale(1);
   }
 
   .home-phone-fan-3 .home-phone-motion {
-    transform: translate3d(0, 6px, -15px) rotateX(5deg) rotateY(14deg) rotateZ(3deg) scale(1.07);
+    transform: translate3d(38px, 80px, 16px) rotateX(2deg) rotateY(0deg) rotateZ(8deg) scale(1.02);
   }
 
   .home-phone-motion {
@@ -442,11 +442,12 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 }
 
-/* Hero — palco 3D com celulares (+15% tamanho) */
+/* Hero — palco stack premium */
 .home-hero-stage {
   --phone-w: 228px;
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
-  --fan-span: calc(var(--phone-w) * 2.08);
+  --phone-stack-y: 88px;
+  --fan-span: calc(var(--phone-w) + 96px);
   min-height: 0;
   padding-top: 12px;
   overflow: visible;
@@ -457,54 +458,40 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: var(--phone-h);
-  margin-bottom: calc(var(--phone-h) * -0.22);
+  height: calc(var(--phone-h) + var(--phone-stack-y));
+  margin-bottom: calc((var(--phone-h) + var(--phone-stack-y)) * -0.2);
   padding-top: 0;
   overflow: visible;
-  perspective: 1280px;
-  perspective-origin: 50% 38%;
+  perspective: 1100px;
+  perspective-origin: 50% 42%;
   transform-style: preserve-3d;
 }
 
 @media (min-width: 640px) {
   .home-hero-stage {
     --phone-w: 271px;
-    --fan-span: calc(var(--phone-w) * 2.1);
-  }
-
-  .home-phone-fan-2 {
-    left: calc(var(--phone-w) * 0.37);
-  }
-
-  .home-phone-fan-3 {
-    left: calc(var(--phone-w) * 0.74);
+    --phone-stack-y: 96px;
+    --fan-span: calc(var(--phone-w) + 104px);
   }
 }
 
 @media (min-width: 1024px) {
   .home-hero-stage {
     --phone-w: 324px;
-    --fan-span: calc(var(--phone-w) * 2.12);
+    --phone-stack-y: 104px;
+    --fan-span: calc(var(--phone-w) + 112px);
   }
 
   .home-phone-stage {
-    perspective: 1580px;
-  }
-
-  .home-phone-fan-2 {
-    left: calc(var(--phone-w) * 0.38);
-  }
-
-  .home-phone-fan-3 {
-    left: calc(var(--phone-w) * 0.76);
+    perspective: 1280px;
   }
 }
 
-/* Hero — celulares em leque 3D */
+/* Hero — stack premium em leque */
 .home-phone-fan {
   position: relative;
   width: var(--fan-span);
-  height: var(--phone-h);
+  height: calc(var(--phone-h) + var(--phone-stack-y));
   flex-shrink: 0;
   overflow: visible;
   transform: translate(4%, -5%);
@@ -530,16 +517,16 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   isolation: isolate;
 }
 
-/* Profundidade: esquerda atrás → direita meio → centro na frente */
+/* Stack: topo → meio → base (z-index cresce com profundidade) */
 .home-phone-preview.home-phone-fan-1 {
   z-index: 10;
 }
 
-.home-phone-preview.home-phone-fan-3 {
+.home-phone-preview.home-phone-fan-2 {
   z-index: 20;
 }
 
-.home-phone-preview.home-phone-fan-2 {
+.home-phone-preview.home-phone-fan-3 {
   z-index: 30;
 }
 
@@ -548,7 +535,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-phone-motion {
-  transform-origin: 50% 92%;
+  transform-origin: 50% 52%;
   transform-style: preserve-3d;
   will-change: transform, opacity;
 }
@@ -699,16 +686,11 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   object-position: top;
 }
 
-.home-phone-fan-1 {
-  left: 0;
-}
-
-.home-phone-fan-2 {
-  left: calc(var(--phone-w) * 0.36);
-}
-
-.home-phone-fan-3 {
-  left: calc(var(--phone-w) * 0.72);
+.home-phone-preview.home-phone-fan-1,
+.home-phone-preview.home-phone-fan-2,
+.home-phone-preview.home-phone-fan-3 {
+  left: 50%;
+  margin-left: calc(var(--phone-w) * -0.5);
 }
 
 .home-phone-fan-1 .home-phone-motion,
