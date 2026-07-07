@@ -257,14 +257,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 /* Hero — palco 3D com celulares */
 .home-hero-stage {
   min-height: 0;
-  padding-top: 12px;
+  padding-top: 20px;
   overflow: visible;
 }
 
 .home-phone-stage {
-  --phone-w: 175px;
+  --phone-w: 198px;
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
-  --phone-visible: calc(var(--phone-h) * 0.76);
+  --phone-visible: calc(var(--phone-h) * 0.78);
   position: relative;
   overflow: visible;
   height: var(--phone-visible);
@@ -294,14 +294,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 @media (min-width: 640px) {
   .home-phone-stage {
-    --phone-w: 208px;
+    --phone-w: 236px;
   }
 }
 
 @media (min-width: 1024px) {
   .home-phone-stage {
-    --phone-w: 248px;
-    perspective: 1480px;
+    --phone-w: 282px;
+    perspective: 1580px;
   }
 }
 

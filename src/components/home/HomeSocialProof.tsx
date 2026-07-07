@@ -26,7 +26,7 @@ export function HomeSocialProof() {
   }, []);
 
   return (
-    <div className="mt-8 flex items-center gap-4">
+    <div className="mt-10 flex items-center gap-4 lg:mt-12">
       <div className="flex -space-x-2">
         {avatars.length > 0 ? (
           avatars.map((creator) => (

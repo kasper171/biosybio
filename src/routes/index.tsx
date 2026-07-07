@@ -111,10 +111,13 @@ function Index() {
       </header>
 
       {/* HERO */}
-      <section id="inicio" className="relative mx-auto max-w-7xl px-6 pt-8 pb-16">
-        <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_1.15fr]">
-          <div>
-            <h1 className="text-6xl font-black leading-[0.95] tracking-tight lg:text-7xl">
+      <section
+        id="inicio"
+        className="relative mx-auto flex max-w-7xl flex-col justify-center px-6 pt-10 pb-20 sm:pt-14 sm:pb-24 lg:min-h-[calc(100vh-5.5rem)] lg:pt-20 lg:pb-28"
+      >
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1.15fr] lg:gap-14">
+          <div className="lg:pt-4">
+            <h1 className="text-[2.75rem] font-black leading-[0.92] tracking-tight sm:text-6xl lg:text-[5.25rem] lg:leading-[0.9] xl:text-[5.75rem]">
               Your world.<br />
               <span
                 className="text-glow bg-clip-text text-transparent"
@@ -122,14 +125,14 @@ function Index() {
               >Your profile.</span><br />
               Your way.
             </h1>
-            <p className="mt-6 max-w-md text-white/60">
+            <p className="mt-7 max-w-lg text-base text-white/60 sm:text-lg lg:mt-8">
               Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place.
             </p>
-            <div className="mt-7 max-w-md">
+            <div className="mt-8 max-w-lg lg:mt-10">
               {isLoggedIn ? (
                 <Link
                   to="/dashboard"
-                  className="glow-pink inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
+                  className="glow-pink inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold text-white"
                   style={{ background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" }}
                 >
                   Go to Dashboard <ArrowRight className="h-4 w-4" />
@@ -187,7 +190,7 @@ function Index() {
       </section>
 
       {/* INTEGRATIONS BAR */}
-      <section className="mx-auto max-w-7xl px-6">
+      <section className="mx-auto max-w-7xl px-6 pt-4 pb-6 lg:pt-8 lg:pb-10">
         <div className="card-surface flex flex-wrap items-center justify-between gap-6 rounded-2xl px-8 py-5 text-sm">
           <HomeScrollReveal variant="up">
             <span className="font-semibold">Connect everything that matters</span>
@@ -207,7 +210,7 @@ function Index() {
       </section>
 
       {/* FEATURES */}
-      <section id="recursos" className="mx-auto max-w-7xl px-6 py-20">
+      <section id="recursos" className="mx-auto max-w-7xl px-6 pb-20 pt-8 lg:pt-12">
         <div className="grid gap-8 lg:grid-cols-[1fr_2.4fr]">
           <div>
             <HomeScrollReveal variant="up">
