@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS card_border_style text NOT NULL DEFAULT 'solid';

@@ -1,0 +1,90 @@
+{
+  "checkedAt": "2026-07-06T22:54:17.128Z",
+  "fail": [
+    {
+      "id": "Dogs #1",
+      "url": "/molduras/Dogs%20%231.png",
+      "status": 404
+    },
+    {
+      "id": "Dogs #2",
+      "url": "/molduras/Dogs%20%232.png",
+      "status": 404
+    },
+    {
+      "id": "Dogs #3",
+      "url": "/molduras/Dogs%20%233.png",
+      "status": 404
+    },
+    {
+      "id": "Frog #1",
+      "url": "/molduras/Frog%20%231.png",
+      "status": 404
+    },
+    {
+      "id": "Frog #2",
+      "url": "/molduras/Frog%20%232.png",
+      "status": 404
+    },
+    {
+      "id": "Frog #3",
+      "url": "/molduras/Frog%20%233.png",
+      "status": 404
+    },
+    {
+      "id": "Frog #4",
+      "url": "/molduras/Frog%20%234.png",
+      "status": 404
+    },
+    {
+      "id": "Lazy Cat #1",
+      "url": "/molduras/Lazy%20Cat%20%231.png",
+      "status": 404
+    },
+    {
+      "id": "Lazy Cat #2",
+      "url": "/molduras/Lazy%20Cat%20%232.png",
+      "status": 404
+    },
+    {
+      "id": "Lazy Cat #3",
+      "url": "/molduras/Lazy%20Cat%20%233.png",
+      "status": 404
+    },
+    {
+      "id": "Lazy Cat #4",
+      "url": "/molduras/Lazy%20Cat%20%234.png",
+      "status": 404
+    },
+    {
+      "id": "Lights, Camera, Action! (Orange)",
+      "url": "/molduras/Lights%2C%20Camera%2C%20Action!%20(Orange).png",
+      "status": 404
+    },
+    {
+      "id": "Lights, Camera, Action! (Teal)",
+      "url": "/molduras/Lights%2C%20Camera%2C%20Action!%20(Teal).png",
+      "status": 404
+    },
+    {
+      "id": "Mushroom #1",
+      "url": "/molduras/Mushroom%20%231.png",
+      "status": 404
+    },
+    {
+      "id": "Mushroom #2",
+      "url": "/molduras/Mushroom%20%232.png",
+      "status": 404
+    },
+    {
+      "id": "Mushroom #3",
+      "url": "/molduras/Mushroom%20%233.png",
+      "status": 404
+    },
+    {
+      "id": "Mushroom #4",
+      "url": "/molduras/Mushroom%20%234.png",
+      "status": 404
+    }
+  ]
+}

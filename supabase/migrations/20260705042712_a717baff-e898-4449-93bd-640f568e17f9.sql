@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS social_original_colors boolean NOT NULL DEFAULT true;
