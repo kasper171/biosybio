@@ -3,7 +3,7 @@ import Tilt from "react-parallax-tilt";
 import { Eye, Hash, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { buildCardBorderChrome } from "@/lib/card-border";
+import { buildCardBorderChrome, normalizeCardBorderStyle } from "@/lib/card-border";
 import {
   getBadgeStyle,
   getBodyBaseStyle,
@@ -518,6 +518,9 @@ export function ProfileCard({
     glowColor: profile.effect_glow_color ?? profile.card_border_color,
     glowSize: profile.effect_glow_size ?? 24,
   });
+  const useCssBorder =
+    borderWidth > 0 && normalizeCardBorderStyle(profile.card_border_style) !== "solid";
+  const innerRadius = useCssBorder ? Math.max(0, radius - borderWidth) : radius;
 
   const avatarRingColor = profile.avatar_border_color ?? profile.card_border_color;
   const avatarRingWidth = profile.avatar_border_width ?? 4;
@@ -539,13 +542,16 @@ export function ProfileCard({
     background: hexToRgba(profile.card_color, profile.card_opacity),
     backdropFilter: `blur(${profile.card_blur}px)`,
     WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-    borderRadius: radius,
+    borderRadius: innerRadius,
   };
 
-  // Frame: border-radius + box-shadow (borda + glow). Sem overflow:hidden para o GlowingEffect poder ultrapassar.
+  // Frame: borda CSS (tracejada etc.) fica aqui; conteúdo interno não pode ter a mesma altura fixa
+  // senão cobre a borda inferior (box-sizing: border-box).
   const frameStyle: CSSProperties = {
     position: "relative",
     width: "100%",
+    display: "flex",
+    flexDirection: "column",
     ...(enforceCardHeight ? { height: cardH } : {}),
     ...borderChrome.style,
   };
@@ -554,17 +560,20 @@ export function ProfileCard({
   const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const contentWrapStyle: CSSProperties = {
     overflow: "hidden",
-    borderRadius: radius,
-    minHeight: cardH + "px",
-    ...(enforceCardHeight
-      ? { height: cardH + "px", maxHeight: cardH + "px" }
-      : {}),
+    borderRadius: innerRadius,
     display: "flex",
     flexDirection: "column",
     textAlign: cardLayout === "aligned" ? "left" : "center",
     width: "100%",
     position: "relative",
     fontFamily: profile.page_font_family,
+    ...(useCssBorder
+      ? enforceCardHeight
+        ? { flex: 1, minHeight: 0 }
+        : { minHeight: cardH + "px" }
+      : enforceCardHeight
+        ? { minHeight: cardH + "px", height: cardH + "px", maxHeight: cardH + "px" }
+        : { minHeight: cardH + "px" }),
   };
 
   return (
