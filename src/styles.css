@@ -70,10 +70,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 @layer base {
   * { border-color: var(--color-border); }
   body {
-    background:
-      radial-gradient(ellipse 80% 60% at 80% 10%, oklch(0.35 0.25 5 / 0.35), transparent 60%),
-      radial-gradient(ellipse 70% 50% at 10% 30%, oklch(0.3 0.22 350 / 0.25), transparent 60%),
-      var(--color-background);
+    background: var(--color-background);
     background-attachment: fixed;
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
@@ -841,10 +838,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 /* Dashboard panels — Biosy identity */
 .biosy-dash-hero {
-  background:
-    radial-gradient(ellipse 70% 80% at 100% 0%, oklch(0.35 0.2 350 / 0.22), transparent 55%),
-    radial-gradient(ellipse 50% 60% at 0% 100%, oklch(0.4 0.22 0 / 0.12), transparent 50%),
-    linear-gradient(145deg, #12121a 0%, #0e0e14 100%);
+  background: linear-gradient(145deg, #12121a 0%, #0e0e14 100%);
 }
 
 .biosy-dash-panel {
