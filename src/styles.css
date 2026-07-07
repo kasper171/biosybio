@@ -240,15 +240,15 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-phone-fan-1 .home-phone-motion {
-    transform: translate3d(0, 8px, -70px) rotateX(5deg) rotateY(-14deg) rotateZ(-3deg) scale(0.91);
+    transform: translate3d(0, 8px, -70px) rotateX(5deg) rotateY(-14deg) rotateZ(-3deg) scale(1.05);
   }
 
   .home-phone-fan-2 .home-phone-motion {
-    transform: translate3d(0, 0, 65px) rotateX(4deg) rotateY(0deg) rotateZ(0deg) scale(1.05);
+    transform: translate3d(0, 0, 65px) rotateX(4deg) rotateY(0deg) rotateZ(0deg) scale(1);
   }
 
   .home-phone-fan-3 .home-phone-motion {
-    transform: translate3d(0, 12px, -15px) rotateX(5deg) rotateY(14deg) rotateZ(3deg) scale(0.93);
+    transform: translate3d(0, 12px, -15px) rotateX(5deg) rotateY(14deg) rotateZ(3deg) scale(1.07);
   }
 
   .home-phone-motion {
@@ -446,7 +446,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-hero-stage {
   --phone-w: 228px;
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
-  --fan-span: calc(var(--phone-w) * 2.02);
+  --fan-span: calc(var(--phone-w) * 2.08);
   min-height: 0;
   padding-top: 12px;
   overflow: visible;
@@ -464,20 +464,20 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   transform-style: preserve-3d;
 }
 
-/* Chão do palco — só abaixo dos celulares, atrás do leque */
+/* Chão do palco — vignette suave abaixo do leque */
 .home-phone-stage-fade {
   position: absolute;
-  top: calc(100% - var(--phone-h) * 0.14);
-  right: -8%;
-  left: -8%;
-  z-index: 0;
-  height: calc(var(--phone-h) * 0.38);
+  top: calc(100% - var(--phone-h) * 0.2);
+  right: -6%;
+  left: -6%;
+  z-index: 5;
+  height: calc(var(--phone-h) * 0.48);
   pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(8, 8, 8, 0.42) 38%,
-    rgba(6, 6, 6, 0.82) 72%,
+    rgba(0, 0, 0, 0.28) 30%,
+    rgba(0, 0, 0, 0.62) 62%,
     var(--biosy-bg-base) 100%
   );
 }
@@ -485,7 +485,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 @media (min-width: 640px) {
   .home-hero-stage {
     --phone-w: 271px;
-    --fan-span: calc(var(--phone-w) * 2.04);
+    --fan-span: calc(var(--phone-w) * 2.1);
   }
 
   .home-phone-fan-2 {
@@ -500,7 +500,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 @media (min-width: 1024px) {
   .home-hero-stage {
     --phone-w: 324px;
-    --fan-span: calc(var(--phone-w) * 2.06);
+    --fan-span: calc(var(--phone-w) * 2.12);
   }
 
   .home-phone-stage {
@@ -572,7 +572,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-phone-card-3d {
-  --phone-cut: 24%;
+  --phone-cut: 26%;
   position: relative;
   overflow: hidden;
   border-radius: 1.9rem;
@@ -602,14 +602,51 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   bottom: 0;
   left: 0;
   z-index: 3;
-  height: 40%;
+  height: 46%;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(0, 0, 0, 0.22) 28%,
-    rgba(0, 0, 0, 0.55) 58%,
-    rgba(0, 0, 0, 0.82) 82%,
+    rgba(0, 0, 0, 0.16) 22%,
+    rgba(0, 0, 0, 0.42) 50%,
+    rgba(0, 0, 0, 0.72) 76%,
     var(--biosy-bg-base) 100%
+  );
+}
+
+/* Sombra na linha de corte — contida no card */
+.home-phone-ground-shadow {
+  pointer-events: none;
+  position: absolute;
+  right: 10%;
+  bottom: calc(var(--phone-cut) - 2%);
+  left: 10%;
+  z-index: 6;
+  height: 1.5rem;
+  background: radial-gradient(
+    ellipse 110% 100% at 50% 0%,
+    rgba(0, 0, 0, 0.58) 0%,
+    rgba(0, 0, 0, 0.24) 48%,
+    transparent 80%
+  );
+  filter: blur(9px);
+}
+
+/* Máscara inferior — fade para o fundo, sem vazar pro vizinho */
+.home-phone-bottom-fade {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 7;
+  height: calc(var(--phone-cut) + 16%);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.12) 14%,
+    rgba(0, 0, 0, 0.38) 38%,
+    rgba(0, 0, 0, 0.68) 66%,
+    var(--biosy-bg-base) 92%
   );
 }
 
