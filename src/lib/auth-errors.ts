@@ -36,6 +36,12 @@ export function getAuthNotice(err: unknown): AuthNotice {
           title: "Muitas tentativas",
           description: "Aguarde alguns minutos e tente novamente.",
         };
+      case "captcha_failed":
+        return {
+          title: "Verificação de segurança falhou",
+          description:
+            "O Cloudflare não validou o check. Recarregue a página e tente novamente.",
+        };
       case "user_banned":
         return {
           title: "Conta suspensa",

@@ -1,13 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice, isExistingEmailSignup } from "@/lib/auth-errors";
+import { signUpWithTurnstileFn } from "@/lib/auth/auth.functions";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
 import { cleanUsername, isUsernameTaken, MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH, usernameLengthError } from "@/lib/username";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Check, X } from "lucide-react";
-import { TurnstileWidget, resetTurnstileWidget } from "@/components/TurnstileWidget";
+import { TurnstileWidget, resetTurnstileWidget, type TurnstileWidgetHandle } from "@/components/TurnstileWidget";
 import { isTurnstileEnabled } from "@/lib/turnstile/config";
 
 type Rule = { label: string; test: (p: string) => boolean };
@@ -45,7 +46,7 @@ function AuthPage() {
     initialUsername ? cleanUsername(initialUsername) : "",
   );
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const [formNotice, setFormNotice] = useState<{
     type: "error" | "success";
     title: string;
@@ -64,12 +65,7 @@ function AuthPage() {
       const clean = cleanUsername(initialUsername);
       if (clean) setUsername(clean);
     }
-    setTurnstileToken(null);
   }, [initialMode, initialUsername]);
-
-  useEffect(() => {
-    setTurnstileToken(null);
-  }, [mode]);
 
   const passwordChecks = useMemo(
     () => PASSWORD_RULES.map((r) => ({ ...r, ok: r.test(password) })),
@@ -96,15 +92,14 @@ function AuthPage() {
   };
 
   const handleTurnstileExpire = useCallback(() => {
-    setTurnstileToken(null);
+    // token expirado — novo token é pedido ao enviar o formulário
   }, []);
 
   const handleTurnstileError = useCallback(() => {
-    setTurnstileToken(null);
     notify({
       title: "Verificação do Cloudflare falhou",
       description:
-        "Recarregue a página e marque o check novamente. Se persistir, teste outro navegador ou rede.",
+        "Recarregue a página e tente novamente. Se persistir, teste outro navegador ou rede.",
     });
   }, []);
 
@@ -135,6 +130,20 @@ function AuthPage() {
         }
 
         if (isTurnstileEnabled()) {
+          let turnstileToken: string | undefined;
+          try {
+            turnstileToken = await turnstileRef.current?.requestToken();
+          } catch (err) {
+            notify({
+              title: "Verificação necessária",
+              description:
+                err instanceof Error
+                  ? err.message
+                  : "Marque o check de segurança antes de criar a conta.",
+            });
+            return;
+          }
+
           if (!turnstileToken) {
             notify({
               title: "Verificação necessária",
@@ -142,6 +151,37 @@ function AuthPage() {
             });
             return;
           }
+
+          const result = await signUpWithTurnstileFn({
+            data: {
+              email,
+              password,
+              username: cleanUser,
+              turnstileToken,
+            },
+          });
+
+          if (!result.ok) {
+            notify({ title: "Não foi possível criar a conta", description: result.error });
+            return;
+          }
+
+          if (result.needsEmailConfirmation) {
+            notify(
+              {
+                title: "Conta criada!",
+                description: `Enviamos um link de confirmação para ${email}. Confira sua caixa de entrada.`,
+              },
+              "success",
+            );
+            return;
+          }
+
+          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+          if (signInError) throw signInError;
+          notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
+          navigate({ to: "/dashboard" });
+          return;
         }
 
         const { data, error } = await supabase.auth.signUp({
@@ -150,7 +190,6 @@ function AuthPage() {
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
             data: { username: cleanUser, display_name: cleanUser },
-            ...(isTurnstileEnabled() && turnstileToken ? { captchaToken: turnstileToken } : {}),
           },
         });
         if (error) throw error;
@@ -184,7 +223,6 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
-      setTurnstileToken(null);
       resetTurnstileWidget();
       const notice = getAuthNotice(err);
       notify(notice);
@@ -282,8 +320,8 @@ function AuthPage() {
             {mode === "signup" && isTurnstileEnabled() && (
               <div className="flex justify-center py-1">
                 <TurnstileWidget
+                  ref={turnstileRef}
                   action="signup"
-                  onToken={setTurnstileToken}
                   onExpire={handleTurnstileExpire}
                   onError={handleTurnstileError}
                 />
@@ -291,7 +329,7 @@ function AuthPage() {
             )}
             <button
               type="submit"
-              disabled={loading || (mode === "signup" && isTurnstileEnabled() && !turnstileToken)}
+              disabled={loading}
               className="glow-pink w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" }}
             >
