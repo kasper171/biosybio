@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Instagram, Youtube, Music2, Twitter, Twitch, ArrowRight, Check,
+  Instagram, Youtube, Music2, Twitter, Twitch, ArrowRight,
   Link2, Image as ImageIcon, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -103,7 +103,7 @@ function Index() {
           <a href="#inicio" className="hover:text-white">Início</a>
           <a href="#recursos" className="hover:text-white">Recursos</a>
           <a href="#creators" className="hover:text-white">Creators</a>
-          <a href="#precos" className="hover:text-white">Planos</a>
+          <Link to="/planos" className="hover:text-white">Planos</Link>
         </nav>
         <div className="flex items-center gap-3">
           <SiteAuthButtons />
@@ -294,53 +294,28 @@ function Index() {
         </div>
       </section>
 
-      {/* PRICING */}
-      <section id="precos" className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="grid gap-8 lg:grid-cols-[1fr_2.5fr]">
+      {/* PLANOS CTA */}
+      <section className="mx-auto max-w-7xl px-6 pb-20">
+        <div className="card-surface flex flex-col items-start justify-between gap-6 rounded-3xl p-10 md:flex-row md:items-center">
           <div>
             <HomeScrollReveal variant="up">
-              <h2 className="text-4xl font-black">Escolha seu plano</h2>
+              <h2 className="text-3xl font-black md:text-4xl">Escolha seu plano</h2>
             </HomeScrollReveal>
             <HomeScrollReveal variant="up" delay={80}>
-              <p className="mt-4 text-sm text-white/60">Comece grátis e evolua.<br/>quando quiser.</p>
+              <p className="mt-3 max-w-lg text-sm text-white/60">
+                Plano Free para começar ou Premium vitalício por €9,99. Badges exclusivas também à venda.
+              </p>
             </HomeScrollReveal>
           </div>
-          <div className="grid gap-6 md:grid-cols-2">
-            {[
-              { name: "Plano Free", sub: "Perfeito para começar", price: "R$0", popular: false,
-                features: ["Links ilimitados", "Álbum de fotos", "Músicas", "Cards básicos", "Suporte comunitário"],
-                cta: "Começar grátis", ctaSolid: false },
-              { name: "Plano Premium", sub: "Para criadores que vão além", price: "R$19,90", popular: true,
-                features: ["Tudo do plano Free", "Cards avançados", "Estatísticas completas", "Domínio personalizado", "Suporte prioritário"],
-                cta: "Assinar Premium", ctaSolid: true },
-            ].map((p, i) => (
-              <div key={i} className={`card-surface relative rounded-2xl p-7 ${p.popular ? "border-pink-hot/50" : ""}`}>
-                {p.popular && (
-                  <span className="absolute right-5 top-5 rounded-full bg-pink-hot/20 px-3 py-1 text-[10px] font-semibold text-pink-hot">Mais popular</span>
-                )}
-                <h3 className="font-bold">{p.name}</h3>
-                <p className="text-xs text-white/55">{p.sub}</p>
-                <div className="mt-4 flex items-end gap-1">
-                  <span className="text-4xl font-black">{p.price}</span>
-                  <span className="mb-1 text-xs text-white/60">/mês</span>
-                </div>
-                <ul className="mt-5 space-y-2 text-sm">
-                  {p.features.map((f, k) => (
-                    <li key={k} className="flex items-center gap-2 text-white/80">
-                      <Check className="h-4 w-4 text-pink-hot" /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <button className={`mt-6 w-full rounded-full py-3 text-sm font-semibold ${
-                  p.ctaSolid
-                    ? "text-white glow-pink"
-                    : "border border-white/15 bg-white/5"
-                }`} style={p.ctaSolid ? { background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" } : {}}>
-                  {p.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+          <HomeScrollReveal variant="up" delay={120}>
+            <Link
+              to="/planos"
+              className="glow-pink inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white"
+              style={{ background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" }}
+            >
+              Ver planos <ArrowRight className="h-4 w-4" />
+            </Link>
+          </HomeScrollReveal>
         </div>
       </section>
 
