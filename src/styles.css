@@ -457,7 +457,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   display: flex;
   justify-content: flex-end;
   height: var(--phone-h);
-  margin-bottom: calc(var(--phone-h) * -0.28);
+  margin-bottom: calc(var(--phone-h) * -0.3);
   padding-top: 20px;
   overflow: visible;
   perspective: 1280px;
@@ -568,7 +568,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-phone-card-3d {
-  --phone-cut: 26%;
+  --phone-fade: 38%;
   position: relative;
   overflow: hidden;
   border-radius: 1.9rem;
@@ -577,7 +577,6 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 .home-phone-card-clip {
   position: relative;
-  clip-path: inset(-2% -4% var(--phone-cut) -4%);
 }
 
 .home-phone-shot-wrap {
@@ -590,24 +589,40 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.45);
 }
 
-/* Corte suave — só cor do fundo, sem sombra cinza */
+/* Fade na base — acima do corte, mesma cor do fundo (sem linha seca) */
 .home-phone-cut-mask {
   pointer-events: none;
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 5;
-  height: calc(var(--phone-cut) + 12%);
+  z-index: 8;
+  height: calc(var(--phone-fade) + 10%);
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    color-mix(in srgb, var(--biosy-bg-base) 10%, transparent) 16%,
-    color-mix(in srgb, var(--biosy-bg-base) 35%, transparent) 36%,
-    color-mix(in srgb, var(--biosy-bg-base) 62%, transparent) 56%,
-    color-mix(in srgb, var(--biosy-bg-base) 86%, transparent) 76%,
+    color-mix(in srgb, var(--biosy-bg-base) 5%, transparent) 10%,
+    color-mix(in srgb, var(--biosy-bg-base) 18%, transparent) 24%,
+    color-mix(in srgb, var(--biosy-bg-base) 38%, transparent) 40%,
+    color-mix(in srgb, var(--biosy-bg-base) 58%, transparent) 54%,
+    color-mix(in srgb, var(--biosy-bg-base) 76%, transparent) 68%,
+    color-mix(in srgb, var(--biosy-bg-base) 90%, transparent) 82%,
+    color-mix(in srgb, var(--biosy-bg-base) 97%, transparent) 92%,
     var(--biosy-bg-base) 100%
   );
+}
+
+/* Extensão sólida abaixo do fade — funde com o hero */
+.home-phone-card-3d::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9;
+  height: 14%;
+  background: var(--biosy-bg-base);
 }
 
 .home-phone-neon-ring {
