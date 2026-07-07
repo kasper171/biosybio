@@ -324,14 +324,32 @@ export function HotelProfileCard({
   );
 
   if (variant === "outside" && chrome) {
+    const cardBlur = Number(profile.card_blur ?? 0);
+    const { backdropFilter, WebkitBackdropFilter, ...chromeWithoutBlur } = chrome.style;
+
     return (
       <div className={`relative isolate ${className}`} style={frameStyle}>
         {borderLabel}
         <div
           className={`relative h-full w-full overflow-hidden ${chrome.className}`}
-          style={{ ...chrome.style, borderRadius: frameStyle.borderRadius ?? mainRadius }}
+          style={{
+            ...chromeWithoutBlur,
+            borderRadius: frameStyle.borderRadius ?? mainRadius,
+          }}
         >
-          {inner}
+          {cardBlur > 0 ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                borderRadius: frameStyle.borderRadius ?? mainRadius,
+                backdropFilter: backdropFilter ?? `blur(${cardBlur}px)`,
+                WebkitBackdropFilter:
+                  WebkitBackdropFilter ?? backdropFilter ?? `blur(${cardBlur}px)`,
+              }}
+            />
+          ) : null}
+          <div className="relative z-10 h-full w-full">{inner}</div>
         </div>
       </div>
     );

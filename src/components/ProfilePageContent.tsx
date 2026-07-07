@@ -90,6 +90,11 @@ export function ProfilePageContent({
         }
       : cardTransition;
 
+  /** Cards com backdrop-filter (hotel) não podem animar opacity no pai — quebra o blur. */
+  const hotelRevealInitial = cardInitial;
+  const hotelRevealAnimate = cardAnimate;
+  const hotelRevealTransition = cardTransition;
+
   const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const { inside: insideBlocks, outside: outsideBlocks } = splitBlocksByPlacement(blocks);
 
@@ -425,10 +430,10 @@ export function ProfilePageContent({
           ? hotelCardsOutside.map((card, index) => (
               <motion.div
                 key={`hotel-beside-${animKey}-${index}`}
-                initial={secondaryInitial}
-                animate={secondaryAnimate}
+                initial={hotelRevealInitial}
+                animate={hotelRevealAnimate}
                 transition={{
-                  ...secondaryTransition,
+                  ...hotelRevealTransition,
                   delay: (hotelBesideRevealDelays[index] ?? 0) / 1000,
                 }}
                 className="relative flex min-h-0 w-full flex-1 flex-col"
@@ -530,10 +535,10 @@ export function ProfilePageContent({
                 ? hotelCardsOutside.map((card, index) => (
                     <motion.div
                       key={`hotel-below-${animKey}-${index}`}
-                      initial={secondaryInitial}
-                      animate={secondaryAnimate}
+                      initial={hotelRevealInitial}
+                      animate={hotelRevealAnimate}
                       transition={{
-                        ...secondaryTransition,
+                        ...hotelRevealTransition,
                         delay: (hotelBelowRevealDelays[index] ?? 0) / 1000,
                       }}
                       className="relative min-w-0 flex-1"
