@@ -1,11 +1,9 @@
-import { HomeProfilePhones } from "@/components/home/HomeProfilePhones";
+import { HomeHeroOrbit } from "@/components/home/HomeHeroOrbit";
 
 export function HomeHeroVisual() {
   return (
-    <div className="home-hero-stage relative mx-auto flex w-full max-w-[min(100%,1060px)] items-center justify-center">
-      <div className="home-phone-stage relative w-full">
-        <HomeProfilePhones />
-      </div>
+    <div className="home-hero-visual-stage relative mx-auto w-full max-w-[min(100%,640px)] lg:max-w-none">
+      <HomeHeroOrbit />
     </div>
   );
 }
