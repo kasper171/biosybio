@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { findConnectionConflict } from "@/lib/connection/connection-linking.server";
 import { linkVerifiedConnection } from "@/lib/connection/connection-linking.server";
+import { verifyHotelOwnershipServer } from "@/lib/connection-verify.server";
 import { requireAuthenticatedUserId } from "@/lib/require-auth.server";
 
 const otpFields = {
