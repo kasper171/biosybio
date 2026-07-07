@@ -1,34 +1,50 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getTurnstileSecretKey } from "@/lib/turnstile/config.server";
-import { getTurnstileUserMessage } from "@/lib/turnstile/errors";
-import { verifyTurnstileToken } from "@/lib/turnstile/verify.server";
+import { passwordPolicyError } from "@/lib/auth/password-policy";
 import { cleanUsername, usernameLengthError } from "@/lib/username";
 
 const signUpInput = z.object({
   email: z.string().email().max(255),
   password: z.string().min(8).max(128),
   username: z.string().min(2).max(64),
-  turnstileToken: z.string().min(1).optional(),
 });
 
-function isTurnstileRequiredOnServer(): boolean {
-  return Boolean(
-    getTurnstileSecretKey() || process.env.VITE_TURNSTILE_SITE_KEY?.trim(),
-  );
-}
+export type SignUpErrorCode =
+  | "invalid_username"
+  | "weak_password"
+  | "username_taken"
+  | "email_exists"
+  | "signup_failed"
+  | "server_misconfigured";
 
-export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
+export const signUpFn = createServerFn({ method: "POST" })
   .inputValidator(signUpInput)
   .handler(async ({ data }) => {
     const email = data.email.trim().toLowerCase();
     const cleanUser = cleanUsername(data.username);
+
     const lengthError = usernameLengthError(cleanUser);
     if (lengthError) {
       return { ok: false as const, error: lengthError, code: "invalid_username" as const };
     }
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const passwordError = passwordPolicyError(data.password);
+    if (passwordError) {
+      return { ok: false as const, error: passwordError, code: "weak_password" as const };
+    }
+
+    let supabaseAdmin: Awaited<
+      typeof import("@/integrations/supabase/client.server")
+    >["supabaseAdmin"];
+    try {
+      ({ supabaseAdmin } = await import("@/integrations/supabase/client.server"));
+    } catch {
+      return {
+        ok: false as const,
+        error: "Servidor de cadastro não configurado. Tente novamente em instantes.",
+        code: "server_misconfigured" as const,
+      };
+    }
 
     const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
@@ -43,24 +59,6 @@ export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
           "Este nome de usuário já está em uso. Se você tentou criar agora, use Entrar com seu email.",
         code: "username_taken" as const,
         tryLogin: true as const,
-      };
-    }
-
-    if (data.turnstileToken?.trim()) {
-      const verified = await verifyTurnstileToken(data.turnstileToken.trim());
-      if (!verified.ok) {
-        return {
-          ok: false as const,
-          error: getTurnstileUserMessage(verified.code),
-          code: verified.code,
-          tryLogin: verified.code === "timeout_or_duplicate",
-        };
-      }
-    } else if (isTurnstileRequiredOnServer()) {
-      return {
-        ok: false as const,
-        error: "Marque o check de segurança antes de criar a conta.",
-        code: "captcha_required" as const,
       };
     }
 
@@ -92,7 +90,7 @@ export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
           code: "weak_password" as const,
         };
       }
-      console.error("[signUpWithTurnstileFn]", error.message);
+      console.error("[signUpFn]", error.message);
       return {
         ok: false as const,
         error: "Não foi possível criar a conta. Tente novamente em instantes.",
@@ -102,7 +100,6 @@ export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
 
     return {
       ok: true as const,
-      needsEmailConfirmation: false,
       userId: created.user?.id ?? null,
     };
   });

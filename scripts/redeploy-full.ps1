@@ -9,7 +9,8 @@
 
 param(
   [switch]$SkipLocalBuild,
-  [switch]$ForceReinstall
+  [switch]$ForceReinstall,
+  [string]$VercelProjectName = "biosybio"
 )
 
 $ErrorActionPreference = "Stop"
@@ -156,15 +157,32 @@ if ($LASTEXITCODE -ne 0) { Fail "git push falhou. Verifique login no GitHub." }
 Write-Host "Push concluido." -ForegroundColor Green
 
 Write-Step -Number "8" -Message "Deploy na Vercel em producao com rebuild forcado"
-Write-Host "Usando: npx vercel deploy --prod --force --yes" -ForegroundColor Cyan
-Write-Host "Na primeira vez pode pedir login no navegador (conta Vercel)." -ForegroundColor Yellow
+Write-Host "O push no GitHub ja deve ter disparado deploy automatico (se o repo esta ligado na Vercel)." -ForegroundColor Green
+Write-Host "Acompanhe em: https://vercel.com/rodrigodiscord01-9846s-projects/biosybio" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Tentando deploy direto via CLI (projeto: $VercelProjectName)..." -ForegroundColor Cyan
+Write-Host "Na primeira vez pode pedir para linkar o projeto na conta Vercel." -ForegroundColor Yellow
 
-npx --yes vercel@latest deploy --prod --force --yes
+$vercelArgs = @(
+  "deploy",
+  "--prod",
+  "--force",
+  "--yes",
+  "--name", $VercelProjectName
+)
+
+npx --yes vercel@latest @vercelArgs
 if ($LASTEXITCODE -ne 0) {
   Write-Host ""
-  Write-Host "Deploy via CLI falhou. O push no GitHub pode ter disparado deploy automatico:" -ForegroundColor Yellow
-  Write-Host "https://vercel.com/dashboard" -ForegroundColor Yellow
-  Fail "vercel deploy falhou."
+  Write-Host "Deploy via CLI falhou, mas o PUSH NO GITHUB JA FOI FEITO." -ForegroundColor Yellow
+  Write-Host "Se o repositorio kasper171/biosybio esta conectado na Vercel, o site" -ForegroundColor Yellow
+  Write-Host "ja esta sendo atualizado automaticamente. Confira:" -ForegroundColor Yellow
+  Write-Host "https://vercel.com/rodrigodiscord01-9846s-projects/biosybio" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "Para linkar o CLI ao projeto existente (opcional, uma vez so):" -ForegroundColor Cyan
+  Write-Host "  npx vercel link --project $VercelProjectName" -ForegroundColor Cyan
+} else {
+  Write-Host "Deploy via CLI concluido." -ForegroundColor Green
 }
 
 Write-Step -Number "9" -Message "Checklist pos-deploy"
@@ -177,8 +195,6 @@ Confira na Vercel (Settings -> Environment Variables) se existem TODAS:
   * SUPABASE_URL
   * SUPABASE_PUBLISHABLE_KEY
   * SUPABASE_SERVICE_ROLE_KEY
-  * VITE_TURNSTILE_SITE_KEY (remova para cadastro SEM Cloudflare)
-  * TURNSTILE_SECRET_KEY (remova junto se desligar Turnstile)
 
 Migracoes SQL no Supabase se ainda nao rodou:
   * supabase/migrations/20260707010000_username_min_2_chars.sql

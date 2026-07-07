@@ -1,35 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getTurnstileUserMessage } from "@/lib/turnstile/errors";
-import { verifyTurnstileToken } from "@/lib/turnstile/verify.server";
-
-const tokenInput = z.object({
-  token: z.string().min(1),
-});
 
 const profileViewInput = z.object({
   profileId: z.string().uuid(),
-  token: z.string().min(1),
 });
-
-export const verifyTurnstileFn = createServerFn({ method: "POST" })
-  .inputValidator(tokenInput)
-  .handler(async ({ data }) => {
-    const verified = await verifyTurnstileToken(data.token);
-    if (!verified.ok) {
-      throw new Error(getTurnstileUserMessage(verified.code));
-    }
-    return { ok: true as const };
-  });
 
 export const incrementProfileViewFn = createServerFn({ method: "POST" })
   .inputValidator(profileViewInput)
   .handler(async ({ data }) => {
-    const verified = await verifyTurnstileToken(data.token);
-    if (!verified.ok) {
-      return { ok: false as const, viewCount: null };
-    }
-
     const url = process.env.SUPABASE_URL;
     const key = process.env.SUPABASE_PUBLISHABLE_KEY;
     if (!url || !key) {

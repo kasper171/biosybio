@@ -36,12 +36,6 @@ export function getAuthNotice(err: unknown): AuthNotice {
           title: "Muitas tentativas",
           description: "Aguarde alguns minutos e tente novamente.",
         };
-      case "captcha_failed":
-        return {
-          title: "Verificação de segurança falhou",
-          description:
-            "O Cloudflare não validou o check. Recarregue a página e tente novamente.",
-        };
       case "user_banned":
         return {
           title: "Conta suspensa",
@@ -52,13 +46,6 @@ export function getAuthNotice(err: unknown): AuthNotice {
 
   const msg = err instanceof Error ? err.message : "Erro ao autenticar";
 
-  if (/captcha protection|turnstile/i.test(msg)) {
-    return {
-      title: "Verificação de segurança falhou",
-      description:
-        "Marque o check do Cloudflare novamente e envie o formulário em seguida. Se repetir, recarregue a página.",
-    };
-  }
   if (/weak.?password|pwned/i.test(msg)) {
     return {
       title: "Senha fraca",

@@ -1,24 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getAuthNotice, isExistingEmailSignup } from "@/lib/auth-errors";
-import { signUpWithTurnstileFn } from "@/lib/auth/auth.functions";
+import { getAuthNotice } from "@/lib/auth-errors";
+import { signUpFn } from "@/lib/auth/auth.functions";
+import { PASSWORD_RULES } from "@/lib/auth/password-policy";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
-import { cleanUsername, isUsernameTaken, MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH, usernameLengthError } from "@/lib/username";
+import {
+  cleanUsername,
+  isUsernameTaken,
+  MIN_USERNAME_LENGTH,
+  MAX_USERNAME_LENGTH,
+  usernameLengthError,
+} from "@/lib/username";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Check, X } from "lucide-react";
-import { TurnstileWidget, resetTurnstileWidget } from "@/components/TurnstileWidget";
-import { isTurnstileEnabled } from "@/lib/turnstile/config";
-
-type Rule = { label: string; test: (p: string) => boolean };
-const PASSWORD_RULES: Rule[] = [
-  { label: "Pelo menos 8 caracteres", test: (p) => p.length >= 8 },
-  { label: "Uma letra maiúscula (A-Z)", test: (p) => /[A-Z]/.test(p) },
-  { label: "Uma letra minúscula (a-z)", test: (p) => /[a-z]/.test(p) },
-  { label: "Um número (0-9)", test: (p) => /[0-9]/.test(p) },
-  { label: "Um caractere especial (!@#$...)", test: (p) => /[^A-Za-z0-9]/.test(p) },
-];
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -54,7 +50,6 @@ function AuthPage() {
     initialUsername ? cleanUsername(initialUsername) : "",
   );
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const submittingRef = useRef(false);
   const [formNotice, setFormNotice] = useState<{
     type: "error" | "success";
@@ -74,12 +69,7 @@ function AuthPage() {
       const clean = cleanUsername(initialUsername);
       if (clean) setUsername(clean);
     }
-    setTurnstileToken(null);
   }, [initialMode, initialUsername]);
-
-  useEffect(() => {
-    setTurnstileToken(null);
-  }, [mode]);
 
   const passwordChecks = useMemo(
     () => PASSWORD_RULES.map((r) => ({ ...r, ok: r.test(password) })),
@@ -92,11 +82,14 @@ function AuthPage() {
     strength === "fraca"
       ? "oklch(0.65 0.25 25)"
       : strength === "média"
-      ? "oklch(0.75 0.18 85)"
-      : "oklch(0.72 0.20 145)";
+        ? "oklch(0.75 0.18 85)"
+        : "oklch(0.72 0.20 145)";
   const strengthPct = (passedCount / PASSWORD_RULES.length) * 100;
 
-  const notify = (notice: { title: string; description?: string }, type: "error" | "success" = "error") => {
+  const notify = (
+    notice: { title: string; description?: string },
+    type: "error" | "success" = "error",
+  ) => {
     setFormNotice({ ...notice, type });
     if (type === "error") {
       toast.error(notice.title, notice.description ? { description: notice.description } : undefined);
@@ -104,19 +97,6 @@ function AuthPage() {
       toast.success(notice.title, notice.description ? { description: notice.description } : undefined);
     }
   };
-
-  const handleTurnstileExpire = useCallback(() => {
-    setTurnstileToken(null);
-  }, []);
-
-  const handleTurnstileError = useCallback(() => {
-    setTurnstileToken(null);
-    notify({
-      title: "Verificação do Cloudflare falhou",
-      description:
-        "Recarregue a página e tente novamente. Se persistir, teste outro navegador ou rede.",
-    });
-  }, []);
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,7 +113,10 @@ function AuthPage() {
           return;
         }
         if (passedCount < PASSWORD_RULES.length) {
-          notify({ title: "Senha incompleta", description: "Sua senha precisa atender a todos os requisitos abaixo." });
+          notify({
+            title: "Senha incompleta",
+            description: "Sua senha precisa atender a todos os requisitos abaixo.",
+          });
           return;
         }
 
@@ -154,76 +137,12 @@ function AuthPage() {
           return;
         }
 
-        if (isTurnstileEnabled()) {
-          if (!turnstileToken) {
-            notify({
-              title: "Verificação necessária",
-              description: "Marque o check de segurança antes de criar a conta.",
-            });
-            return;
-          }
-
-          const result = await signUpWithTurnstileFn({
-            data: {
-              email,
-              password,
-              username: cleanUser,
-              turnstileToken,
-            },
-          });
-
-          if (!result.ok) {
-            if ("tryLogin" in result && result.tryLogin && (await trySignIn(email, password))) {
-              notify(
-                { title: "Conta encontrada!", description: "Entrando com este email e senha..." },
-                "success",
-              );
-              navigate({ to: "/dashboard" });
-              return;
-            }
-
-            notify({ title: "Não foi possível criar a conta", description: result.error });
-            if (
-              result.code === "timeout_or_duplicate" ||
-              result.code === "invalid_token" ||
-              result.code === "captcha_required"
-            ) {
-              setTurnstileToken(null);
-              resetTurnstileWidget();
-            }
-            return;
-          }
-
-          const signedIn = await trySignIn(email, password);
-          if (signedIn) {
-            notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
-            navigate({ to: "/dashboard" });
-            return;
-          }
-
-          notify(
-            {
-              title: "Conta criada",
-              description: "Use Entrar com este email e senha para acessar o painel.",
-            },
-            "success",
-          );
-          setMode("signin");
-          return;
-        }
-
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { username: cleanUser, display_name: cleanUser },
-          },
+        const result = await signUpFn({
+          data: { email, password, username: cleanUser },
         });
-        if (error) throw error;
 
-        if (isExistingEmailSignup(data.user)) {
-          if (await trySignIn(email, password)) {
+        if (!result.ok) {
+          if ("tryLogin" in result && result.tryLogin && (await trySignIn(email, password))) {
             notify(
               { title: "Conta encontrada!", description: "Entrando com este email e senha..." },
               "success",
@@ -231,36 +150,33 @@ function AuthPage() {
             navigate({ to: "/dashboard" });
             return;
           }
-          notify({
-            title: "Este email já está cadastrado",
-            description: "Se você tentou criar agora, use Entrar com este email e senha.",
-          });
-          setMode("signin");
+          notify({ title: "Não foi possível criar a conta", description: result.error });
           return;
         }
 
-        if (!data.session) {
-          notify(
-            {
-              title: "Conta criada!",
-              description: `Enviamos um link de confirmação para ${email}. Confira sua caixa de entrada.`,
-            },
-            "success",
-          );
+        const signedIn = await trySignIn(email, password);
+        if (signedIn) {
+          notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
+          navigate({ to: "/dashboard" });
           return;
         }
 
-        notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
-        navigate({ to: "/dashboard" });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        notify({ title: "Login realizado!", description: "Redirecionando..." }, "success");
-        navigate({ to: "/dashboard" });
+        notify(
+          {
+            title: "Conta criada",
+            description: "Use Entrar com este email e senha para acessar o painel.",
+          },
+          "success",
+        );
+        setMode("signin");
+        return;
       }
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      notify({ title: "Login realizado!", description: "Redirecionando..." }, "success");
+      navigate({ to: "/dashboard" });
     } catch (err) {
-      setTurnstileToken(null);
-      resetTurnstileWidget();
       const notice = getAuthNotice(err);
       notify(notice);
     } finally {
@@ -273,7 +189,9 @@ function AuthPage() {
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link to="/" className="text-2xl font-bold">Biosy</Link>
+          <Link to="/" className="text-2xl font-bold">
+            Biosy
+          </Link>
           <h1 className="mt-6 text-2xl font-bold">
             {mode === "signin" ? "Bem-vindo de volta" : "Crie sua conta"}
           </h1>
@@ -297,6 +215,7 @@ function AuthPage() {
                     required
                     minLength={MIN_USERNAME_LENGTH}
                     maxLength={MAX_USERNAME_LENGTH}
+                    autoComplete="username"
                     className="w-full bg-transparent py-2.5 text-sm outline-none"
                   />
                 </div>
@@ -309,6 +228,7 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-pink-hot/60"
               />
             </div>
@@ -320,6 +240,7 @@ function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={mode === "signup" ? 8 : 6}
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-pink-hot/60"
               />
               {mode === "signup" && password.length > 0 && (
@@ -343,11 +264,7 @@ function AuthPage() {
                         className="flex items-center gap-2 text-xs transition-colors"
                         style={{ color: c.ok ? "oklch(0.72 0.20 145)" : "rgba(255,255,255,0.45)" }}
                       >
-                        {c.ok ? (
-                          <Check className="h-3.5 w-3.5" />
-                        ) : (
-                          <X className="h-3.5 w-3.5" />
-                        )}
+                        {c.ok ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
                         <span className={c.ok ? "line-through opacity-80" : ""}>{c.label}</span>
                       </li>
                     ))}
@@ -355,21 +272,13 @@ function AuthPage() {
                 </div>
               )}
             </div>
-            {mode === "signup" && isTurnstileEnabled() && (
-              <div className="flex justify-center py-1">
-                <TurnstileWidget
-                  action="signup"
-                  onToken={setTurnstileToken}
-                  onExpire={handleTurnstileExpire}
-                  onError={handleTurnstileError}
-                />
-              </div>
-            )}
             <button
               type="submit"
-              disabled={loading || (mode === "signup" && isTurnstileEnabled() && !turnstileToken)}
+              disabled={loading}
               className="glow-pink w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" }}
+              style={{
+                background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))",
+              }}
             >
               {loading ? "Aguarde..." : mode === "signin" ? "Entrar" : "Criar conta"}
             </button>
