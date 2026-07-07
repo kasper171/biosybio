@@ -11,21 +11,26 @@ import { PublicProfileView } from "@/components/PublicProfileView";
 import { normalizeProfile } from "@/lib/normalize-profile";
 import { attachProfileRoles } from "@/lib/profile-roles";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
-import {
-  fetchProfileShareEmbed,
-  profileShareEmbedHead,
-} from "@/lib/profile/profile-embed.server";
-import { resolveShareEmbedTitle } from "@/lib/share-embed";
+import { buildProfileShareMeta, resolveShareEmbedTitle } from "@/lib/share-embed";
+
+type ProfileShareEmbedRow = {
+  username: string;
+  share_embed_title: string | null;
+  share_embed_description: string | null;
+  share_embed_image_url: string | null;
+};
 
 export const Route = createFileRoute("/$username")({
   loader: async ({ params }) => {
+    // Loader roda no client também (navegação SPA). Só busque embed no servidor,
+    // senão o bundle do client tenta puxar supabaseAdmin e quebra (erro até dar F5).
+    if (!import.meta.env.SSR) return null;
+    const { fetchProfileShareEmbed } = await import("@/lib/profile/profile-embed.server");
     return fetchProfileShareEmbed(params.username);
   },
   head: ({ loaderData, params }) => {
-    if (!loaderData) {
-      return { meta: [{ title: "Perfil não encontrado — Biosy" }] };
-    }
-    return profileShareEmbedHead(params.username, loaderData);
+    if (!loaderData) return { meta: [{ title: "Biosy — Seu mundo. Seu perfil. Seu jeito." }] };
+    return { meta: buildProfileShareMeta(params.username, loaderData) };
   },
   component: PublicProfile,
   notFoundComponent: () => (
