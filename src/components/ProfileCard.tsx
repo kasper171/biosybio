@@ -324,12 +324,18 @@ function CardLayoutContent({
   // ── LAYOUT CENTRALIZADO ────────────────────────────────────────────────────
   if (layout === "centered") {
     const centeredAvatarSize = Math.max(52, Math.round(avatarSize * 1.1));
+    const centeredFrameOverflow = profile.avatar_frame_id
+      ? Math.ceil(centeredAvatarSize * (AVATAR_FRAME_SCALE - 1) / 2)
+      : 0;
     return (
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {overlayBadges}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6">
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden py-4">
-            <div className="flex w-full max-w-full shrink-0 flex-col items-center overflow-hidden text-center">
+            <div
+              className="flex w-full max-w-full shrink-0 flex-col items-center overflow-hidden text-center"
+              style={{ paddingTop: centeredFrameOverflow }}
+            >
               <AvatarBlock
                 profile={profile}
                 size={centeredAvatarSize}
@@ -391,6 +397,9 @@ function CardLayoutContent({
   }
 
   // ── LAYOUT PADRÃO (default) ────────────────────────────────────────────────
+  const defaultFrameOverflow = profile.avatar_frame_id
+    ? Math.ceil(avatarSize * (AVATAR_FRAME_SCALE - 1) / 2)
+    : 0;
   return (
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
       {overlayBadges}
@@ -406,7 +415,10 @@ function CardLayoutContent({
       >
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex shrink-0 flex-col items-center overflow-hidden text-center">
-            <div className="relative z-[5] mx-auto mb-2 flex shrink-0 justify-center">
+            <div
+              className="relative z-[5] mx-auto mb-2 flex shrink-0 justify-center"
+              style={{ paddingTop: defaultFrameOverflow }}
+            >
               <AvatarBlock
                 profile={profile}
                 size={avatarSize}

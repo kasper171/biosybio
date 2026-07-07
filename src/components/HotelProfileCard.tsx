@@ -276,12 +276,16 @@ export function HotelProfileCard({
   besideSlot,
   belowSlot,
 }: Props) {
-  const mainRadius = Number(profile.card_border_radius ?? 16) || 16;
+  // Arredondamento GLOBAL — 0 deve permanecer 0
+  const mainRadiusRaw = Number(profile.card_border_radius ?? 16);
+  const mainRadius = Number.isFinite(mainRadiusRaw) ? mainRadiusRaw : 16;
   const frameStyle = besideSlot
     ? getHotelBesideFrameStyle(profile, layout.size, layout.shape, true)
     : belowSlot
       ? getHotelBelowFrameStyle(profile, layout.size, layout.shape, true)
       : getHotelCardFrameStyle(layout.size, layout.shape);
+  // Garante 1 única configuração de arredondamento (a do card principal)
+  const frameStyleSynced = { ...frameStyle, borderRadius: mainRadius };
   const chromeShape = layout.shape;
   const chrome =
     variant === "outside"
@@ -328,13 +332,13 @@ export function HotelProfileCard({
     const { backdropFilter, WebkitBackdropFilter, ...chromeWithoutBlur } = chrome.style;
 
     return (
-      <div className={`relative isolate ${className}`} style={frameStyle}>
+      <div className={`relative isolate ${className}`} style={frameStyleSynced}>
         {borderLabel}
         <div
           className={`relative h-full w-full overflow-hidden ${chrome.className}`}
           style={{
             ...chromeWithoutBlur,
-            borderRadius: frameStyle.borderRadius ?? mainRadius,
+            borderRadius: mainRadius,
           }}
         >
           {cardBlur > 0 ? (
@@ -342,7 +346,7 @@ export function HotelProfileCard({
               aria-hidden
               className="pointer-events-none absolute inset-0"
               style={{
-                borderRadius: frameStyle.borderRadius ?? mainRadius,
+                borderRadius: mainRadius,
                 backdropFilter: backdropFilter ?? `blur(${cardBlur}px)`,
                 WebkitBackdropFilter:
                   WebkitBackdropFilter ?? backdropFilter ?? `blur(${cardBlur}px)`,
@@ -356,7 +360,7 @@ export function HotelProfileCard({
   }
 
   return (
-    <div className={`relative mx-auto min-w-0 ${className}`} style={frameStyle}>
+    <div className={`relative mx-auto min-w-0 ${className}`} style={frameStyleSynced}>
       {borderLabel}
       <div className="relative h-full w-full overflow-hidden rounded-[inherit]">{inner}</div>
     </div>

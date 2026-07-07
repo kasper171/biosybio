@@ -214,10 +214,9 @@ export function getHotelBesideFrameStyle(
   shape: HotelCardShape,
   fillParent?: boolean,
 ): CSSProperties {
-  const radius =
-    Number(profile.card_border_radius ?? 0) > 0
-      ? Number(profile.card_border_radius)
-      : getHotelCardBorderRadius(size, shape);
+  // O arredondamento é GLOBAL (card principal). 0 deve permanecer 0.
+  const radiusRaw = Number(profile.card_border_radius ?? 16);
+  const radius = Number.isFinite(radiusRaw) ? radiusRaw : 16;
 
   if (fillParent) {
     return {
@@ -240,7 +239,9 @@ export function getHotelBelowFrameStyle(
   shape: HotelCardShape,
   fillParent?: boolean,
 ): CSSProperties {
-  const radius = Number(profile.card_border_radius ?? 16) || 16;
+  // O arredondamento é GLOBAL (card principal). 0 deve permanecer 0.
+  const radiusRaw = Number(profile.card_border_radius ?? 16);
+  const radius = Number.isFinite(radiusRaw) ? radiusRaw : 16;
   const fixedHeight = shape === "square" ? SQUARE_SIDE[size] : RECT_HEIGHT[size];
 
   if (fillParent) {
