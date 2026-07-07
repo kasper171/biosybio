@@ -1,10 +1,11 @@
 import {
   CONNECTION_OTP_VALIDATE_WINDOW_MS,
-  CONNECTION_OTP_WAIT_MS,
   generateConnectionOtp,
 } from "@/lib/connection-verify";
 
-export const HOTEL_OTP_WAIT_MS = CONNECTION_OTP_WAIT_MS;
+/** Tempo para o Habbo/Habblet propagar a missão na API pública */
+export const HOTEL_OTP_WAIT_MS = 65_000;
+export const HOTEL_OTP_WAIT_SECONDS = 65;
 export const HOTEL_OTP_VALIDATE_WINDOW_MS = CONNECTION_OTP_VALIDATE_WINDOW_MS;
 
 export type HotelVerifyError =
@@ -22,7 +23,7 @@ export const HOTEL_VERIFY_MESSAGES: Record<HotelVerifyError, string> = {
   user_not_found: "Jogador não encontrado.",
   code_not_found: "O código não foi encontrado na missão do seu personagem.",
   expired: "O código expirou. Gere um novo código e tente novamente.",
-  waiting: "Aguarde 50 segundos antes de validar.",
+  waiting: `Aguarde ${HOTEL_OTP_WAIT_SECONDS} segundos antes de validar.`,
   network: "Falha ao validar. Tente novamente em instantes.",
 };
 

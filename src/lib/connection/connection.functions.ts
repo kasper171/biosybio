@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { HOTEL_OTP_WAIT_SECONDS } from "@/lib/hotel-verify";
 import { findConnectionConflict } from "@/lib/connection/connection-linking.server";
 import { linkVerifiedConnection } from "@/lib/connection/connection-linking.server";
 import { verifyHotelOwnershipServer } from "@/lib/connection-verify.server";
@@ -95,7 +96,7 @@ function mapHotelVerifyError(code: string): string {
     case "expired":
       return "O código expirou. Gere um novo código e tente novamente.";
     case "waiting":
-      return "Aguarde 50 segundos antes de validar.";
+      return `Aguarde ${HOTEL_OTP_WAIT_SECONDS} segundos antes de validar.`;
     default:
       return "Falha ao validar. Tente novamente em instantes.";
   }

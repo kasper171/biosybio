@@ -506,7 +506,7 @@ function PlatformConnectSection({
               </button>
               <p className="text-[11px] leading-relaxed text-white/50">
                 No jogo, abra o perfil do personagem e edite a missão. Cole o código, salve e aguarde
-                50s. Ao clicar em Validar, buscamos a missão atualizada na API do hotel.
+                65s. Ao clicar em Validar, buscamos a missão atualizada na API do hotel.
               </p>
               {preview.motto ? (
                 <p className="rounded-md border border-white/10 bg-black/30 px-2.5 py-2 text-[11px] text-white/55">

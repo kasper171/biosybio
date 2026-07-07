@@ -1,4 +1,6 @@
 import type { HotelProfileData } from "@/lib/hotel/types";
+import { CONNECTION_OTP_WAIT_MS } from "@/lib/connection-verify";
+import { HOTEL_OTP_WAIT_SECONDS } from "@/lib/hotel-verify";
 import {
   verifyDiscordOwnershipServer,
   verifyHotelOwnershipServer,
@@ -258,7 +260,9 @@ function mapVerifyError(
     case "expired":
       return "O código expirou. Gere um novo código e tente novamente.";
     case "waiting":
-      return "Aguarde 50 segundos antes de validar.";
+      return platform === "discord"
+        ? `Aguarde ${CONNECTION_OTP_WAIT_MS / 1000} segundos antes de validar.`
+        : `Aguarde ${HOTEL_OTP_WAIT_SECONDS} segundos antes de validar.`;
     default:
       return "Falha ao validar. Tente novamente em instantes.";
   }
