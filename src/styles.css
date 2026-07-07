@@ -261,55 +261,45 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   overflow: visible;
 }
 
-.home-phone-stage-clip {
+.home-phone-stage {
   --phone-w: 198px;
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
-  --phone-visible: calc(var(--phone-h) * 0.76);
   position: relative;
-  height: var(--phone-visible);
-  overflow: visible;
-}
-
-.home-phone-stage {
-  position: relative;
-  overflow: visible;
   height: var(--phone-h);
-  padding-top: 6px;
+  margin-bottom: calc(var(--phone-h) * -0.22);
+  overflow: visible;
   perspective: 1280px;
   perspective-origin: 50% 38%;
   transform-style: preserve-3d;
 }
 
+/* Máscara só embaixo — retângulo com gradiente, sem cortar o topo */
 .home-phone-stage-fade {
   position: absolute;
-  right: -8%;
+  right: -6%;
   bottom: 0;
-  left: -8%;
+  left: -6%;
   z-index: 50;
-  height: 46%;
+  height: 34%;
   pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    transparent 22%,
-    rgba(11, 11, 13, 0.82) 62%,
-    var(--biosy-bg-base) 92%,
+    rgba(11, 11, 13, 0.35) 38%,
+    var(--biosy-bg-base) 88%,
     var(--biosy-bg-base) 100%
   );
 }
 
 @media (min-width: 640px) {
-  .home-phone-stage-clip {
+  .home-phone-stage {
     --phone-w: 236px;
   }
 }
 
 @media (min-width: 1024px) {
-  .home-phone-stage-clip {
-    --phone-w: 282px;
-  }
-
   .home-phone-stage {
+    --phone-w: 282px;
     perspective: 1580px;
   }
 }
@@ -447,8 +437,6 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   overflow: hidden;
   border-radius: 1.85rem;
   transform-style: preserve-3d;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 100%);
 }
 
 .home-phone-shot {
@@ -457,24 +445,6 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   aspect-ratio: 9 / 19.2;
   object-fit: cover;
   object-position: top;
-}
-
-.home-phone-bottom-fade {
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 4;
-  height: 36%;
-  border-radius: 0 0 1.9rem 1.9rem;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 28%,
-    rgba(11, 11, 13, 0.72) 68%,
-    var(--biosy-bg-base) 100%
-  );
 }
 
 .home-phone-fan-1 {

@@ -217,7 +217,6 @@ function PhonePreview({
           <div className="home-phone-shot-wrap">
             <img src={src} alt={alt} className="home-phone-shot" draggable={false} />
           </div>
-          <div aria-hidden className="home-phone-bottom-fade" />
         </div>
       </div>
     </div>
