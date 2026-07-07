@@ -217,7 +217,7 @@ function PhonePreview({
       >
         <div className="home-phone-card-3d">
           <div className="home-phone-card-clip">
-            <div className={cn("home-phone-neon-ring", neon)} />
+            <div className={cn("home-phone-top-border", neon)} />
             <div className="home-phone-shot-wrap">
               <img src={src} alt={alt} className="home-phone-shot" draggable={false} />
             </div>

@@ -591,75 +591,74 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.45);
 }
 
-/* Feather — gradiente do fundo subindo a partir da linha do corte */
+/* Borda superior 1.5px — tema Biosy, visível só no topo */
+.home-phone-top-border {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: 1.85rem;
+}
+
+.home-phone-top-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid oklch(0.65 0.28 0);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 32%, transparent 56%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 32%, transparent 56%);
+  filter: drop-shadow(0 0 10px oklch(0.65 0.28 0 / 0.38));
+}
+
+.home-phone-neon-soft::before {
+  border-color: oklch(0.62 0.26 0 / 0.85);
+  filter: drop-shadow(0 0 8px oklch(0.65 0.28 0 / 0.28));
+}
+
+.home-phone-neon-bright::before {
+  border-color: oklch(0.7 0.28 0);
+  filter: drop-shadow(0 0 14px oklch(0.65 0.28 0 / 0.48))
+    drop-shadow(0 0 28px oklch(0.55 0.27 10 / 0.22));
+}
+
+.home-phone-preview.is-hovered .home-phone-top-border::before {
+  border-color: oklch(0.72 0.28 0);
+  filter: drop-shadow(0 0 16px oklch(0.65 0.28 0 / 0.52))
+    drop-shadow(0 0 32px oklch(0.55 0.27 10 / 0.24));
+}
+
+/* Feather — cobre corte + bordas na base */
 .home-phone-cut-feather {
   pointer-events: none;
   position: absolute;
-  right: 0;
+  right: -2px;
   bottom: var(--phone-cut);
-  left: 0;
-  z-index: 6;
-  height: 22%;
+  left: -2px;
+  z-index: 10;
+  height: 24%;
   background: linear-gradient(
     to top,
     var(--biosy-bg-base) 0%,
-    color-mix(in srgb, var(--biosy-bg-base) 78%, transparent) 32%,
-    color-mix(in srgb, var(--biosy-bg-base) 38%, transparent) 62%,
+    var(--biosy-bg-base) 12%,
+    color-mix(in srgb, var(--biosy-bg-base) 82%, transparent) 36%,
+    color-mix(in srgb, var(--biosy-bg-base) 42%, transparent) 64%,
     transparent 100%
   );
 }
 
-/* Retângulo na linha do corte — desfoque sobe e suaviza o corte seco */
+/* Retângulo desfocado na linha do corte — suaviza corte + borda */
 .home-phone-cut-blur {
   pointer-events: none;
   position: absolute;
-  right: 0;
-  bottom: calc(var(--phone-cut) - 2px);
-  left: 0;
-  z-index: 7;
-  height: 1.25rem;
+  right: -4px;
+  bottom: calc(var(--phone-cut) - 3px);
+  left: -4px;
+  z-index: 11;
+  height: 1.5rem;
   background: var(--biosy-bg-base);
-  transform: translateY(45%);
-  filter: blur(16px);
-}
-
-.home-phone-neon-ring {
-  pointer-events: none;
-  position: absolute;
-  inset: -2px;
-  z-index: 3;
-  border-radius: 1.9rem;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 45, 122, 0.75) 0%,
-    rgba(255, 45, 122, 0.15) 35%,
-    rgba(168, 85, 247, 0.35) 65%,
-    rgba(255, 45, 122, 0.65) 100%
-  );
-  padding: 1.5px;
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  box-shadow:
-    0 0 16px rgba(255, 45, 122, 0.28),
-    0 0 32px rgba(255, 45, 122, 0.12);
-}
-
-.home-phone-neon-bright {
-  box-shadow:
-    0 0 18px rgba(255, 45, 122, 0.34),
-    0 0 36px rgba(255, 45, 122, 0.14);
-}
-
-.home-phone-preview.is-hovered .home-phone-neon-ring {
-  box-shadow:
-    0 0 26px rgba(255, 45, 122, 0.48),
-    0 0 52px rgba(255, 45, 122, 0.2);
+  transform: translateY(50%);
+  filter: blur(18px);
 }
 
 .home-phone-shot {
