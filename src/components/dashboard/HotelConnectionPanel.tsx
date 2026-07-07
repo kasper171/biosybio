@@ -193,15 +193,20 @@ function PlatformConnectSection({
     return () => clearInterval(timer);
   }, [validateUnlockAt, otpExpiresAt]);
 
+  const resolveLookupName = () => username.trim() || preview?.username?.trim() || "";
+
   const startVerification = async () => {
     if (!preview) return;
-    clearHotelCache(platform, preview.username, platform === "habbo" ? hotelDomain : null);
+    const lookupName = resolveLookupName();
+    if (lookupName.length < 2) return;
+
+    clearHotelCache(platform, lookupName, platform === "habbo" ? hotelDomain : null);
 
     setLoading(true);
     try {
       const result = await fetchHotelProfile(
         platform,
-        preview.username,
+        lookupName,
         platform === "habbo" ? hotelDomain : null,
         { bypassCache: true, fresh: true },
       );
@@ -210,6 +215,7 @@ function PlatformConnectSection({
         return;
       }
       setPreview(result.data);
+      setUsername(result.data.username);
     } finally {
       setLoading(false);
     }
@@ -222,6 +228,16 @@ function PlatformConnectSection({
     toast.success("Código gerado — coloque na missão do personagem");
   };
 
+  const fetchFreshMotto = async (lookupName: string, hotelDomainValue: string | null) => {
+    clearHotelCache(platform, lookupName, platform === "habbo" ? hotelDomainValue : null);
+    return fetchHotelProfile(
+      platform,
+      lookupName,
+      platform === "habbo" ? hotelDomainValue : null,
+      { bypassCache: true, fresh: true },
+    );
+  };
+
   const runHotelLink = async (forceTransfer: boolean) => {
     if (!preview || !otp || !validateUnlockAt || !otpExpiresAt) return;
     if (waitSecondsLeft > 0) {
@@ -229,45 +245,58 @@ function PlatformConnectSection({
       return;
     }
 
-    const hotelDomainValue = preview.hotelDomain ?? hotelDomain;
+    const lookupName = resolveLookupName();
+    if (lookupName.length < 2) return;
+
+    const hotelDomainValue =
+      platform === "habbo" ? preview.hotelDomain ?? hotelDomain : null;
 
     try {
       setVerifying(true);
-      clearHotelCache(platform, preview.username, platform === "habbo" ? hotelDomainValue : null);
 
-      const freshProfile = await fetchHotelProfile(
-        platform,
-        preview.username,
-        platform === "habbo" ? hotelDomainValue : null,
-        { bypassCache: true, fresh: true },
-      );
-
+      const freshProfile = await fetchFreshMotto(lookupName, hotelDomainValue);
       if (!freshProfile.ok) {
         toast.error(HOTEL_FETCH_MESSAGES[freshProfile.error]);
         return;
       }
 
-      setPreview(freshProfile.data);
+      const player = freshProfile.data;
+      setPreview(player);
+      setUsername(player.username);
 
-      const mottoCheck = await verifyHotelMottoFn({
-        data:
-          platform === "habbo"
-            ? {
-                platform: "habbo",
-                username: preview.username,
-                hotelDomain: hotelDomainValue,
-                otp,
-                unlockAt: validateUnlockAt,
-                expiresAt: otpExpiresAt,
-              }
-            : {
-                platform: "habblet",
-                username: preview.username,
-                otp,
-                unlockAt: validateUnlockAt,
-                expiresAt: otpExpiresAt,
-              },
-      });
+      const verifyPayload =
+        platform === "habbo"
+          ? {
+              platform: "habbo" as const,
+              username: player.username,
+              hotelDomain: player.hotelDomain ?? hotelDomainValue ?? "com.br",
+              otp,
+              unlockAt: validateUnlockAt,
+              expiresAt: otpExpiresAt,
+            }
+          : {
+              platform: "habblet" as const,
+              username: player.username,
+              otp,
+              unlockAt: validateUnlockAt,
+              expiresAt: otpExpiresAt,
+            };
+
+      let mottoCheck = await verifyHotelMottoFn({ data: verifyPayload });
+
+      if (!mottoCheck.ok && mottoCheck.code === "code_not_found") {
+        await new Promise((r) => setTimeout(r, 2500));
+        const retryProfile = await fetchFreshMotto(player.username, hotelDomainValue);
+        if (retryProfile.ok) {
+          setPreview(retryProfile.data);
+          mottoCheck = await verifyHotelMottoFn({
+            data: {
+              ...verifyPayload,
+              username: retryProfile.data.username,
+            },
+          });
+        }
+      }
 
       if (!mottoCheck.ok) {
         toast.error(mottoCheck.error ?? HOTEL_VERIFY_MESSAGES.code_not_found);
@@ -282,8 +311,8 @@ function PlatformConnectSection({
           platform === "habbo"
             ? {
                 type: "habbo",
-                username: preview.username,
-                hotelDomain: hotelDomainValue,
+                username: player.username,
+                hotelDomain: player.hotelDomain ?? hotelDomainValue ?? "com.br",
                 otp,
                 unlockAt: validateUnlockAt,
                 expiresAt: otpExpiresAt,
@@ -291,7 +320,7 @@ function PlatformConnectSection({
               }
             : {
                 type: "habblet",
-                username: preview.username,
+                username: player.username,
                 otp,
                 unlockAt: validateUnlockAt,
                 expiresAt: otpExpiresAt,

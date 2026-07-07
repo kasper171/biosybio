@@ -9,6 +9,15 @@ type HabboApiUser = {
   currentLevel?: number;
 };
 
+function hotelFetchHeaders(fresh?: boolean): HeadersInit {
+  return {
+    Accept: "application/json",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    Pragma: "no-cache",
+    ...(fresh ? { "X-Biosy-Fetch": String(Date.now()) } : {}),
+  };
+}
+
 export async function fetchHabboProfile(
   username: string,
   hotelDomain: string,
@@ -24,18 +33,13 @@ export async function fetchHabboProfile(
     return { ok: false, error: "invalid_hotel", message: "Hotel inválido" };
   }
 
-  const cacheBust = options?.fresh ? `&_=${Date.now()}` : "";
-  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}${cacheBust}`;
+  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}`;
 
   let response: Response;
   try {
     response = await fetch(url, {
       cache: "no-store",
-      headers: {
-        Accept: "application/json",
-        "Cache-Control": "no-cache, no-store",
-        Pragma: "no-cache",
-      },
+      headers: hotelFetchHeaders(options?.fresh),
       signal: AbortSignal.timeout(12000),
     });
   } catch {

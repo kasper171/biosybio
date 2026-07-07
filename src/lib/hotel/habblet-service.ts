@@ -8,6 +8,15 @@ type HabbletApiUser = {
   achievementPoints?: number;
 };
 
+function hotelFetchHeaders(fresh?: boolean): HeadersInit {
+  return {
+    Accept: "application/json",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    Pragma: "no-cache",
+    ...(fresh ? { "X-Biosy-Fetch": String(Date.now()) } : {}),
+  };
+}
+
 export async function fetchHabbletProfile(
   username: string,
   options?: { fresh?: boolean },
@@ -17,18 +26,13 @@ export async function fetchHabbletProfile(
     return { ok: false, error: "invalid_username", message: "Nome inválido" };
   }
 
-  const cacheBust = options?.fresh ? `?_=${Date.now()}` : "";
-  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}${cacheBust}`;
+  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}`;
 
   let response: Response;
   try {
     response = await fetch(url, {
       cache: "no-store",
-      headers: {
-        Accept: "application/json",
-        "Cache-Control": "no-cache, no-store",
-        Pragma: "no-cache",
-      },
+      headers: hotelFetchHeaders(options?.fresh),
       signal: AbortSignal.timeout(12000),
     });
   } catch {
