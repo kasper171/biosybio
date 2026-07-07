@@ -48,8 +48,8 @@ type Pose = {
 /** Escada — retos, um abaixo do outro, leve sobreposição (+40% espaço) */
 const PHONE_POSE: Record<Layer, Pose> = {
   "home-phone-fan-1": { x: 0, y: 0, z: -12, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 0.98 },
-  "home-phone-fan-2": { x: 31, y: 62, z: 4, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1 },
-  "home-phone-fan-3": { x: 62, y: 123, z: 10, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1.01 },
+  "home-phone-fan-2": { x: 26, y: 53, z: 4, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1 },
+  "home-phone-fan-3": { x: 53, y: 105, z: 10, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1.01 },
 };
 
 /** Pintura DOM: fundo → frente (evita z-index vs 3D) */

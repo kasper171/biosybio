@@ -244,11 +244,11 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-phone-fan-2 .home-phone-motion {
-    transform: translate3d(31px, 62px, 4px) scale(1);
+    transform: translate3d(26px, 53px, 4px) scale(1);
   }
 
   .home-phone-fan-3 .home-phone-motion {
-    transform: translate3d(62px, 123px, 10px) scale(1.01);
+    transform: translate3d(53px, 105px, 10px) scale(1.01);
   }
 
   .home-phone-motion {
@@ -446,8 +446,8 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-hero-stage {
   --phone-w: 228px;
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
-  --phone-stack-y: 134px;
-  --fan-span: calc(var(--phone-w) * 2.72);
+  --phone-stack-y: 114px;
+  --fan-span: calc(var(--phone-w) * 2.31);
   min-height: 0;
   padding-top: 12px;
   overflow: visible;
@@ -470,16 +470,16 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 @media (min-width: 640px) {
   .home-hero-stage {
     --phone-w: 271px;
-    --phone-stack-y: 146px;
-    --fan-span: calc(var(--phone-w) * 2.76);
+    --phone-stack-y: 124px;
+    --fan-span: calc(var(--phone-w) * 2.35);
   }
 }
 
 @media (min-width: 1024px) {
   .home-hero-stage {
     --phone-w: 324px;
-    --phone-stack-y: 157px;
-    --fan-span: calc(var(--phone-w) * 2.8);
+    --phone-stack-y: 133px;
+    --fan-span: calc(var(--phone-w) * 2.38);
   }
 
   .home-phone-stage {
@@ -691,30 +691,30 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-phone-fan-2 {
-  left: calc(var(--phone-w) * 0.78);
+  left: calc(var(--phone-w) * 0.66);
 }
 
 .home-phone-fan-3 {
-  left: calc(var(--phone-w) * 1.56);
+  left: calc(var(--phone-w) * 1.33);
 }
 
 @media (min-width: 640px) {
   .home-phone-fan-2 {
-    left: calc(var(--phone-w) * 0.8);
+    left: calc(var(--phone-w) * 0.68);
   }
 
   .home-phone-fan-3 {
-    left: calc(var(--phone-w) * 1.6);
+    left: calc(var(--phone-w) * 1.36);
   }
 }
 
 @media (min-width: 1024px) {
   .home-phone-fan-2 {
-    left: calc(var(--phone-w) * 0.82);
+    left: calc(var(--phone-w) * 0.7);
   }
 
   .home-phone-fan-3 {
-    left: calc(var(--phone-w) * 1.64);
+    left: calc(var(--phone-w) * 1.4);
   }
 }
 
