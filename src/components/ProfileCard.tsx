@@ -24,6 +24,7 @@ import type { TextAnimationId } from "@/lib/text-animations";
 import { normalizeTextAnimationId, hasActiveTextAnimation } from "@/lib/text-animations";
 import { ProfileAnimatedText } from "@/components/text-animations/ProfileAnimatedText";
 import { AvatarWithFrame } from "@/components/AvatarWithFrame";
+import { AVATAR_FRAME_SCALE } from "@/lib/avatar-frames";
 import { ProfileRoleBadges } from "@/components/ProfileRoleBadges";
 import { cn } from "@/lib/utils";
 
@@ -238,18 +239,35 @@ function CardLayoutContent({
 
   // ── LAYOUT ALINHADO (guns.lol style) ──────────────────────────────────────
   if (layout === "aligned") {
+    const frameOverflow = profile.avatar_frame_id
+      ? Math.ceil(avatarSize * (AVATAR_FRAME_SCALE - 1) / 2)
+      : 0;
+
     return (
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden text-left">
         {overlayBadges}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex min-h-0 flex-1 items-start gap-4 overflow-hidden px-6 pt-4 pb-2">
-            <div className="flex shrink-0 flex-col items-center" style={{ width: avatarSize, maxWidth: avatarSize }}>
-              <AvatarBlock
-                profile={profile}
-                size={avatarSize}
-                ringWidth={avatarRingWidth}
-                ringColor={avatarRingColor}
-              />
+          <div className="flex shrink-0 items-start gap-4 overflow-visible px-6 pt-4 pb-2">
+            <div
+              className="flex shrink-0 flex-col items-center gap-2 overflow-visible"
+              style={{ width: avatarSize, maxWidth: avatarSize }}
+            >
+              <div
+                className="overflow-visible"
+                style={{ paddingTop: frameOverflow, paddingBottom: frameOverflow }}
+              >
+                <AvatarBlock
+                  profile={profile}
+                  size={avatarSize}
+                  ringWidth={avatarRingWidth}
+                  ringColor={avatarRingColor}
+                />
+              </div>
+              {socialIcons && (
+                <div className="flex w-full max-w-full flex-nowrap items-center justify-center gap-1.5 overflow-x-auto">
+                  {socialIcons}
+                </div>
+              )}
             </div>
             <div className="flex min-h-0 min-w-0 flex-1 flex-col items-start overflow-hidden text-left">
               <h3
@@ -290,11 +308,6 @@ function CardLayoutContent({
               />
             </div>
           </div>
-          {socialIcons && (
-            <div className="flex w-full shrink-0 flex-nowrap items-center justify-center gap-2 overflow-x-auto px-6 pb-2">
-              {socialIcons}
-            </div>
-          )}
           {children && <div className="shrink-0 px-6 pb-2 text-left">{children}</div>}
         </div>
         {footer && (
@@ -313,7 +326,7 @@ function CardLayoutContent({
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {overlayBadges}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-4">
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-start overflow-hidden text-center">
+          <div className="flex shrink-0 flex-col items-center overflow-hidden text-center">
             <AvatarBlock
               profile={profile}
               size={centeredAvatarSize}
@@ -356,12 +369,12 @@ function CardLayoutContent({
               accentColor={bodyAccent}
               particleColor={bioParticleColor}
             />
+            {socialIcons && (
+              <div className="mt-1.5 flex w-full max-w-full shrink-0 flex-nowrap items-center justify-center gap-2 overflow-x-auto">
+                {socialIcons}
+              </div>
+            )}
           </div>
-          {socialIcons && (
-            <div className="mt-3 flex w-full max-w-full shrink-0 flex-nowrap items-center justify-center gap-2 overflow-x-auto">
-              {socialIcons}
-            </div>
-          )}
           {children && <div className="mt-3 w-full shrink-0">{children}</div>}
         </div>
         {footer && (
@@ -388,7 +401,7 @@ function CardLayoutContent({
         style={{ marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0, paddingTop: hasBanner ? 16 : 20 }}
       >
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-start overflow-hidden text-center">
+          <div className="flex shrink-0 flex-col items-center overflow-hidden text-center">
             <div className="relative z-[5] mx-auto mb-2 flex shrink-0 justify-center">
               <AvatarBlock
                 profile={profile}
@@ -430,10 +443,10 @@ function CardLayoutContent({
               accentColor={bodyAccent}
               particleColor={bioParticleColor}
             />
+            {socialIcons && (
+              <div className="mt-1.5 flex shrink-0 flex-nowrap justify-center gap-2 overflow-x-auto">{socialIcons}</div>
+            )}
           </div>
-          {socialIcons && (
-            <div className="mt-3 flex shrink-0 flex-nowrap justify-center gap-2 overflow-x-auto">{socialIcons}</div>
-          )}
           {children && <div className="mt-3 w-full shrink-0">{children}</div>}
         </div>
         {footer && (

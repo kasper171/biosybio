@@ -71,9 +71,9 @@ function estimateSocialRowsHeight(profile: Profile, cardWidth: number): number {
   const rowWidth = cardWidth - 48;
   const rowNeeded = count * icon + (count - 1) * gap;
   if (rowNeeded <= rowWidth) {
-    return 16 + icon;
+    return 6 + icon;
   }
-  return 16 + icon;
+  return 6 + icon;
 }
 
 function roundCardHeight(h: number): number {
@@ -100,8 +100,11 @@ export function estimateMinCardHeight(
   let body = 0;
 
   if (layout === "aligned") {
-    const socialCol = estimateSocialRowsHeight(profile, cardWidth);
-    const avatarCol = avatarSize;
+    const socialCount = countSocials(profile);
+    const socialIcon = profile.social_icon_style === "logo" ? 40 : 44;
+    const socialUnderAvatar = socialCount > 0 ? 10 + socialIcon : 0;
+    const frameOverflow = profile.avatar_frame_id ? Math.ceil(avatarSize * 0.11) : 0;
+    const avatarCol = avatarSize + frameOverflow * 2 + socialUnderAvatar;
     const textWidth = Math.max(120, cardWidth - 48 - avatarSize - 16);
     const bioLines = estimateTextLines(bio, textWidth, 7);
 
@@ -110,7 +113,7 @@ export function estimateMinCardHeight(
     if (showUsername) textCol += 20;
     textCol += bioLines * 18 + (bio ? 8 : 0) + (hasBioFx ? 16 : 0);
 
-    body = Math.max(avatarCol, textCol) + (socialCol > 0 ? socialCol + 8 : 0) + 28;
+    body = Math.max(avatarCol, textCol) + 28;
   } else if (layout === "centered") {
     const avatar = Math.max(52, Math.round(avatarSize * 1.1));
     body += 64 + avatar + 16;
