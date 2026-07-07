@@ -303,13 +303,13 @@ export function ProfilePageContent({
 
   const mainCardWidth = mainCardDims.width;
   const mainSlotStyle: CSSProperties = {
-    width: "100%",
-    maxWidth: mainCardWidth,
+    width: mainCardWidth,
+    maxWidth: "100%",
     minWidth: 0,
   };
   const mainCardBesideSlotStyle: CSSProperties = {
     width: mainCardWidth,
-    maxWidth: mainCardWidth,
+    maxWidth: "100%",
     minWidth: 0,
     flexShrink: 0,
   };
@@ -325,40 +325,33 @@ export function ProfilePageContent({
     ) : null;
 
   const outsideDiscordWrapped = outsideDiscordInner ? (
-    <div className="mt-4 w-full min-w-0" style={{ maxWidth: mainCardWidth }}>
+    <div className="mt-4 w-full min-w-0 max-w-full overflow-hidden">
       {animate && discordOutside ? (
         <motion.div
           key={`discord-${animKey}`}
           initial={cardInitial}
           animate={cardAnimate}
           transition={{ ...cardTransition, delay: discordDelay / 1000 }}
-          className="relative mx-auto w-full min-w-0"
-          style={{ maxWidth: mainCardWidth, willChange: "transform" }}
+          className="relative w-full min-w-0 max-w-full"
+          style={{ willChange: "transform" }}
         >
           {outsideDiscordInner}
         </motion.div>
       ) : (
-        <div className="mx-auto w-full min-w-0" style={{ maxWidth: mainCardWidth }}>
-          {outsideDiscordInner}
-        </div>
+        <div className="w-full min-w-0 max-w-full">{outsideDiscordInner}</div>
       )}
     </div>
   ) : null;
 
-  const belowMainSlots =
-    musicCardInner || outsideDiscordWrapped ? (
-      <div
-        className={`min-w-0 ${hotelOutsideBeside ? "shrink-0 self-start" : "mx-auto w-full"}`}
-        style={mainSlotStyle}
-      >
-        {musicCardInner}
-        {outsideDiscordWrapped}
-      </div>
-    ) : null;
-
-  const mainCardSlot = (
-    <div className="shrink-0" style={mainCardBesideSlotStyle}>
+  /** Coluna do card principal — largura fixa; música e Discord separado ficam aqui */
+  const mainProfileColumn = (
+    <div
+      className="flex min-w-0 shrink-0 flex-col"
+      style={hotelOutsideBeside ? mainCardBesideSlotStyle : mainSlotStyle}
+    >
       {mainCardWrapped}
+      {musicCardInner}
+      {outsideDiscordWrapped}
     </div>
   );
 
@@ -396,24 +389,18 @@ export function ProfilePageContent({
     ) : null;
 
   const profileContent = hotelOutsideBeside ? (
-    <div className="flex w-full flex-col gap-4">
-      <div
-        className={
-          isEditor
-            ? "flex w-full flex-row flex-nowrap items-stretch justify-center gap-4"
-            : "flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-stretch lg:justify-center"
-        }
-      >
-        {mainCardSlot}
-        {hotelBesideColumn}
-      </div>
-      {belowMainSlots}
+    <div
+      className={
+        isEditor
+          ? "flex w-full flex-row flex-nowrap items-start justify-center gap-4"
+          : "flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:justify-center"
+      }
+    >
+      {mainProfileColumn}
+      {hotelBesideColumn}
     </div>
   ) : (
-    <div className="mx-auto w-full" style={mainSlotStyle}>
-      {mainCardWrapped}
-      {belowMainSlots}
-    </div>
+    <div className="mx-auto w-full">{mainProfileColumn}</div>
   );
 
   return (

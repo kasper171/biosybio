@@ -273,7 +273,7 @@ export function DiscordPresenceCard({
     : undefined;
 
   const rootClass = variant === "outside"
-    ? "relative isolate box-border w-full overflow-hidden px-4 py-3"
+    ? "relative isolate box-border w-full max-w-full min-w-0 overflow-hidden px-4 py-3"
     : "w-full";
 
   const scaleFactor = Math.min(140, Math.max(80, scale)) / 100;
