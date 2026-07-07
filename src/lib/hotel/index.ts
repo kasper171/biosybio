@@ -44,3 +44,4 @@ export {
   isHotelConnected,
 } from "@/lib/hotel/profile-hotel";
 export { fetchHotelProfile } from "@/lib/hotel/hotel-service";
+export { clearHotelCache } from "@/lib/hotel/cache";

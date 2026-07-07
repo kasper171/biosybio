@@ -1,5 +1,6 @@
 import { fetchHabboProfile } from "@/lib/hotel/habbo-service";
 import { fetchHabbletProfile } from "@/lib/hotel/habblet-service";
+import type { HotelProfileData } from "@/lib/hotel/types";
 import { isOtpTimingValid, textContainsOtp } from "@/lib/connection-verify";
 
 export type ConnectionVerifyError =
@@ -74,7 +75,9 @@ export async function verifyHotelOwnershipServer(
   otp: string,
   unlockAt: number,
   expiresAt: number,
-): Promise<{ ok: true; motto: string } | { ok: false; error: ConnectionVerifyError }> {
+): Promise<
+  { ok: true; profile: HotelProfileData } | { ok: false; error: ConnectionVerifyError }
+> {
   const trimmed = username.trim();
   if (trimmed.length < 2) {
     return { ok: false, error: "invalid_username" };
@@ -101,7 +104,7 @@ export async function verifyHotelOwnershipServer(
       return { ok: false, error: "code_not_found" };
     }
 
-    return { ok: true, motto };
+    return { ok: true, profile: result.data };
   } catch {
     return { ok: false, error: "network" };
   }

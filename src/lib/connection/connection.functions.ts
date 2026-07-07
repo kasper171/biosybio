@@ -27,6 +27,15 @@ const checkConflictInput = z.discriminatedUnion("type", [
   }),
 ]);
 
+const verifyHotelMottoInput = z.object({
+  platform: z.enum(["habbo", "habblet"]),
+  username: z.string().min(2).max(64),
+  hotelDomain: z.string().min(2).max(32).optional(),
+  otp: z.string().min(8).max(8),
+  unlockAt: z.number(),
+  expiresAt: z.number(),
+});
+
 const linkConnectionInput = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("discord"),
@@ -70,6 +79,51 @@ export const checkConnectionConflictFn = createServerFn({ method: "POST" })
             });
 
     return { hasConflict: Boolean(conflict) };
+  });
+
+function mapHotelVerifyError(code: string): string {
+  switch (code) {
+    case "invalid_username":
+      return "Nome do jogador inválido.";
+    case "invalid_hotel":
+      return "Hotel inválido.";
+    case "user_not_found":
+      return "Jogador não encontrado.";
+    case "code_not_found":
+      return "O código não foi encontrado na missão do seu personagem.";
+    case "expired":
+      return "O código expirou. Gere um novo código e tente novamente.";
+    case "waiting":
+      return "Aguarde 50 segundos antes de validar.";
+    default:
+      return "Falha ao validar. Tente novamente em instantes.";
+  }
+}
+
+/** Segunda chamada à API do hotel: lê a missão atualizada e confere o código OTP. */
+export const verifyHotelMottoFn = createServerFn({ method: "POST" })
+  .inputValidator(verifyHotelMottoInput)
+  .handler(async ({ data }) => {
+    await requireAuthenticatedUserId();
+
+    const verified = await verifyHotelOwnershipServer(
+      data.platform,
+      data.username,
+      data.platform === "habbo" ? (data.hotelDomain ?? "com.br") : null,
+      data.otp,
+      data.unlockAt,
+      data.expiresAt,
+    );
+
+    if (!verified.ok) {
+      return {
+        ok: false as const,
+        error: mapHotelVerifyError(verified.error),
+        code: verified.error,
+      };
+    }
+
+    return { ok: true as const, profile: verified.profile };
   });
 
 export const linkVerifiedConnectionFn = createServerFn({ method: "POST" })

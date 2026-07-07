@@ -23,12 +23,17 @@ export async function fetchHabboProfile(
     return { ok: false, error: "invalid_hotel", message: "Hotel inválido" };
   }
 
-  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}`;
+  const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}&_cb=${Date.now()}`;
 
   let response: Response;
   try {
     response = await fetch(url, {
-      headers: { Accept: "application/json" },
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "Cache-Control": "no-cache, no-store",
+        Pragma: "no-cache",
+      },
       signal: AbortSignal.timeout(12000),
     });
   } catch {

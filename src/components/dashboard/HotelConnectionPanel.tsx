@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import type { Profile } from "@/lib/profile-storage";
 import { HotelProfileCard } from "@/components/HotelProfileCard";
 import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
-import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions";
+import { linkVerifiedConnectionFn, verifyHotelMottoFn } from "@/lib/connection/connection.functions";
 import {
   HOTEL_OTP_VALIDATE_WINDOW_MS,
   HOTEL_OTP_WAIT_MS,
@@ -13,6 +13,7 @@ import {
 } from "@/lib/hotel-verify";
 import {
   clearHotelProfilePatch,
+  clearHotelCache,
   fetchHotelProfile,
   HABBO_HOTELS,
   HOTEL_CARD_PLACEMENT_LABELS,
@@ -194,6 +195,7 @@ function PlatformConnectSection({
 
   const startVerification = () => {
     if (!preview) return;
+    clearHotelCache(platform, preview.username, platform === "habbo" ? hotelDomain : null);
     const now = Date.now();
     setOtp(generateHotelOtp());
     setValidateUnlockAt(now + HOTEL_OTP_WAIT_MS);
@@ -209,15 +211,47 @@ function PlatformConnectSection({
       return;
     }
 
+    const hotelDomainValue = preview.hotelDomain ?? hotelDomain;
+
     try {
       setVerifying(true);
+      clearHotelCache(platform, preview.username, platform === "habbo" ? hotelDomainValue : null);
+
+      const mottoCheck = await verifyHotelMottoFn({
+        data:
+          platform === "habbo"
+            ? {
+                platform: "habbo",
+                username: preview.username,
+                hotelDomain: hotelDomainValue,
+                otp,
+                unlockAt: validateUnlockAt,
+                expiresAt: otpExpiresAt,
+              }
+            : {
+                platform: "habblet",
+                username: preview.username,
+                otp,
+                unlockAt: validateUnlockAt,
+                expiresAt: otpExpiresAt,
+              },
+      });
+
+      if (!mottoCheck.ok) {
+        toast.error(mottoCheck.error ?? HOTEL_VERIFY_MESSAGES.code_not_found);
+        if (mottoCheck.code === "expired") {
+          resetVerification();
+        }
+        return;
+      }
+
       const result = await linkVerifiedConnectionFn({
         data:
           platform === "habbo"
             ? {
                 type: "habbo",
                 username: preview.username,
-                hotelDomain: preview.hotelDomain ?? hotelDomain,
+                hotelDomain: hotelDomainValue,
                 otp,
                 unlockAt: validateUnlockAt,
                 expiresAt: otpExpiresAt,
@@ -420,7 +454,7 @@ function PlatformConnectSection({
                 className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {verifying
-                  ? "Validando..."
+                  ? "Verificando missão..."
                   : waitSecondsLeft > 0
                     ? `Aguarde ${waitSecondsLeft}s`
                     : "Validar"}

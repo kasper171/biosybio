@@ -1,6 +1,4 @@
 import type { HotelProfileData } from "@/lib/hotel/types";
-import { fetchHabboProfile } from "@/lib/hotel/habbo-service";
-import { fetchHabbletProfile } from "@/lib/hotel/habblet-service";
 import {
   verifyDiscordOwnershipServer,
   verifyHotelOwnershipServer,
@@ -177,15 +175,10 @@ export async function linkVerifiedConnection(options: {
       return { ok: false, error: mapVerifyError(verified.error, "habbo"), code: verified.error };
     }
 
-    const fetch = await fetchHabboProfile(input.username, input.hotelDomain);
-    if (!fetch.ok) {
-      return { ok: false, error: "Não foi possível carregar o perfil do Habbo." };
-    }
-
     const conflict = await findConnectionConflict(admin, ownerId, {
       type: "habbo",
-      username: fetch.data.username,
-      hotelDomain: fetch.data.hotelDomain ?? input.hotelDomain,
+      username: verified.profile.username,
+      hotelDomain: verified.profile.hotelDomain ?? input.hotelDomain,
     });
     if (conflict && !forceTransfer) {
       return { ok: false, needsTransfer: true };
@@ -194,7 +187,7 @@ export async function linkVerifiedConnection(options: {
       await clearConnectionFromProfile(admin, conflict.otherProfileId, conflict.type);
     }
 
-    return { ok: true, patch: hotelDataToPatch(fetch.data) };
+    return { ok: true, patch: hotelDataToPatch(verified.profile) };
   }
 
   const verified = await verifyHotelOwnershipServer(
@@ -209,14 +202,9 @@ export async function linkVerifiedConnection(options: {
     return { ok: false, error: mapVerifyError(verified.error, "habblet"), code: verified.error };
   }
 
-  const fetch = await fetchHabbletProfile(input.username);
-  if (!fetch.ok) {
-    return { ok: false, error: "Não foi possível carregar o perfil do Habblet." };
-  }
-
   const conflict = await findConnectionConflict(admin, ownerId, {
     type: "habblet",
-    username: fetch.data.username,
+    username: verified.profile.username,
   });
   if (conflict && !forceTransfer) {
     return { ok: false, needsTransfer: true };
@@ -225,7 +213,7 @@ export async function linkVerifiedConnection(options: {
     await clearConnectionFromProfile(admin, conflict.otherProfileId, conflict.type);
   }
 
-  return { ok: true, patch: hotelDataToPatch(fetch.data) };
+  return { ok: true, patch: hotelDataToPatch(verified.profile) };
 }
 
 function hotelDataToPatch(data: HotelProfileData): Record<string, unknown> {

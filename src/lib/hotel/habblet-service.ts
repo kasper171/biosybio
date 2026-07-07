@@ -14,12 +14,17 @@ export async function fetchHabbletProfile(username: string): Promise<HotelFetchR
     return { ok: false, error: "invalid_username", message: "Nome inválido" };
   }
 
-  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}`;
+  const url = `https://api.habblet.city/player/${encodeURIComponent(name)}?_cb=${Date.now()}`;
 
   let response: Response;
   try {
     response = await fetch(url, {
-      headers: { Accept: "application/json" },
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "Cache-Control": "no-cache, no-store",
+        Pragma: "no-cache",
+      },
       signal: AbortSignal.timeout(12000),
     });
   } catch {
