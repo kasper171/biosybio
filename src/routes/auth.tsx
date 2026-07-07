@@ -7,9 +7,8 @@ import { cleanUsername, isUsernameTaken, MIN_USERNAME_LENGTH, MAX_USERNAME_LENGT
 import { toast } from "sonner";
 import { z } from "zod";
 import { Check, X } from "lucide-react";
-import { TurnstileWidget } from "@/components/TurnstileWidget";
+import { TurnstileWidget, resetTurnstileWidget } from "@/components/TurnstileWidget";
 import { isTurnstileEnabled } from "@/lib/turnstile/config";
-import { verifyTurnstileFn } from "@/lib/turnstile/turnstile.functions";
 
 type Rule = { label: string; test: (p: string) => boolean };
 const PASSWORD_RULES: Rule[] = [
@@ -100,6 +99,15 @@ function AuthPage() {
     setTurnstileToken(null);
   }, []);
 
+  const handleTurnstileError = useCallback(() => {
+    setTurnstileToken(null);
+    notify({
+      title: "Verificação do Cloudflare falhou",
+      description:
+        "Recarregue a página e marque o check novamente. Se persistir, teste outro navegador ou rede.",
+    });
+  }, []);
+
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormNotice(null);
@@ -134,7 +142,6 @@ function AuthPage() {
             });
             return;
           }
-          await verifyTurnstileFn({ data: { token: turnstileToken } });
         }
 
         const { data, error } = await supabase.auth.signUp({
@@ -143,6 +150,7 @@ function AuthPage() {
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
             data: { username: cleanUser, display_name: cleanUser },
+            ...(isTurnstileEnabled() && turnstileToken ? { captchaToken: turnstileToken } : {}),
           },
         });
         if (error) throw error;
@@ -177,6 +185,7 @@ function AuthPage() {
       }
     } catch (err) {
       setTurnstileToken(null);
+      resetTurnstileWidget();
       const notice = getAuthNotice(err);
       notify(notice);
     } finally {
@@ -227,15 +236,6 @@ function AuthPage() {
                 className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-pink-hot/60"
               />
             </div>
-            {mode === "signup" && isTurnstileEnabled() && (
-              <div className="flex justify-center py-1">
-                <TurnstileWidget
-                  action="signup"
-                  onToken={setTurnstileToken}
-                  onExpire={handleTurnstileExpire}
-                />
-              </div>
-            )}
             <div>
               <label className="mb-1 block text-xs text-white/60">Senha</label>
               <input
@@ -279,6 +279,16 @@ function AuthPage() {
                 </div>
               )}
             </div>
+            {mode === "signup" && isTurnstileEnabled() && (
+              <div className="flex justify-center py-1">
+                <TurnstileWidget
+                  action="signup"
+                  onToken={setTurnstileToken}
+                  onExpire={handleTurnstileExpire}
+                  onError={handleTurnstileError}
+                />
+              </div>
+            )}
             <button
               type="submit"
               disabled={loading || (mode === "signup" && isTurnstileEnabled() && !turnstileToken)}

@@ -46,6 +46,13 @@ export function getAuthNotice(err: unknown): AuthNotice {
 
   const msg = err instanceof Error ? err.message : "Erro ao autenticar";
 
+  if (/captcha protection|turnstile/i.test(msg)) {
+    return {
+      title: "Verificação de segurança falhou",
+      description:
+        "Marque o check do Cloudflare novamente e envie o formulário em seguida. Se repetir, recarregue a página.",
+    };
+  }
   if (/weak.?password|pwned/i.test(msg)) {
     return {
       title: "Senha fraca",

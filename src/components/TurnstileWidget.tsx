@@ -14,6 +14,8 @@ declare global {
           "error-callback"?: () => void;
           theme?: "light" | "dark" | "auto";
           retry?: "auto" | "never";
+          appearance?: "always" | "execute" | "interaction-only";
+          "refresh-expired"?: "auto" | "manual" | "never";
         },
       ) => string;
       reset: (widgetId?: string) => void;
@@ -101,6 +103,8 @@ function TurnstileWidgetInner({
           action,
           theme: "dark",
           retry: "auto",
+          appearance: "always",
+          "refresh-expired": "auto",
           callback: (token) => onTokenRef.current(token),
           "expired-callback": () => onExpireRef.current?.(),
           "error-callback": () => {
@@ -130,9 +134,8 @@ function TurnstileWidgetInner({
         className="flex min-h-[65px] items-center justify-center"
       />
       {failed && (
-        <p className="mt-2 text-center text-xs text-red-400">
-          Verificação bloqueada pelo navegador. Desative o bloqueador (Brave Shields, AdBlock) ou teste no
-          Chrome.
+        <p className="mt-2 text-center text-xs leading-relaxed text-red-400">
+          Não foi possível carregar a verificação. Recarregue a página ou teste outro navegador/rede.
         </p>
       )}
     </div>
