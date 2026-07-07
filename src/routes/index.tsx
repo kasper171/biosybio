@@ -14,6 +14,7 @@ import { HomeSocialProof } from "@/components/home/HomeSocialProof";
 import { HomeHeroVisual } from "@/components/home/HomeHeroVisual";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import { SiteNavbar } from "@/components/SiteNavbar";
+import { SiteLogo } from "@/components/SiteLogo";
 import { SiteAuthButtons } from "@/components/SiteAuthButtons";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
@@ -307,7 +308,7 @@ function Index() {
       <footer className="border-t border-white/5">
         <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-14 md:flex-row md:items-start md:justify-between">
           <div>
-            <Logo />
+            <SiteLogo linked={false} />
             <p className="mt-3 text-sm text-white/55">Your way.<br />For the world.</p>
           </div>
           <nav aria-label="Site links">

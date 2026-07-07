@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, Check, Crown, Gem, Heart, Sparkles } from "lucide-react";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import { SiteNavbar } from "@/components/SiteNavbar";
+import { SiteLogo } from "@/components/SiteLogo";
 import { BADGE_PRODUCTS, PLANS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
@@ -165,7 +166,7 @@ function PlanosPage() {
 
       <footer className="border-t border-white/5">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
-          <Logo size={32} />
+          <SiteLogo size={32} />
           <Link to="/" className="text-sm text-white/55 transition hover:text-white">
             Back to home
           </Link>

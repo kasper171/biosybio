@@ -3,7 +3,6 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  useRouter,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,11 +10,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
-import {
-  SiteStatusOutlineLink,
-  SiteStatusPage,
-  SiteStatusPrimaryButton,
-} from "@/components/errors/SiteStatusPage";
+import { ErrorFace404 } from "@/components/errors/ErrorFace404";
+import { SiteStatusPage } from "@/components/errors/SiteStatusPage";
 import { reportClientError } from "../lib/report-client-error";
 import { SITE_ORIGIN } from "@/lib/site";
 
@@ -39,31 +35,16 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error }: { error: Error; reset: () => void }) {
   console.error(error);
-  const router = useRouter();
   useEffect(() => {
     reportClientError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
-    <SiteStatusPage
-      title="This page didn't load"
-      description="Something went wrong on our end. You can try refreshing or head back home."
-      actions={
-        <>
-          <SiteStatusPrimaryButton
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-          >
-            Try again
-          </SiteStatusPrimaryButton>
-          <SiteStatusOutlineLink href="/">Go home</SiteStatusOutlineLink>
-        </>
-      }
-    />
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+      <ErrorFace404 />
+    </div>
   );
 }
 

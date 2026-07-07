@@ -1,35 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import logoUrl from "@/assets/logo.png";
 import { SiteAuthButtons } from "@/components/SiteAuthButtons";
+import { SiteLogo } from "@/components/SiteLogo";
 import { cn } from "@/lib/utils";
 
 const SCROLL_THRESHOLD = 28;
-
-function SiteLogo({ compact }: { compact?: boolean }) {
-  const size = compact ? 28 : 36;
-
-  return (
-    <Link to="/" className="flex shrink-0 items-center gap-2">
-      <img
-        src={logoUrl}
-        alt="Biosy"
-        width={size}
-        height={size}
-        className="transition-[width,height] duration-300"
-        style={{ filter: "drop-shadow(0 0 12px oklch(0.65 0.28 0 / 0.55))" }}
-      />
-      <span
-        className={cn(
-          "font-bold tracking-tight transition-all duration-300",
-          compact ? "text-base sm:text-lg" : "text-xl",
-        )}
-      >
-        Biosy
-      </span>
-    </Link>
-  );
-}
 
 type SiteNavbarProps = {
   children?: ReactNode;
@@ -73,7 +48,10 @@ export function SiteNavbar({ children }: SiteNavbarProps) {
             : "relative mx-auto max-w-7xl px-6 py-5",
         )}
       >
-        <SiteLogo compact={scrolled} />
+        <SiteLogo
+          size={scrolled ? 28 : 36}
+          className="shrink-0 transition-all duration-300"
+        />
         {children ? (
           <nav
             className={cn(
