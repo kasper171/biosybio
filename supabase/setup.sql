@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   public_template_enabled boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT username_format CHECK (username ~ '^[a-z0-9_]{3,30}$')
+  CONSTRAINT username_format CHECK (username ~ '^[a-z0-9_]{2,30}$')
 );
 
 GRANT SELECT ON public.profiles TO anon;
@@ -93,7 +93,7 @@ BEGIN
              'user'),
     '[^a-z0-9_]', '', 'g'
   ));
-  IF length(base_username) < 3 THEN
+  IF length(base_username) < 2 THEN
     base_username := 'user' || substr(NEW.id::text, 1, 6);
   END IF;
   final_username := base_username;

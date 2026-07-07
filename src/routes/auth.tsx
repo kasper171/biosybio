@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice, isExistingEmailSignup } from "@/lib/auth-errors";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
-import { cleanUsername, isUsernameTaken } from "@/lib/username";
+import { cleanUsername, isUsernameTaken, MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH, usernameLengthError } from "@/lib/username";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Check, X } from "lucide-react";
@@ -107,8 +107,9 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         const cleanUser = cleanUsername(username);
-        if (cleanUser.length < 3) {
-          notify({ title: "Nome de usuário inválido", description: "Use pelo menos 3 letras, números ou _." });
+        const lengthError = usernameLengthError(cleanUser);
+        if (lengthError) {
+          notify({ title: "Nome de usuário inválido", description: lengthError });
           return;
         }
         if (passedCount < PASSWORD_RULES.length) {
@@ -209,8 +210,8 @@ function AuthPage() {
                     onChange={(e) => setUsername(cleanUsername(e.target.value))}
                     placeholder="seunome"
                     required
-                    minLength={3}
-                    maxLength={30}
+                    minLength={MIN_USERNAME_LENGTH}
+                    maxLength={MAX_USERNAME_LENGTH}
                     className="w-full bg-transparent py-2.5 text-sm outline-none"
                   />
                 </div>

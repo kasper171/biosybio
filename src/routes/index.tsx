@@ -16,7 +16,13 @@ import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import { SiteAuthButtons } from "@/components/SiteAuthButtons";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
-import { cleanUsername, isUsernameTaken } from "@/lib/username";
+import {
+  cleanUsername,
+  isUsernameTaken,
+  MIN_USERNAME_LENGTH,
+  MAX_USERNAME_LENGTH,
+  usernameLengthError,
+} from "@/lib/username";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,10 +62,10 @@ function Index() {
     setReserveError(null);
     const cleanUser = cleanUsername(reserveUsername);
 
-    if (cleanUser.length < 3) {
-      const message = "Use pelo menos 3 letras, números ou _.";
-      setReserveError(message);
-      toast.error("Nome de usuário inválido", { description: message });
+    const lengthError = usernameLengthError(cleanUser);
+    if (lengthError) {
+      setReserveError(lengthError);
+      toast.error("Nome de usuário inválido", { description: lengthError });
       return;
     }
 
@@ -153,7 +159,7 @@ function Index() {
                         setReserveError(null);
                       }}
                       placeholder="seunome"
-                      maxLength={30}
+                      maxLength={MAX_USERNAME_LENGTH}
                       className="flex-1 bg-transparent py-2 text-sm text-white placeholder:text-white/30 focus:outline-none"
                     />
                     <button

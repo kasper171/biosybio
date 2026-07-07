@@ -13,6 +13,11 @@ import {
   Shield,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  MAX_USERNAME_LENGTH,
+  MIN_USERNAME_LENGTH,
+  usernameLengthError,
+} from "@/lib/username";
 import type { Profile } from "@/lib/profile-storage";
 import { setPublicTemplateEnabled } from "@/lib/profile-template";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
@@ -94,12 +99,9 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
 
   const saveProfileSettings = async () => {
     const clean = username.toLowerCase().replace(/[^a-z0-9_]/g, "");
-    if (clean.length < 3) {
-      toast.error("O nome de usuário precisa ter pelo menos 3 caracteres");
-      return;
-    }
-    if (clean.length > 30) {
-      toast.error("O nome de usuário pode ter no máximo 30 caracteres");
+    const lengthError = usernameLengthError(clean);
+    if (lengthError) {
+      toast.error(lengthError);
       return;
     }
 
@@ -232,8 +234,8 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               onChange={(e) =>
                 setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
               }
-              minLength={3}
-              maxLength={30}
+              minLength={MIN_USERNAME_LENGTH}
+              maxLength={MAX_USERNAME_LENGTH}
               className="w-full bg-transparent py-3 text-sm text-white outline-none"
               placeholder="seuusuario"
             />
