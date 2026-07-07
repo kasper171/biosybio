@@ -1,30 +1,17 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Instagram, Youtube, Music2, Twitter, Twitch, ArrowRight,
   Link2, Image as ImageIcon, Sparkles,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import ctaBanner from "@/assets/cta-banner.png";
 import { LanyardCard } from "@/components/LanyardCard";
 import { HomeStatsSection } from "@/components/home/HomeStatsSection";
 import { HomeCreatorsCarousel } from "@/components/home/HomeCreatorsCarousel";
-import { HomeSocialProof } from "@/components/home/HomeSocialProof";
-import { HomeHeroVisual } from "@/components/home/HomeHeroVisual";
+import { HomeHeroSection } from "@/components/home/HomeHeroSection";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import { SiteNavbar } from "@/components/SiteNavbar";
 import { SiteLogo } from "@/components/SiteLogo";
-import { SiteAuthButtons } from "@/components/SiteAuthButtons";
-import { useAuthSession } from "@/hooks/useAuthSession";
-import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
-import {
-  cleanUsername,
-  isUsernameTaken,
-  MIN_USERNAME_LENGTH,
-  MAX_USERNAME_LENGTH,
-  usernameLengthError,
-} from "@/lib/username";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,48 +26,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const navigate = useNavigate();
-  const { isLoggedIn } = useAuthSession();
-  const [reserveUsername, setReserveUsername] = useState("");
-  const [reserveError, setReserveError] = useState<string | null>(null);
-  const [reserveLoading, setReserveLoading] = useState(false);
-
-  const handleReserve = async () => {
-    setReserveError(null);
-    const cleanUser = cleanUsername(reserveUsername);
-
-    const lengthError = usernameLengthError(cleanUser);
-    if (lengthError) {
-      setReserveError(lengthError);
-      toast.error("Invalid username", { description: lengthError });
-      return;
-    }
-
-    setReserveLoading(true);
-    try {
-      const { taken } = await isUsernameTaken(cleanUser);
-      if (taken) {
-        const message = "Username already taken. Choose another name.";
-        setReserveError(message);
-        toast.error("Username already taken", {
-          description: `${profileDisplayPath(cleanUser)} is already in use.`,
-        });
-        return;
-      }
-
-      navigate({
-        to: "/auth",
-        search: { mode: "signup", username: cleanUser },
-      });
-    } catch {
-      const message = "Could not verify username. Please try again.";
-      setReserveError(message);
-      toast.error("Error verifying username");
-    } finally {
-      setReserveLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen text-foreground">
       <SiteNavbar>
@@ -90,84 +35,7 @@ function Index() {
         <Link to="/planos" className="hover:text-white">Plans</Link>
       </SiteNavbar>
 
-      {/* HERO */}
-      <section
-        id="inicio"
-        className="relative mx-auto flex max-w-7xl flex-col justify-center px-6 pt-10 pb-20 sm:pt-14 sm:pb-24 lg:min-h-[calc(100vh-5.5rem)] lg:pt-20 lg:pb-28"
-      >
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1.15fr] lg:gap-14">
-          <div className="lg:pt-4">
-            <h1 className="text-[2.75rem] font-black leading-[0.92] tracking-tight sm:text-6xl lg:text-[5.25rem] lg:leading-[0.9] xl:text-[5.75rem]">
-              Your world.<br />
-              <span
-                className="text-glow bg-clip-text text-transparent"
-                style={{ backgroundImage: "linear-gradient(90deg, oklch(0.7 0.28 0), oklch(0.6 0.27 10))" }}
-              >Your profile.</span><br />
-              Your way.
-            </h1>
-            <p className="mt-7 max-w-lg text-base text-white/60 sm:text-lg lg:mt-8">
-              Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place.
-            </p>
-            <div className="mt-8 max-w-lg lg:mt-10">
-              {isLoggedIn ? (
-                <Link
-                  to="/dashboard"
-                  className="glow-pink inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-semibold text-white"
-                  style={{ background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" }}
-                >
-                  Go to Dashboard <ArrowRight className="h-4 w-4" />
-                </Link>
-              ) : (
-                <>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      void handleReserve();
-                    }}
-                    className="flex items-center overflow-hidden rounded-full border border-white/15 bg-white/5 p-1.5 backdrop-blur"
-                    style={{ boxShadow: "0 0 30px oklch(0.65 0.28 0 / 0.15)" }}
-                  >
-                    <span className="pl-4 pr-1 text-sm font-semibold text-white/70 select-none">
-                      {SITE_PROFILE_PREFIX}
-                    </span>
-                    <input
-                      type="text"
-                      value={reserveUsername}
-                      onChange={(e) => {
-                        setReserveUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""));
-                        setReserveError(null);
-                      }}
-                      placeholder="yourname"
-                      maxLength={MAX_USERNAME_LENGTH}
-                      className="flex-1 bg-transparent py-2 text-sm text-white placeholder:text-white/30 focus:outline-none"
-                    />
-                    <button
-                      type="submit"
-                      disabled={reserveLoading}
-                      className="glow-pink flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-                      style={{ background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" }}
-                    >
-                      {reserveLoading ? "Checking..." : "Claim"} <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </form>
-                  {reserveError ? (
-                    <p className="mt-2 pl-4 text-[11px] text-red-400" role="alert">
-                      {reserveError}
-                    </p>
-                  ) : (
-                    <p className="mt-2 pl-4 text-[11px] text-white/40">
-                      Claim your unique link before someone else does.
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-            <HomeSocialProof />
-          </div>
-
-          <HomeHeroVisual />
-        </div>
-      </section>
+      <HomeHeroSection />
 
       {/* INTEGRATIONS BAR */}
       <section className="mx-auto max-w-7xl px-6 pt-4 pb-6 lg:pt-8 lg:pb-10">
