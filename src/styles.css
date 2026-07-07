@@ -274,19 +274,20 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   transform-style: preserve-3d;
 }
 
-/* Blend suave no chão do palco — complementa o clip de cada celular */
+/* Blend suave no chão do palco — sombra geral abaixo dos celulares */
 .home-phone-stage-fade {
   position: absolute;
   right: -10%;
-  bottom: calc(var(--phone-h) * -0.3);
+  bottom: calc(var(--phone-h) * -0.28);
   left: -10%;
   z-index: 60;
-  height: calc(var(--phone-h) * 0.36);
+  height: calc(var(--phone-h) * 0.44);
   pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(11, 11, 13, 0.55) 42%,
+    rgba(11, 11, 13, 0.35) 28%,
+    rgba(11, 11, 13, 0.88) 68%,
     var(--biosy-bg-base) 100%
   );
 }
@@ -364,11 +365,39 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-phone-card-3d {
+  --phone-cut: 26%;
   position: relative;
   transform-style: preserve-3d;
   filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.45));
-  /* Corta só a base — acompanha o 3D, sem editar PNG */
-  clip-path: inset(-4% -10% 26% -10%);
+}
+
+.home-phone-card-clip {
+  position: relative;
+  clip-path: inset(-4% -10% var(--phone-cut) -10%);
+}
+
+/* Sombra na linha do corte */
+.home-phone-cut-shadow {
+  pointer-events: none;
+  position: absolute;
+  right: 6%;
+  bottom: calc(var(--phone-cut) - 3%);
+  left: 6%;
+  z-index: 4;
+  height: 2rem;
+  background: radial-gradient(
+    ellipse 115% 100% at 50% 0%,
+    rgba(0, 0, 0, 0.62) 0%,
+    rgba(0, 0, 0, 0.28) 42%,
+    transparent 78%
+  );
+  filter: blur(10px);
+  opacity: 0.9;
+}
+
+.home-phone-preview.is-hovered .home-phone-cut-shadow {
+  opacity: 1;
+  filter: blur(12px);
 }
 
 .home-phone-shadow-plate {
@@ -455,16 +484,17 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-phone-bottom-fade {
   pointer-events: none;
   position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  right: -3%;
+  bottom: calc(var(--phone-cut) - 6%);
+  left: -3%;
   z-index: 5;
-  height: 38%;
-  border-radius: 0 0 1.9rem 1.9rem;
+  height: 34%;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(11, 11, 13, 0.65) 45%,
+    rgba(11, 11, 13, 0.3) 16%,
+    rgba(11, 11, 13, 0.72) 48%,
+    rgba(11, 11, 13, 0.95) 76%,
     var(--biosy-bg-base) 100%
   );
 }
