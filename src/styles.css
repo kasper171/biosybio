@@ -264,9 +264,9 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-phone-stage {
   --phone-w: 198px;
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
-  --phone-visible: calc(var(--phone-h) * 0.78);
+  --phone-visible: calc(var(--phone-h) * 0.76);
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   height: var(--phone-visible);
   padding-bottom: 0;
   perspective: 1280px;
@@ -274,20 +274,20 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   transform-style: preserve-3d;
 }
 
-.home-phone-stage::after {
-  content: "";
+.home-phone-stage-fade {
   position: absolute;
   right: -8%;
   bottom: 0;
   left: -8%;
-  z-index: 30;
-  height: 42%;
+  z-index: 50;
+  height: 46%;
   pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    transparent 38%,
-    rgba(11, 11, 13, 0.7) 72%,
+    transparent 22%,
+    rgba(11, 11, 13, 0.82) 62%,
+    var(--biosy-bg-base) 92%,
     var(--biosy-bg-base) 100%
   );
 }
@@ -438,8 +438,8 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   overflow: hidden;
   border-radius: 1.85rem;
   transform-style: preserve-3d;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
 }
 
 .home-phone-shot {
@@ -457,13 +457,13 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   bottom: 0;
   left: 0;
   z-index: 4;
-  height: 28%;
+  height: 36%;
   border-radius: 0 0 1.9rem 1.9rem;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    transparent 42%,
-    rgba(11, 11, 13, 0.55) 72%,
+    transparent 28%,
+    rgba(11, 11, 13, 0.72) 68%,
     var(--biosy-bg-base) 100%
   );
 }
