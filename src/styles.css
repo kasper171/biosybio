@@ -240,15 +240,15 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-phone-fan-1 .home-phone-motion {
-    transform: translate3d(-38px, 0, -18px) rotateX(2deg) rotateY(0deg) rotateZ(-8deg) scale(1.02);
+    transform: translate3d(0, 0, -14px) rotateX(3deg) rotateY(-5deg) rotateZ(-14deg) scale(0.95);
   }
 
   .home-phone-fan-2 .home-phone-motion {
-    transform: translate3d(0, 40px, 8px) rotateX(2deg) rotateY(0deg) rotateZ(0deg) scale(1);
+    transform: translate3d(8px, 52px, 8px) rotateX(3deg) rotateY(0deg) rotateZ(8deg) scale(1);
   }
 
   .home-phone-fan-3 .home-phone-motion {
-    transform: translate3d(38px, 80px, 16px) rotateX(2deg) rotateY(0deg) rotateZ(8deg) scale(1.02);
+    transform: translate3d(12px, 104px, 18px) rotateX(3deg) rotateY(5deg) rotateZ(18deg) scale(1.02);
   }
 
   .home-phone-motion {
@@ -442,12 +442,12 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 }
 
-/* Hero — palco stack premium */
+/* Hero — leque diagonal (referência) */
 .home-hero-stage {
   --phone-w: 228px;
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
-  --phone-stack-y: 88px;
-  --fan-span: calc(var(--phone-w) + 96px);
+  --phone-stack-y: 112px;
+  --fan-span: calc(var(--phone-w) * 1.92);
   min-height: 0;
   padding-top: 12px;
   overflow: visible;
@@ -470,16 +470,16 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 @media (min-width: 640px) {
   .home-hero-stage {
     --phone-w: 271px;
-    --phone-stack-y: 96px;
-    --fan-span: calc(var(--phone-w) + 104px);
+    --phone-stack-y: 120px;
+    --fan-span: calc(var(--phone-w) * 1.94);
   }
 }
 
 @media (min-width: 1024px) {
   .home-hero-stage {
     --phone-w: 324px;
-    --phone-stack-y: 104px;
-    --fan-span: calc(var(--phone-w) + 112px);
+    --phone-stack-y: 128px;
+    --fan-span: calc(var(--phone-w) * 1.96);
   }
 
   .home-phone-stage {
@@ -487,26 +487,26 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 }
 
-/* Hero — stack premium em leque */
+/* Hero — leque espalhado */
 .home-phone-fan {
   position: relative;
   width: var(--fan-span);
   height: calc(var(--phone-h) + var(--phone-stack-y));
   flex-shrink: 0;
   overflow: visible;
-  transform: translate(4%, -5%);
+  transform: translate(2%, -5%);
   transform-style: preserve-3d;
 }
 
 @media (min-width: 640px) {
   .home-phone-fan {
-    transform: translate(5%, -6%);
+    transform: translate(3%, -6%);
   }
 }
 
 @media (min-width: 1024px) {
   .home-phone-fan {
-    transform: translate(6%, -7%);
+    transform: translate(4%, -7%);
   }
 }
 
@@ -517,7 +517,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   isolation: isolate;
 }
 
-/* Stack: topo → meio → base (z-index cresce com profundidade) */
+/* Leque: esquerda atrás → direita na frente */
 .home-phone-preview.home-phone-fan-1 {
   z-index: 10;
 }
@@ -535,7 +535,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-phone-motion {
-  transform-origin: 50% 52%;
+  transform-origin: 50% 38%;
   transform-style: preserve-3d;
   will-change: transform, opacity;
 }
@@ -686,11 +686,36 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   object-position: top;
 }
 
-.home-phone-preview.home-phone-fan-1,
-.home-phone-preview.home-phone-fan-2,
-.home-phone-preview.home-phone-fan-3 {
-  left: 50%;
-  margin-left: calc(var(--phone-w) * -0.5);
+.home-phone-fan-1 {
+  left: 0;
+}
+
+.home-phone-fan-2 {
+  left: calc(var(--phone-w) * 0.38);
+}
+
+.home-phone-fan-3 {
+  left: calc(var(--phone-w) * 0.76);
+}
+
+@media (min-width: 640px) {
+  .home-phone-fan-2 {
+    left: calc(var(--phone-w) * 0.4);
+  }
+
+  .home-phone-fan-3 {
+    left: calc(var(--phone-w) * 0.8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-phone-fan-2 {
+    left: calc(var(--phone-w) * 0.42);
+  }
+
+  .home-phone-fan-3 {
+    left: calc(var(--phone-w) * 0.84);
+  }
 }
 
 .home-phone-fan-1 .home-phone-motion,

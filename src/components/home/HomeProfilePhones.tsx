@@ -45,11 +45,11 @@ type Pose = {
   scale: number;
 };
 
-/** Stack premium — leque vertical com inclinação (offsets em px) */
+/** Leque diagonal — topo-esquerda → baixo-direita (como referência) */
 const PHONE_POSE: Record<Layer, Pose> = {
-  "home-phone-fan-1": { x: -38, y: 0, z: -18, rotateX: 2, rotateY: 0, rotateZ: -8, scale: 1.02 },
-  "home-phone-fan-2": { x: 0, y: 40, z: 8, rotateX: 2, rotateY: 0, rotateZ: 0, scale: 1 },
-  "home-phone-fan-3": { x: 38, y: 80, z: 16, rotateX: 2, rotateY: 0, rotateZ: 8, scale: 1.02 },
+  "home-phone-fan-1": { x: 0, y: 0, z: -14, rotateX: 3, rotateY: -5, rotateZ: -14, scale: 0.95 },
+  "home-phone-fan-2": { x: 8, y: 52, z: 8, rotateX: 3, rotateY: 0, rotateZ: 8, scale: 1 },
+  "home-phone-fan-3": { x: 12, y: 104, z: 18, rotateX: 3, rotateY: 5, rotateZ: 18, scale: 1.02 },
 };
 
 /** Pintura DOM: fundo → frente (evita z-index vs 3D) */
@@ -70,9 +70,9 @@ const ENTRANCE_DELAY_MS: Record<Layer, number> = {
 };
 
 const ENTRANCE_START_ANGLES: Record<Layer, { rotateY: number; rotateZ: number }> = {
-  "home-phone-fan-1": { rotateY: 0, rotateZ: -12 },
-  "home-phone-fan-2": { rotateY: 0, rotateZ: 0 },
-  "home-phone-fan-3": { rotateY: 0, rotateZ: 12 },
+  "home-phone-fan-1": { rotateY: -8, rotateZ: -20 },
+  "home-phone-fan-2": { rotateY: 0, rotateZ: 4 },
+  "home-phone-fan-3": { rotateY: 8, rotateZ: 24 },
 };
 
 type Pointer = { x: number; y: number };
