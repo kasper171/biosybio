@@ -40,6 +40,7 @@
   --biosy-bg-base: #121318;
   --biosy-bg-raised: #17171d;
   --biosy-bg-surface: #1b1b22;
+  --biosy-hero-mask: #0a0a0a;
   --background: var(--biosy-bg-base);
   --foreground: oklch(0.98 0.005 0);
   --card: var(--biosy-bg-surface);
@@ -256,7 +257,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 /* Hero — ambiente, entrada, CTA e parallax */
 .home-hero {
-  overflow: hidden;
+  overflow: visible;
   background: var(--biosy-bg-base);
 }
 
@@ -274,6 +275,11 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-hero__visual {
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
+}
+
+.home-hero__visual-wrap,
+.home-hero__visual {
+  overflow: visible;
 }
 
 .home-hero-entrance {
@@ -441,8 +447,8 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   --phone-h: calc(var(--phone-w) * 19.2 / 9);
   min-height: 0;
   padding-top: 12px;
+  padding-right: clamp(0px, 3vw, 28px);
   overflow: visible;
-  isolation: isolate;
 }
 
 .home-phone-stage {
@@ -455,21 +461,21 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   transform-style: preserve-3d;
 }
 
-/* Blend suave no chão do palco — sombra geral abaixo dos celulares */
+/* Chão do palco — só abaixo dos celulares, atrás do leque */
 .home-phone-stage-fade {
   position: absolute;
-  right: -10%;
-  bottom: calc(var(--phone-h) * -0.28);
-  left: -10%;
-  z-index: 60;
-  height: calc(var(--phone-h) * 0.44);
+  top: calc(100% - var(--phone-h) * 0.14);
+  right: -8%;
+  left: -8%;
+  z-index: 0;
+  height: calc(var(--phone-h) * 0.38);
   pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    color-mix(in srgb, var(--biosy-bg-base) 28%, transparent) 32%,
-    color-mix(in srgb, var(--biosy-bg-base) 72%, transparent) 62%,
-    var(--biosy-bg-base) 88%
+    rgba(8, 8, 8, 0.42) 38%,
+    rgba(6, 6, 6, 0.82) 72%,
+    var(--biosy-hero-mask) 100%
   );
 }
 
@@ -495,7 +501,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   top: 0;
   right: 0;
   left: 0;
-  z-index: 1;
+  z-index: 2;
   height: var(--phone-h);
   overflow: visible;
   transform-style: preserve-3d;
@@ -669,27 +675,27 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   bottom: calc(var(--phone-cut) - 6%);
   left: -3%;
   z-index: 5;
-  height: 34%;
+  height: 36%;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    color-mix(in srgb, var(--biosy-bg-base) 22%, transparent) 18%,
-    color-mix(in srgb, var(--biosy-bg-base) 58%, transparent) 46%,
-    color-mix(in srgb, var(--biosy-bg-base) 86%, transparent) 72%,
+    rgba(0, 0, 0, 0.18) 20%,
+    rgba(0, 0, 0, 0.48) 46%,
+    rgba(0, 0, 0, 0.78) 72%,
     var(--biosy-bg-base) 100%
   );
 }
 
 .home-phone-fan-1 {
-  left: -6%;
+  left: -8%;
 }
 
 .home-phone-fan-2 {
-  left: 28%;
+  left: 26%;
 }
 
 .home-phone-fan-3 {
-  left: 56%;
+  left: 50%;
 }
 
 .home-phone-fan-1 .home-phone-motion,
@@ -700,6 +706,20 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 @media (min-width: 640px) {
   .home-phone-fan-1 {
+    left: -6%;
+  }
+
+  .home-phone-fan-2 {
+    left: 28%;
+  }
+
+  .home-phone-fan-3 {
+    left: 52%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-phone-fan-1 {
     left: -4%;
   }
 
@@ -708,21 +728,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-phone-fan-3 {
-    left: 58%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .home-phone-fan-1 {
-    left: -2%;
-  }
-
-  .home-phone-fan-2 {
-    left: 32%;
-  }
-
-  .home-phone-fan-3 {
-    left: 60%;
+    left: 54%;
   }
 }
 

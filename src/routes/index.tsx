@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="min-h-screen text-foreground">
+    <div className="min-h-screen overflow-x-hidden text-foreground">
       <SiteNavbar>
         <a href="#inicio" className="hover:text-white">Home</a>
         <a href="#recursos" className="hover:text-white">Features</a>
