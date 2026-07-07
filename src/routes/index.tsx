@@ -12,6 +12,7 @@ import { HomeHeroSection } from "@/components/home/HomeHeroSection";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import { SiteNavbar } from "@/components/SiteNavbar";
 import { SiteLogo } from "@/components/SiteLogo";
+import { SiteAuthButtons } from "@/components/SiteAuthButtons";
 
 export const Route = createFileRoute("/")({
   head: () => ({
