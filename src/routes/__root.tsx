@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { reportClientError } from "../lib/report-client-error";
+import { SITE_ORIGIN } from "@/lib/site";
 
 function NotFoundComponent() {
   return (
@@ -84,6 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Biosy — Seu mundo. Seu perfil. Seu jeito." },
       { property: "og:description", content: "Crie um perfil único com links, músicas, álbuns, cards, redes sociais e muito mais. Tudo em um só lugar." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_ORIGIN },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Biosy — Seu mundo. Seu perfil. Seu jeito." },
       { name: "twitter:description", content: "Crie um perfil único com links, músicas, álbuns, cards, redes sociais e muito mais. Tudo em um só lugar." },

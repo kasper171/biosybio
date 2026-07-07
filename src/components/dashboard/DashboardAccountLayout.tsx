@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/profile-storage";
+import { profilePublicUrl } from "@/lib/site";
 import {
   DASHBOARD_TEXT_SCALE_DEFAULT,
   getDashboardTextScale,
@@ -140,7 +141,7 @@ export function DashboardAccountLayout({
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/${profile.username}`;
+    const url = profilePublicUrl(profile.username);
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copiado!");

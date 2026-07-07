@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice, isExistingEmailSignup } from "@/lib/auth-errors";
+import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
 import { cleanUsername, isUsernameTaken } from "@/lib/username";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -106,7 +107,7 @@ function AuthPage() {
         if (taken) {
           notify({
             title: "Usuário já existente",
-            description: `biosy.bio/${cleanUser} já está em uso. Escolha outro.`,
+            description: `${profileDisplayPath(cleanUser)} já está em uso. Escolha outro.`,
           });
           return;
         }
@@ -176,7 +177,7 @@ function AuthPage() {
               <div>
                 <label className="mb-1 block text-xs text-white/60">Nome de usuário</label>
                 <div className="flex items-center rounded-lg border border-white/15 bg-white/5 px-3">
-                  <span className="text-sm text-white/40">biosy.bio/</span>
+                  <span className="text-sm text-white/40">{SITE_PROFILE_PREFIX}</span>
                   <input
                     type="text"
                     value={username}

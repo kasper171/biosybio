@@ -56,9 +56,10 @@ Copie os valores do `.env` local ou do dashboard Supabase → **Settings → API
 
 No Supabase → **Authentication → URL Configuration**:
 
-- **Site URL:** `https://seu-dominio.vercel.app`
+- **Site URL:** `https://www.byosy.bio`
 - **Redirect URLs:** inclua  
-  `https://seu-dominio.vercel.app/**`  
+  `https://www.byosy.bio/**`  
+  `https://byosy.bio/**` (redireciona para www na Vercel)  
   `http://localhost:5173/**` (dev)
 
 ### 5. Storage (música, avatars, etc.)
@@ -71,9 +72,11 @@ Bucket `profile-assets` já usa signed URLs do Supabase — funciona em qualquer
 2. O script `prebuild` roda `badges:sync` e `molduras:sync` antes do build.
 3. Confira logs: build deve terminar com preset Vercel/Nitro.
 
-### 7. Domínio customizado (opcional)
+### 7. Domínio customizado
 
-Vercel → **Domains** → adicione seu domínio e atualize de novo as URLs no Supabase.
+Vercel → **Domains** → adicione **`byosy.bio`** e **`www.byosy.bio`** (ambos apontando para o projeto).
+
+O `vercel.json` já redireciona `byosy.bio` → `https://www.byosy.bio`. Depois de configurar o DNS, atualize as URLs no Supabase (passo 4).
 
 ## Testar build local (como na Vercel)
 

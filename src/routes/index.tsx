@@ -15,6 +15,7 @@ import { HomeHeroVisual } from "@/components/home/HomeHeroVisual";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import { SiteAuthButtons } from "@/components/SiteAuthButtons";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
 import { cleanUsername, isUsernameTaken } from "@/lib/username";
 
 export const Route = createFileRoute("/")({
@@ -69,7 +70,7 @@ function Index() {
         const message = "Usuário já existente. Escolha outro nome.";
         setReserveError(message);
         toast.error("Usuário já existente", {
-          description: `biosy.bio/${cleanUser} já está em uso.`,
+          description: `${profileDisplayPath(cleanUser)} já está em uso.`,
         });
         return;
       }
@@ -143,7 +144,7 @@ function Index() {
                     style={{ boxShadow: "0 0 30px oklch(0.65 0.28 0 / 0.15)" }}
                   >
                     <span className="pl-4 pr-1 text-sm font-semibold text-white/70 select-none">
-                      byosy.bio/
+                      {SITE_PROFILE_PREFIX}
                     </span>
                     <input
                       type="text"

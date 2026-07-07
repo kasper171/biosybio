@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Profile } from "@/lib/profile-storage";
+import { profilePublicUrl } from "@/lib/site";
 import { profileHasFullAccess } from "@/lib/profile-roles";
 import {
   getProfileCompletionPercent,
@@ -78,7 +79,7 @@ export function ContaOverviewPanel({ profile }: Props) {
   };
 
   const copyLink = async () => {
-    const url = `${window.location.origin}/${profile.username}`;
+    const url = profilePublicUrl(profile.username);
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copiado!");
