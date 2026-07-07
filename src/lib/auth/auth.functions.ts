@@ -63,7 +63,8 @@ export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: data.email.trim(),
       password: data.password,
-      email_confirm: false,
+      // Com confirmação de email desligada no Supabase, o usuário deve entrar direto.
+      email_confirm: true,
       user_metadata: {
         username: cleanUser,
         display_name: cleanUser,
@@ -94,10 +95,9 @@ export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
       };
     }
 
-    const hasSession = Boolean(created.user?.email_confirmed_at);
     return {
       ok: true as const,
-      needsEmailConfirmation: !hasSession,
+      needsEmailConfirmation: false,
       userId: created.user?.id ?? null,
     };
   });
