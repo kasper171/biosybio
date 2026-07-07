@@ -84,7 +84,7 @@ export function ProfilePageContent({
 
   const hotelLayout = getHotelCardLayoutFromProfile(profile);
   const hotelConnections = listHotelConnections(profile);
-  const mainCardDims = getMainCardDimensions(profile);
+  const mainCardDims = getMainCardDimensions(profile, { blocks });
   const hasHotel = hotelConnections.length > 0;
   const hotelInside = hasHotel && hotelLayout.placement === "inside";
   const hotelOutside = hasHotel && hotelLayout.placement === "outside";
@@ -187,6 +187,7 @@ export function ProfilePageContent({
     <ProfileCard
       profile={profile}
       enforceCardHeight={hotelOutsideBeside}
+      contentBlocks={blocks}
       animateNameText={animate && profile.text_typing_name_effect !== false}
       animateBioText={animate && profile.text_typing_bio_effect !== false}
       animationSeed={animKey}

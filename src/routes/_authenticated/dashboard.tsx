@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -26,6 +26,11 @@ import type { TextAnimationId } from "@/lib/text-animations";
 import { SaveTemplateDialog } from "@/components/templates/SaveTemplateDialog";
 import { BlocosPanel } from "@/components/dashboard/BlocosPanel";
 import { useProfileBlocks } from "@/hooks/useProfileBlocks";
+import {
+  CARD_HEIGHT_SLIDER_MAX,
+  clampCardHeight,
+  estimateMinCardHeight,
+} from "@/lib/card-min-height";
 import { syncLivePublicTemplate, ensureLivePublicTemplateIfEnabled } from "@/lib/profile-template";
 import {
   DashboardAccountLayout,
@@ -128,6 +133,19 @@ function Dashboard() {
   const musicRef = useRef<HTMLInputElement>(null);
   const musicArtRef = useRef<HTMLInputElement>(null);
   const { blocks, setBlocks } = useProfileBlocks(profile?.id);
+
+  const minCardHeight = useMemo(
+    () => (profile ? estimateMinCardHeight(profile, { blocks }) : DEFAULT_CARD_HEIGHT),
+    [profile, blocks],
+  );
+
+  useEffect(() => {
+    if (!profile) return;
+    const current = profile.card_height ?? DEFAULT_CARD_HEIGHT;
+    if (current < minCardHeight) {
+      setProfile((prev) => (prev ? { ...prev, card_height: minCardHeight } : prev));
+    }
+  }, [minCardHeight, profile?.card_height, profile?.id]);
 
   useEffect(() => {
     setTextScale(getDashboardTextScale());
@@ -530,7 +548,14 @@ function Dashboard() {
                   onBlocksChange={setBlocks}
                 />
               )}
-              {openPanel === "aparencia" && <AparenciaPanel profile={profile} update={update} />}
+              {openPanel === "aparencia" && profile && (
+                <AparenciaPanel
+                  profile={profile}
+                  update={update}
+                  blocks={blocks}
+                  minCardHeight={minCardHeight}
+                />
+              )}
               {openPanel === "molduras" && <MoldurasPanel profile={profile} update={update} />}
               {openPanel === "efeitos" && <EfeitosPanel profile={profile} update={update} />}
               {openPanel === "colors" && <ColorsPanel profile={profile} update={update} />}
@@ -1121,9 +1146,20 @@ function LayoutPickerField({ value, onChange }: { value: string; onChange: (v: s
   );
 }
 
-function AparenciaPanel({ profile, update }: { profile: Profile; update: <K extends keyof Profile>(k: K, v: Profile[K]) => void }) {
+function AparenciaPanel({
+  profile,
+  update,
+  blocks,
+  minCardHeight,
+}: {
+  profile: Profile;
+  update: <K extends keyof Profile>(k: K, v: Profile[K]) => void;
+  blocks: import("@/lib/profile-blocks").ProfileBlock[];
+  minCardHeight: number;
+}) {
   const borderStyle = profile.card_border_style ?? "solid";
   const isCustomBorder = borderStyle !== "solid";
+  const cardHeight = clampCardHeight(profile, profile.card_height ?? DEFAULT_CARD_HEIGHT, blocks);
 
   return (
     <div className="space-y-4">
@@ -1182,7 +1218,18 @@ function AparenciaPanel({ profile, update }: { profile: Profile; update: <K exte
       </div>
 
       <SliderField label="Largura do card" min={280} max={1200} step={10} value={profile.card_width ?? DEFAULT_CARD_WIDTH} onChange={(v) => update("card_width", v)} display={`${profile.card_width ?? DEFAULT_CARD_WIDTH}px`} />
-      <SliderField label="Altura do card" min={300} max={800} step={10} value={profile.card_height ?? DEFAULT_CARD_HEIGHT} onChange={(v) => update("card_height", v)} display={`${profile.card_height ?? DEFAULT_CARD_HEIGHT}px`} />
+      <SliderField
+        label="Altura do card"
+        min={minCardHeight}
+        max={CARD_HEIGHT_SLIDER_MAX}
+        step={10}
+        value={cardHeight}
+        onChange={(v) => update("card_height", clampCardHeight(profile, v, blocks))}
+        display={`${cardHeight}px`}
+      />
+      <p className="text-[11px] leading-relaxed text-white/40">
+        Altura mínima: {minCardHeight}px — calculada pelo conteúdo do card (bio, redes, Discord, hotel, blocos internos).
+      </p>
 
       <div className="border-t border-white/10 pt-4">
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">Efeitos</h3>
