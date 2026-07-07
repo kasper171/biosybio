@@ -34,7 +34,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
       return (
         <Link
           to="/dashboard"
-          className={cn(gradientBtn, "px-6 py-3", className)}
+          className={cn(gradientBtn, "inline-flex px-6 py-3", className)}
           style={gradientStyle}
         >
           Go to Dashboard <ArrowRight className="h-4 w-4" />
@@ -67,7 +67,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
       <Link
         to="/auth"
         search={{ mode: "signup" as const }}
-        className={cn(gradientBtn, "px-6 py-3", className)}
+        className={cn(gradientBtn, "inline-flex px-6 py-3", className)}
         style={gradientStyle}
       >
         Create my profile for free <ArrowRight className="h-4 w-4" />

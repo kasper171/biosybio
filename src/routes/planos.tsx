@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, Check, Crown, Gem, Heart, Sparkles } from "lucide-react";
-import logoUrl from "@/assets/logo.png";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
-import { SiteAuthButtons } from "@/components/SiteAuthButtons";
+import { SiteNavbar } from "@/components/SiteNavbar";
 import { BADGE_PRODUCTS, PLANS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
@@ -42,28 +41,13 @@ const badgeIcons = {
   verified: BadgeCheck,
 } as const;
 
-function Logo({ size = 36 }: { size?: number }) {
-  return (
-    <Link to="/" className="flex items-center gap-2">
-      <img
-        src={logoUrl}
-        alt="Biosy"
-        width={size}
-        height={size}
-        style={{ filter: "drop-shadow(0 0 12px oklch(0.65 0.28 0 / 0.55))" }}
-      />
-      <span className="text-xl font-bold tracking-tight">Biosy</span>
-    </Link>
-  );
-}
-
 function PlanosPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <Logo />
-        <SiteAuthButtons />
-      </header>
+      <SiteNavbar>
+        <Link to="/" className="hover:text-white">Home</Link>
+        <Link to="/planos" className="text-white">Plans</Link>
+      </SiteNavbar>
 
       <main className="mx-auto max-w-7xl px-6 pb-20 pt-6">
         <div className="mx-auto max-w-2xl text-center">

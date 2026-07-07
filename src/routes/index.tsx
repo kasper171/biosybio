@@ -5,7 +5,7 @@ import {
   Link2, Image as ImageIcon, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
-import logoUrl from "@/assets/logo.png";
+
 import ctaBanner from "@/assets/cta-banner.png";
 import { LanyardCard } from "@/components/LanyardCard";
 import { HomeStatsSection } from "@/components/home/HomeStatsSection";
@@ -13,6 +13,7 @@ import { HomeCreatorsCarousel } from "@/components/home/HomeCreatorsCarousel";
 import { HomeSocialProof } from "@/components/home/HomeSocialProof";
 import { HomeHeroVisual } from "@/components/home/HomeHeroVisual";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
+import { SiteNavbar } from "@/components/SiteNavbar";
 import { SiteAuthButtons } from "@/components/SiteAuthButtons";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
@@ -35,21 +36,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
-
-function Logo({ size = 36 }: { size?: number }) {
-  return (
-    <div className="flex items-center gap-2">
-      <img
-        src={logoUrl}
-        alt="Biosy"
-        width={size}
-        height={size}
-        style={{ filter: "drop-shadow(0 0 12px oklch(0.65 0.28 0 / 0.55))" }}
-      />
-      <span className="text-xl font-bold tracking-tight">Biosy</span>
-    </div>
-  );
-}
 
 function Index() {
   const navigate = useNavigate();
@@ -96,19 +82,12 @@ function Index() {
 
   return (
     <div className="min-h-screen text-foreground">
-      {/* HEADER */}
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <Logo />
-        <nav className="hidden items-center gap-8 text-sm text-white/70 lg:flex">
-          <a href="#inicio" className="hover:text-white">Home</a>
-          <a href="#recursos" className="hover:text-white">Features</a>
-          <a href="#creators" className="hover:text-white">Creators</a>
-          <Link to="/planos" className="hover:text-white">Plans</Link>
-        </nav>
-        <div className="flex items-center gap-3">
-          <SiteAuthButtons />
-        </div>
-      </header>
+      <SiteNavbar>
+        <a href="#inicio" className="hover:text-white">Home</a>
+        <a href="#recursos" className="hover:text-white">Features</a>
+        <a href="#creators" className="hover:text-white">Creators</a>
+        <Link to="/planos" className="hover:text-white">Plans</Link>
+      </SiteNavbar>
 
       {/* HERO */}
       <section
@@ -279,7 +258,7 @@ function Index() {
           <img src={ctaBanner} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, oklch(0.15 0.1 5 / 0.95) 0%, oklch(0.15 0.1 5 / 0.6) 50%, transparent 100%)" }} />
           <div className="relative grid gap-6 p-12 lg:grid-cols-2">
-            <div>
+            <div className="flex flex-col gap-5">
               <HomeScrollReveal variant="up">
                 <h2 className="text-4xl font-black leading-tight">
                   <span className="bg-clip-text text-transparent"
@@ -289,9 +268,11 @@ function Index() {
                 </h2>
               </HomeScrollReveal>
               <HomeScrollReveal variant="up" delay={80}>
-                <p className="mt-4 max-w-md text-sm text-white/70">Join thousands of creators and show your world to the world.</p>
+                <p className="max-w-md text-sm text-white/70">Join thousands of creators and show your world to the world.</p>
               </HomeScrollReveal>
-              <SiteAuthButtons variant="cta" />
+              <HomeScrollReveal variant="up" delay={160}>
+                <SiteAuthButtons variant="cta" />
+              </HomeScrollReveal>
             </div>
           </div>
         </div>
