@@ -242,27 +242,19 @@ function CardLayoutContent({
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden text-left">
         {overlayBadges}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex items-start gap-4 px-6 pt-6 pb-3">
-            <div
-              className="flex shrink-0 flex-col items-center gap-3.5"
-              style={{ width: avatarSize, maxWidth: avatarSize }}
-            >
+          <div className="flex min-h-0 flex-1 items-start gap-4 overflow-hidden px-6 pt-4 pb-2">
+            <div className="flex shrink-0 flex-col items-center" style={{ width: avatarSize, maxWidth: avatarSize }}>
               <AvatarBlock
                 profile={profile}
                 size={avatarSize}
                 ringWidth={avatarRingWidth}
                 ringColor={avatarRingColor}
               />
-              {socialIcons && (
-                <div className="flex w-full flex-wrap items-center justify-center gap-2.5">
-                  {socialIcons}
-                </div>
-              )}
             </div>
-            <div className="flex min-w-0 flex-1 flex-col items-start text-left">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col items-start overflow-hidden text-left">
               <h3
                 className={cn(
-                  "w-full text-left text-xl font-bold leading-tight",
+                  "w-full shrink-0 text-left text-xl font-bold leading-tight",
                   hasNameFx ? "py-2" : "truncate",
                 )}
                 style={titleBase}
@@ -277,9 +269,9 @@ function CardLayoutContent({
                   particleColor={nameParticleColor}
                 />
               </h3>
-              <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5" />
+              <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5 shrink-0" />
               {profile.show_username !== false && (
-                <p className="mt-1 text-left text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
+                <p className="mt-1 shrink-0 text-left text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
                   {fullUsername}
                 </p>
               )}
@@ -288,14 +280,22 @@ function CardLayoutContent({
                 typedBio={typedBio}
                 fullBio={fullBio}
                 textEffect={bioTextEffect}
-                className={cn("mt-2 text-left text-xs", hasBioFx && "py-2")}
+                className={cn(
+                  "mt-2 min-h-0 w-full overflow-hidden text-left text-xs",
+                  hasBioFx ? "py-2" : "line-clamp-3",
+                )}
                 bodyStyle={{ ...bodyBase, ...bodyGlow }}
                 accentColor={bodyAccent}
                 particleColor={bioParticleColor}
               />
             </div>
           </div>
-          {children && <div className="px-6 pb-3 text-left">{children}</div>}
+          {socialIcons && (
+            <div className="flex w-full shrink-0 flex-nowrap items-center justify-center gap-2 overflow-x-auto px-6 pb-2">
+              {socialIcons}
+            </div>
+          )}
+          {children && <div className="shrink-0 px-6 pb-2 text-left">{children}</div>}
         </div>
         {footer && (
           <CardFooter dividerStyle={dividerStyle}>
@@ -358,7 +358,7 @@ function CardLayoutContent({
             />
           </div>
           {socialIcons && (
-            <div className="mt-3 flex w-full max-w-full shrink-0 flex-wrap justify-center gap-2.5">
+            <div className="mt-3 flex w-full max-w-full shrink-0 flex-nowrap items-center justify-center gap-2 overflow-x-auto">
               {socialIcons}
             </div>
           )}
@@ -432,7 +432,7 @@ function CardLayoutContent({
             />
           </div>
           {socialIcons && (
-            <div className="mt-3 flex shrink-0 flex-wrap justify-center gap-2.5">{socialIcons}</div>
+            <div className="mt-3 flex shrink-0 flex-nowrap justify-center gap-2 overflow-x-auto">{socialIcons}</div>
           )}
           {children && <div className="mt-3 w-full shrink-0">{children}</div>}
         </div>

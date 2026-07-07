@@ -62,16 +62,18 @@ function estimateFooterHeight(profile: Profile): number {
   return inner + 33;
 }
 
-function estimateSocialRowsHeight(profile: Profile, cardWidth: number, inAlignedColumn: boolean): number {
+function estimateSocialRowsHeight(profile: Profile, cardWidth: number): number {
   const count = countSocials(profile);
   if (!count) return 0;
 
   const icon = profile.social_icon_style === "logo" ? 36 : 44;
-  const gap = 10;
-  const colWidth = inAlignedColumn ? Math.min(128, Math.round(cardWidth * 0.24)) : cardWidth - 48;
-  const perRow = Math.max(1, Math.floor(colWidth / (icon + gap)));
-  const rows = Math.ceil(count / perRow);
-  return 16 + rows * icon + (rows - 1) * gap;
+  const gap = 8;
+  const rowWidth = cardWidth - 48;
+  const rowNeeded = count * icon + (count - 1) * gap;
+  if (rowNeeded <= rowWidth) {
+    return 16 + icon;
+  }
+  return 16 + icon;
 }
 
 function roundCardHeight(h: number): number {
@@ -98,8 +100,8 @@ export function estimateMinCardHeight(
   let body = 0;
 
   if (layout === "aligned") {
-    const socialCol = estimateSocialRowsHeight(profile, cardWidth, true);
-    const avatarCol = avatarSize + (socialCol > 0 ? 14 + socialCol : 0);
+    const socialCol = estimateSocialRowsHeight(profile, cardWidth);
+    const avatarCol = avatarSize;
     const textWidth = Math.max(120, cardWidth - 48 - avatarSize - 16);
     const bioLines = estimateTextLines(bio, textWidth, 7);
 
@@ -108,7 +110,7 @@ export function estimateMinCardHeight(
     if (showUsername) textCol += 20;
     textCol += bioLines * 18 + (bio ? 8 : 0) + (hasBioFx ? 16 : 0);
 
-    body = Math.max(avatarCol, textCol) + 36;
+    body = Math.max(avatarCol, textCol) + (socialCol > 0 ? socialCol + 8 : 0) + 28;
   } else if (layout === "centered") {
     const avatar = Math.max(52, Math.round(avatarSize * 1.1));
     body += 64 + avatar + 16;
@@ -118,7 +120,7 @@ export function estimateMinCardHeight(
 
     const bioLines = estimateTextLines(bio, cardWidth - 48, 8);
     body += bioLines * 21 + (bio ? 8 : 0) + (hasBioFx ? 16 : 0);
-    body += estimateSocialRowsHeight(profile, cardWidth, false);
+    body += estimateSocialRowsHeight(profile, cardWidth);
   } else {
     const padTop = hasBanner ? 20 : 24;
     body += padTop + 24 + avatarSize + 12;
@@ -128,7 +130,7 @@ export function estimateMinCardHeight(
 
     const bioLines = estimateTextLines(bio, cardWidth - 48, 8);
     body += bioLines * 21 + (bio ? 8 : 0) + (hasBioFx ? 16 : 0);
-    body += estimateSocialRowsHeight(profile, cardWidth, false);
+    body += estimateSocialRowsHeight(profile, cardWidth);
   }
 
   body += estimateInsideBlocksHeight(opts?.blocks);

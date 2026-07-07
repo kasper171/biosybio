@@ -215,7 +215,7 @@ export function ProfilePageContent({
                       window.open(url, "_blank", "noopener,noreferrer");
                     });
                   }}
-                  className={`grid place-items-center transition hover:scale-110 ${
+                  className={`grid shrink-0 place-items-center transition hover:scale-110 ${
                     socialIconStyle === "logo"
                       ? compact
                         ? "h-10 w-10 rounded-full bg-transparent"
