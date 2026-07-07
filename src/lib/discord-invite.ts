@@ -43,7 +43,7 @@ export function buildDiscordInviteUrl(code: string): string {
 }
 
 export function formatDiscordMemberLabel(memberCount: number, onlineCount?: number): string {
-  const fmt = (n: number) => n.toLocaleString("pt-BR");
+  const fmt = (n: number) => n.toLocaleString("en-US");
   if (onlineCount != null && onlineCount > 0) {
     return `${fmt(memberCount)} membros · ${fmt(onlineCount)} online`;
   }
@@ -52,14 +52,14 @@ export function formatDiscordMemberLabel(memberCount: number, onlineCount?: numb
 
 export async function fetchDiscordInvite(input: string): Promise<DiscordInviteInfo> {
   const code = parseDiscordInviteCode(input);
-  if (!code) throw new Error("Link de convite do Discord inválido");
+  if (!code) throw new Error("Invalid Discord invite link");
 
   const res = await fetch(
     `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true`,
   );
 
   if (!res.ok) {
-    throw new Error("Convite não encontrado ou expirado");
+    throw new Error("Invite not found or expired");
   }
 
   const data = (await res.json()) as {
@@ -75,7 +75,7 @@ export async function fetchDiscordInvite(input: string): Promise<DiscordInviteIn
 
   const guild = data.guild;
   if (!guild?.id || !guild.name) {
-    throw new Error("Não foi possível obter dados do servidor");
+    throw new Error("Could not fetch server data");
   }
 
   const iconUrl = guild.icon

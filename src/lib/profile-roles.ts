@@ -50,7 +50,7 @@ export function profileHasFullAccess(profile: Pick<Profile, "is_premium" | "role
 
 export function formatRoleDatePt(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString("pt-BR", {
+    return new Date(iso).toLocaleDateString("en-US", {
       day: "2-digit",
       month: "long",
       year: "numeric",

@@ -25,12 +25,12 @@ export async function fetchHabboProfile(
 ): Promise<HotelFetchResult> {
   const name = username.trim();
   if (!name) {
-    return { ok: false, error: "invalid_username", message: "Nome inválido" };
+    return { ok: false, error: "invalid_username", message: "Invalid name" };
   }
 
   const domain = normalizeHabboHotelDomain(hotelDomain);
   if (!getHabboHotel(domain)) {
-    return { ok: false, error: "invalid_hotel", message: "Hotel inválido" };
+    return { ok: false, error: "invalid_hotel", message: "Invalid hotel" };
   }
 
   const url = `https://www.habbo.${domain}/api/public/users?name=${encodeURIComponent(name)}`;
@@ -46,19 +46,19 @@ export async function fetchHabboProfile(
     return {
       ok: false,
       error: "service_unavailable",
-      message: "Não foi possível contactar o Habbo Hotel",
+      message: "Could not reach Habbo Hotel",
     };
   }
 
   if (response.status === 404) {
-    return { ok: false, error: "user_not_found", message: "Jogador não encontrado" };
+    return { ok: false, error: "user_not_found", message: "Player not found" };
   }
 
   if (!response.ok) {
     return {
       ok: false,
       error: "service_unavailable",
-      message: `Habbo retornou erro (${response.status})`,
+      message: `Habbo returned an error (${response.status})`,
     };
   }
 
@@ -66,12 +66,12 @@ export async function fetchHabboProfile(
   try {
     payload = await response.json();
   } catch {
-    return { ok: false, error: "service_unavailable", message: "Resposta inválida do Habbo" };
+    return { ok: false, error: "service_unavailable", message: "Invalid response from Habbo" };
   }
 
   const user = Array.isArray(payload) ? payload[0] : payload;
   if (!user?.name || !user.figureString) {
-    return { ok: false, error: "user_not_found", message: "Jogador não encontrado" };
+    return { ok: false, error: "user_not_found", message: "Player not found" };
   }
 
   const data: HotelProfileData = {

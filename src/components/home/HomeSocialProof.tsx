@@ -9,7 +9,7 @@ import {
 
 export function HomeSocialProof() {
   const [avatars, setAvatars] = useState<CreatorAvatar[]>([]);
-  const [creatorLabel, setCreatorLabel] = useState("Criadores já usam o Biosy");
+  const [creatorLabel, setCreatorLabel] = useState("Creators already use Biosy");
 
   useEffect(() => {
     let cancelled = false;

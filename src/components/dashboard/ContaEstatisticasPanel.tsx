@@ -24,7 +24,7 @@ type Props = {
 function formatViews(count: number): string {
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return count.toLocaleString("pt-BR");
+  return count.toLocaleString("en-US");
 }
 
 const chartTooltipStyle = {
@@ -68,27 +68,27 @@ export function ContaEstatisticasPanel({ profile }: Props) {
   const insights = [
     {
       icon: TrendingUp,
-      label: "Semana",
+      label: "Week",
       value: loading ? "—" : formatViews(weekViews),
-      hint: stats?.peakDay7 ? `Pico ${stats.peakDay7.views} · ${stats.peakDay7.label}` : "Sem pico ainda",
+      hint: stats?.peakDay7 ? `Peak ${stats.peakDay7.views} · ${stats.peakDay7.label}` : "No peak yet",
     },
     {
       icon: Calendar,
-      label: "Mês",
+      label: "Month",
       value: loading ? "—" : formatViews(monthViews),
-      hint: "Últimos 30 dias",
+      hint: "Last 30 days",
     },
     {
       icon: MessageSquare,
-      label: "Comentários",
+      label: "Comments",
       value: loading ? "—" : String(commentCount),
-      hint: "No seu card público",
+      hint: "On your public card",
     },
     {
       icon: Eye,
-      label: "Média/dia",
+      label: "Avg/day",
       value: loading ? "—" : formatViews(stats?.avgPerDay7 ?? 0),
-      hint: "Base 7 dias",
+      hint: "7-day basis",
     },
   ];
 
@@ -102,11 +102,11 @@ export function ContaEstatisticasPanel({ profile }: Props) {
               className="mb-3 inline-flex items-center gap-1.5 dash-t-caption text-white/40 transition hover:text-white"
             >
               <ArrowLeft className="dash-icon-sm" />
-              Voltar ao painel
+              Back to dashboard
             </Link>
-            <h1 className="dash-t-heading font-bold text-white">Métricas</h1>
+            <h1 className="dash-t-heading font-bold text-white">Analytics</h1>
             <p className="mt-1.5 dash-t-body text-white/45">
-              Números de visita e engajamento do seu perfil público.
+              Visit and engagement numbers for your public profile.
             </p>
           </div>
         </div>
@@ -115,13 +115,13 @@ export function ContaEstatisticasPanel({ profile }: Props) {
         <section className="biosy-dash-hero relative overflow-hidden rounded-3xl border border-white/[0.08] px-6 py-8 lg:px-10">
           <div className="pointer-events-none absolute -right-10 top-0 h-48 w-48 rounded-full bg-pink-500/10 blur-3xl" />
           <p className="dash-t-caption font-medium uppercase tracking-widest text-white/40">
-            Visitas acumuladas
+            Total visits
           </p>
           <p className="mt-2 text-5xl font-bold tracking-tight text-white lg:text-6xl">
             {loading ? "—" : formatViews(totalViews)}
           </p>
           <p className="mt-2 dash-t-body text-white/45">
-            @{profile.username} · desde que o perfil foi criado
+            @{profile.username} · since profile was created
           </p>
         </section>
 
@@ -146,8 +146,8 @@ export function ContaEstatisticasPanel({ profile }: Props) {
 
         {/* Charts — stacked, different types */}
         <section className="biosy-dash-panel">
-          <h2 className="dash-t-title font-semibold text-white">Últimos 7 dias</h2>
-          <p className="mt-1 dash-t-caption text-white/40">Curva de visitas diárias</p>
+          <h2 className="dash-t-title font-semibold text-white">Last 7 days</h2>
+          <p className="mt-1 dash-t-caption text-white/40">Daily visit curve</p>
           {loading ? (
             <ChartSkeleton />
           ) : (
@@ -169,7 +169,7 @@ export function ContaEstatisticasPanel({ profile }: Props) {
                   />
                   <Tooltip
                     contentStyle={chartTooltipStyle}
-                    formatter={(value) => [`${value} visitas`, "Dia"]}
+                    formatter={(value) => [`${value} views`, "Day"]}
                   />
                   <Line
                     type="monotone"
@@ -186,8 +186,8 @@ export function ContaEstatisticasPanel({ profile }: Props) {
         </section>
 
         <section className="biosy-dash-panel">
-          <h2 className="dash-t-title font-semibold text-white">Últimos 30 dias</h2>
-          <p className="mt-1 dash-t-caption text-white/40">Volume por dia no mês</p>
+          <h2 className="dash-t-title font-semibold text-white">Last 30 days</h2>
+          <p className="mt-1 dash-t-caption text-white/40">Daily volume this month</p>
           {loading ? (
             <ChartSkeleton />
           ) : (
@@ -210,7 +210,7 @@ export function ContaEstatisticasPanel({ profile }: Props) {
                   />
                   <Tooltip
                     contentStyle={chartTooltipStyle}
-                    formatter={(value) => [`${value} visitas`, "Dia"]}
+                    formatter={(value) => [`${value} views`, "Day"]}
                   />
                   <Bar dataKey="views" fill="oklch(0.55 0.22 350)" radius={[4, 4, 0, 0]} maxBarSize={12} />
                 </BarChart>

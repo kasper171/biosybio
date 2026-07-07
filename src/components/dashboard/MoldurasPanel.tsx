@@ -38,7 +38,7 @@ export function MoldurasPanel({ profile, update }: Props) {
 
   const selectFrame = (frameId: string | null) => {
     if (frameId && !canUseAvatarFrame(frameId, profile)) {
-      toast.error("Moldura premium — faça upgrade para desbloquear.");
+      toast.error("Premium frame — upgrade to unlock.");
       return;
     }
     update("avatar_frame_id", frameId);
@@ -69,7 +69,7 @@ export function MoldurasPanel({ profile, update }: Props) {
           </AvatarWithFrame>
         </div>
         <p className="mt-2 text-center text-[11px] text-white/40">
-          {profile.avatar_frame_id ? profile.avatar_frame_id : "Nenhuma moldura selecionada"}
+          {profile.avatar_frame_id ? profile.avatar_frame_id : "No frame selected"}
         </p>
       </div>
 
@@ -82,21 +82,21 @@ export function MoldurasPanel({ profile, update }: Props) {
             setQuery(e.target.value);
             setPage(0);
           }}
-          placeholder="Buscar moldura..."
+          placeholder="Search frames..."
           className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] py-2.5 pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-pink-500/40"
         />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/45">
         <span>
-          {AVATAR_FRAMES.length} molduras · {FREE_AVATAR_FRAME_COUNT} grátis
+          {AVATAR_FRAMES.length} frames · {FREE_AVATAR_FRAME_COUNT} free
         </span>
         {hasFullAccess ? (
           <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-amber-200">
             <Crown className="h-3 w-3" /> Premium
           </span>
         ) : (
-          <span className="text-white/35">Premium desbloqueia o restante</span>
+          <span className="text-white/35">Premium unlocks the rest</span>
         )}
       </div>
 
@@ -112,7 +112,7 @@ export function MoldurasPanel({ profile, update }: Props) {
           )}
         >
           <X className="h-4 w-4 text-white/45" />
-          <span className="mt-1 text-[9px] text-white/45">Nenhuma</span>
+          <span className="mt-1 text-[9px] text-white/45">None</span>
         </button>
 
         {pageItems.map((frame) => {
@@ -171,7 +171,7 @@ export function MoldurasPanel({ profile, update }: Props) {
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             className="rounded-lg border border-white/10 px-3 py-1.5 disabled:opacity-40"
           >
-            Anterior
+            Previous
           </button>
           <span>
             {safePage + 1} / {totalPages}
@@ -182,7 +182,7 @@ export function MoldurasPanel({ profile, update }: Props) {
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             className="rounded-lg border border-white/10 px-3 py-1.5 disabled:opacity-40"
           >
-            Próxima
+            Next
           </button>
         </div>
       )}

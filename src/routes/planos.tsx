@@ -9,15 +9,15 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/planos")({
   head: () => ({
     meta: [
-      { title: "Planos — Biosy" },
+      { title: "Plans — Biosy" },
       {
         name: "description",
-        content: "Escolha o plano Free ou Premium e desbloqueie badges exclusivas para o seu perfil.",
+        content: "Choose the Free or Premium plan and unlock exclusive badges for your profile.",
       },
-      { property: "og:title", content: "Planos — Biosy" },
+      { property: "og:title", content: "Plans — Biosy" },
       {
         property: "og:description",
-        content: "Plano Free, Premium vitalício e badges exclusivas para personalizar seu perfil.",
+        content: "Free plan, lifetime Premium, and exclusive badges to customize your profile.",
       },
     ],
   }),
@@ -68,11 +68,11 @@ function PlanosPage() {
       <main className="mx-auto max-w-7xl px-6 pb-20 pt-6">
         <div className="mx-auto max-w-2xl text-center">
           <HomeScrollReveal variant="up">
-            <h1 className="text-4xl font-black tracking-tight md:text-5xl">Escolha seu plano</h1>
+            <h1 className="text-4xl font-black tracking-tight md:text-5xl">Choose your plan</h1>
           </HomeScrollReveal>
           <HomeScrollReveal variant="up" delay={80}>
             <p className="mt-4 text-sm text-white/60 md:text-base">
-              Comece grátis ou desbloqueie tudo com um pagamento único. Sem mensalidade.
+              Start for free or unlock everything with a one-time payment. No monthly fees.
             </p>
           </HomeScrollReveal>
         </div>
@@ -89,7 +89,7 @@ function PlanosPage() {
                 {plan.popular && (
                   <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full bg-pink-hot/20 px-3 py-1 text-[10px] font-semibold text-pink-hot">
                     <Crown className="h-3 w-3" />
-                    Mais popular
+                    Most popular
                   </span>
                 )}
                 <h2 className="text-xl font-bold">{plan.name}</h2>
@@ -130,11 +130,11 @@ function PlanosPage() {
         <section className="mt-20">
           <div className="mx-auto max-w-2xl text-center">
             <HomeScrollReveal variant="up">
-              <h2 className="text-3xl font-black">Outros produtos</h2>
+              <h2 className="text-3xl font-black">Other products</h2>
             </HomeScrollReveal>
             <HomeScrollReveal variant="up" delay={80}>
               <p className="mt-3 text-sm text-white/60">
-                Badges exclusivas para destacar seu perfil. Compra única, sua para sempre.
+                Exclusive badges to make your profile stand out. One-time purchase, yours forever.
               </p>
             </HomeScrollReveal>
           </div>
@@ -169,7 +169,7 @@ function PlanosPage() {
                       type="button"
                       className="mt-6 w-full rounded-full border border-white/15 bg-white/5 py-2.5 text-sm font-semibold text-white/90 transition hover:bg-white/10"
                     >
-                      Comprar
+                      Buy
                     </button>
                   </div>
                 </HomeScrollReveal>
@@ -183,7 +183,7 @@ function PlanosPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
           <Logo size={32} />
           <Link to="/" className="text-sm text-white/55 transition hover:text-white">
-            Voltar para o início
+            Back to home
           </Link>
         </div>
       </footer>

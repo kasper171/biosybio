@@ -38,9 +38,9 @@ type Props = {
 };
 
 const SORT_OPTIONS: { id: TemplateSort; label: string; icon: typeof Clock }[] = [
-  { id: "recent", label: "Atualizados recentemente", icon: Clock },
-  { id: "most_used", label: "Mais usados", icon: Heart },
-  { id: "most_favorited", label: "Mais favoritados", icon: Star },
+  { id: "recent", label: "Recently updated", icon: Clock },
+  { id: "most_used", label: "Most used", icon: Heart },
+  { id: "most_favorited", label: "Most favorited", icon: Star },
 ];
 
 export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = "explorar" }: Props) {
@@ -69,7 +69,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
     try {
       await Promise.all([loadPublic(), loadMine()]);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao carregar templates");
+      toast.error(e instanceof Error ? e.message : "Error loading templates");
     } finally {
       setLoading(false);
     }
@@ -84,10 +84,10 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
     try {
       const updated = await applyTemplateToProfile(template.id, profile);
       onProfileChange(updated);
-      toast.success("Template aplicado! Seu avatar, imagens e músicas foram mantidos.");
+      toast.success("Template applied! Your avatar, images, and music were kept.");
       await reload();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao aplicar template");
+      toast.error(e instanceof Error ? e.message : "Error applying template");
     } finally {
       setApplyingId(null);
     }
@@ -96,7 +96,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
   const handleUseInEditor = (template: ProfileTemplateWithAuthor) => {
     const updated = applyThemeToProfile(profile, template.theme);
     onProfileChange(updated);
-    toast.success("Estilo aplicado no editor. Clique em Salvar para manter.");
+    toast.success("Style applied in the editor. Click Save to keep it.");
   };
 
   const handleFavorite = async (template: ProfileTemplateWithAuthor) => {
@@ -104,33 +104,33 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
       await toggleTemplateFavorite(template.id, profile.id, !!template.is_favorited);
       await reload();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao favoritar");
+      toast.error(e instanceof Error ? e.message : "Error favoriting");
     }
   };
 
   const handleDelete = async (templateId: string) => {
-    if (!confirm("Excluir este template permanentemente?")) return;
+    if (!confirm("Delete this template permanently?")) return;
     try {
       await deleteTemplate(templateId);
-      toast.success("Template excluído");
+      toast.success("Template deleted");
       await reload();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao excluir");
+      toast.error(e instanceof Error ? e.message : "Error deleting");
     }
   };
 
   const handleToggleVisibility = async (template: ProfileTemplateWithAuthor) => {
     if (template.is_live) {
-      toast.error("O template ao vivo é controlado pela opção Template Público em Conta.");
+      toast.error("The live template is controlled by the Public Template option in Account.");
       return;
     }
     const next = template.visibility === "public" ? "private" : "public";
     try {
       await updateTemplateMeta(template.id, { visibility: next });
-      toast.success(next === "public" ? "Template publicado!" : "Template tornado privado");
+      toast.success(next === "public" ? "Template published!" : "Template made private");
       await reload();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao atualizar");
+      toast.error(e instanceof Error ? e.message : "Error updating");
     }
   };
 
@@ -142,16 +142,16 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
   const saveEdit = async (templateId: string) => {
     const trimmed = editName.trim();
     if (!trimmed) {
-      toast.error("Nome inválido");
+      toast.error("Invalid name");
       return;
     }
     try {
       await updateTemplateMeta(templateId, { name: trimmed });
       setEditingId(null);
-      toast.success("Template atualizado");
+      toast.success("Template updated");
       await reload();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+      toast.error(e instanceof Error ? e.message : "Error saving");
     }
   };
 
@@ -165,8 +165,8 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
               Templates
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-white/45">
-              Explore estilos da comunidade ou gerencie os seus. Ao usar um template, apenas layout,
-              cores, tamanhos e efeitos são copiados — seu avatar, imagens e músicas permanecem os seus.
+              Explore community styles or manage your own. When you use a template, only layout,
+              colors, sizes, and effects are copied — your avatar, images, and music stay yours.
             </p>
           </div>
           <Link
@@ -175,7 +175,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
             className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/[0.08]"
           >
             <Sparkles className="h-4 w-4 text-pink-400" />
-            Abrir editor
+            Open editor
           </Link>
         </div>
 
@@ -183,11 +183,11 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
           <div className="flex items-start gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3">
             <Globe className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
             <div>
-              <p className="text-sm font-medium text-emerald-200">Template público ativo</p>
+              <p className="text-sm font-medium text-emerald-200">Public template active</p>
               <p className="mt-0.5 text-xs text-emerald-200/70">
-                Seu estilo atual está publicado como{" "}
-                <span className="font-semibold">Template de {profile.display_name || profile.username}</span>{" "}
-                e atualiza automaticamente quando você salva o perfil.
+                Your current style is published as{" "}
+                <span className="font-semibold">{profile.display_name || profile.username}&apos;s Template</span>{" "}
+                and updates automatically when you save your profile.
               </p>
             </div>
           </div>
@@ -195,10 +195,10 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
 
         <div className="flex flex-wrap gap-2">
           <TabButton active={tab === "explorar"} onClick={() => setTab("explorar")}>
-            Templates públicos
+            Public templates
           </TabButton>
           <TabButton active={tab === "meus"} onClick={() => setTab("meus")}>
-            Meus templates ({myTemplates.length})
+            My templates ({myTemplates.length})
           </TabButton>
         </div>
 
@@ -229,7 +229,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
             {loading ? (
               <LoadingGrid />
             ) : publicTemplates.length === 0 ? (
-              <EmptyState message="Nenhum template público ainda. Seja o primeiro a publicar!" />
+              <EmptyState message="No public templates yet. Be the first to publish!" />
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {publicTemplates.map((t) => (
@@ -251,7 +251,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
             {loading ? (
               <LoadingGrid />
             ) : myTemplates.length === 0 ? (
-              <EmptyState message="Você ainda não salvou templates. Use Salvar template no editor para criar um." />
+              <EmptyState message="You haven't saved any templates yet. Use Save template in the editor to create one." />
             ) : (
               myTemplates.map((t) => (
                 <DashCard key={t.id} className="!p-4">
@@ -269,14 +269,14 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
                             onClick={() => saveEdit(t.id)}
                             className="rounded-lg bg-pink-500 px-3 py-1.5 text-xs font-semibold text-white"
                           >
-                            Salvar
+                            Save
                           </button>
                           <button
                             type="button"
                             onClick={() => setEditingId(null)}
                             className="text-xs text-white/45"
                           >
-                            Cancelar
+                            Cancel
                           </button>
                         </div>
                       ) : (
@@ -285,7 +285,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
                             <h3 className="text-sm font-semibold text-white">{t.name}</h3>
                             {t.is_live && (
                               <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
-                                Ao vivo
+                                Live
                               </span>
                             )}
                             <span
@@ -296,14 +296,14 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
                                   : "bg-white/10 text-white/45",
                               )}
                             >
-                              {t.visibility === "public" ? "Público" : "Privado"}
+                              {t.visibility === "public" ? "Public" : "Private"}
                             </span>
                           </div>
                           <p className="mt-1 text-xs text-white/40">
                             <Heart className="mr-1 inline h-3 w-3 text-rose-400/80" />
-                            {t.use_count} usos ·{" "}
+                            {t.use_count} uses ·{" "}
                             <Star className="mr-1 inline h-3 w-3 text-amber-400/80" />
-                            {t.favorite_count} favoritos
+                            {t.favorite_count} favorites
                           </p>
                         </>
                       )}
@@ -315,7 +315,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
                         onClick={() => handleUseInEditor(t)}
                         className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:bg-white/[0.05]"
                       >
-                        Aplicar no editor
+                        Apply in editor
                       </button>
                       {!t.is_live && (
                         <>
@@ -323,7 +323,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
                             type="button"
                             onClick={() => startEdit(t)}
                             className="rounded-lg border border-white/10 p-1.5 text-white/55 hover:bg-white/[0.05]"
-                            title="Renomear"
+                            title="Rename"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
@@ -331,7 +331,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
                             type="button"
                             onClick={() => handleToggleVisibility(t)}
                             className="rounded-lg border border-white/10 p-1.5 text-white/55 hover:bg-white/[0.05]"
-                            title={t.visibility === "public" ? "Tornar privado" : "Publicar"}
+                            title={t.visibility === "public" ? "Make private" : "Publish"}
                           >
                             {t.visibility === "public" ? (
                               <Lock className="h-3.5 w-3.5" />
@@ -343,7 +343,7 @@ export function DashboardTemplatesPage({ profile, onProfileChange, initialTab = 
                             type="button"
                             onClick={() => handleDelete(t.id)}
                             className="rounded-lg border border-red-500/20 p-1.5 text-red-400/80 hover:bg-red-500/10"
-                            title="Excluir"
+                            title="Delete"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>

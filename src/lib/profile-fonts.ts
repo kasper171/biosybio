@@ -23,12 +23,12 @@ export const DEFAULT_PAGE_FONT_STACK =
   "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif";
 
 export const FONT_CATEGORY_LABELS: Record<FontCategory, string> = {
-  sistema: "Sistema",
+  sistema: "System",
   sans: "Sans",
-  fina: "Finas",
+  fina: "Thin",
   serif: "Serif",
   display: "Display",
-  gotica: "Góticas",
+  gotica: "Gothic",
   cartoon: "Cartoon",
   halloween: "Halloween",
   script: "Script",
@@ -55,7 +55,7 @@ function font(
 }
 
 export const PROFILE_FONTS: ProfileFontOption[] = [
-  font("system", "Sistema (padrão)", "sistema", null, ""),
+  font("system", "System (default)", "sistema", null, ""),
 
   font("inter", "Inter", "sans", "Inter", "Inter"),
   font("poppins", "Poppins", "sans", "Poppins", "Poppins"),

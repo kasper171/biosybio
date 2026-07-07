@@ -1,79 +1,79 @@
-import { AuthApiError } from "@supabase/supabase-js";
-
-export type AuthNotice = { title: string; description?: string };
-
-export function getAuthNotice(err: unknown): AuthNotice {
-  if (err instanceof AuthApiError) {
-    switch (err.code) {
-      case "user_already_exists":
-      case "email_exists":
-        return {
-          title: "Este email já está cadastrado",
-          description: "Tente entrar ou use outro email.",
-        };
-      case "invalid_credentials":
-        return {
-          title: "Email ou senha incorretos",
-          description: "Verifique seus dados e tente novamente.",
-        };
-      case "email_not_confirmed":
-        return {
-          title: "Confirme seu email",
-          description: "Acesse o link enviado para sua caixa de entrada antes de entrar.",
-        };
-      case "weak_password":
-        return {
-          title: "Senha fraca",
-          description: "Escolha uma senha mais forte ou que não tenha vazado em bancos públicos.",
-        };
-      case "signup_disabled":
-        return {
-          title: "Cadastro indisponível",
-          description: "Novos cadastros estão temporariamente desativados.",
-        };
-      case "over_request_rate_limit":
-        return {
-          title: "Muitas tentativas",
-          description: "Aguarde alguns minutos e tente novamente.",
-        };
-      case "user_banned":
-        return {
-          title: "Conta suspensa",
-          description: "Entre em contato com o suporte se achar que isso é um engano.",
-        };
-    }
-  }
-
-  const msg = err instanceof Error ? err.message : "Erro ao autenticar";
-
-  if (/weak.?password|pwned/i.test(msg)) {
-    return {
-      title: "Senha fraca",
-      description: "Essa senha vazou em bancos públicos. Escolha outra.",
-    };
-  }
-  if (/already.?registered|already.?exists|user.?already/i.test(msg)) {
-    return {
-      title: "Este email já está cadastrado",
-      description: "Tente entrar ou use outro email.",
-    };
-  }
-  if (/invalid.?login|invalid.?credentials/i.test(msg)) {
-    return {
-      title: "Email ou senha incorretos",
-      description: "Verifique seus dados e tente novamente.",
-    };
-  }
-  if (/email.?not.?confirmed/i.test(msg)) {
-    return {
-      title: "Confirme seu email",
-      description: "Acesse o link enviado para sua caixa de entrada antes de entrar.",
-    };
-  }
-
-  return { title: msg };
-}
-
-export function isExistingEmailSignup(user: { identities?: { id: string }[] } | null): boolean {
-  return Boolean(user && (!user.identities || user.identities.length === 0));
-}
+import { AuthApiError } from "@supabase/supabase-js";
+
+export type AuthNotice = { title: string; description?: string };
+
+export function getAuthNotice(err: unknown): AuthNotice {
+  if (err instanceof AuthApiError) {
+    switch (err.code) {
+      case "user_already_exists":
+      case "email_exists":
+        return {
+          title: "This email is already registered",
+          description: "Try signing in or use a different email.",
+        };
+      case "invalid_credentials":
+        return {
+          title: "Incorrect email or password",
+          description: "Check your details and try again.",
+        };
+      case "email_not_confirmed":
+        return {
+          title: "Confirm your email",
+          description: "Open the link sent to your inbox before signing in.",
+        };
+      case "weak_password":
+        return {
+          title: "Weak password",
+          description: "Choose a stronger password that has not appeared in public data breaches.",
+        };
+      case "signup_disabled":
+        return {
+          title: "Sign-up unavailable",
+          description: "New registrations are temporarily disabled.",
+        };
+      case "over_request_rate_limit":
+        return {
+          title: "Too many attempts",
+          description: "Wait a few minutes and try again.",
+        };
+      case "user_banned":
+        return {
+          title: "Account suspended",
+          description: "Contact support if you believe this is a mistake.",
+        };
+    }
+  }
+
+  const msg = err instanceof Error ? err.message : "Authentication failed";
+
+  if (/weak.?password|pwned/i.test(msg)) {
+    return {
+      title: "Weak password",
+      description: "This password appeared in public data breaches. Choose another one.",
+    };
+  }
+  if (/already.?registered|already.?exists|user.?already/i.test(msg)) {
+    return {
+      title: "This email is already registered",
+      description: "Try signing in or use a different email.",
+    };
+  }
+  if (/invalid.?login|invalid.?credentials/i.test(msg)) {
+    return {
+      title: "Incorrect email or password",
+      description: "Check your details and try again.",
+    };
+  }
+  if (/email.?not.?confirmed/i.test(msg)) {
+    return {
+      title: "Confirm your email",
+      description: "Open the link sent to your inbox before signing in.",
+    };
+  }
+
+  return { title: msg };
+}
+
+export function isExistingEmailSignup(user: { identities?: { id: string }[] } | null): boolean {
+  return Boolean(user && (!user.identities || user.identities.length === 0));
+}

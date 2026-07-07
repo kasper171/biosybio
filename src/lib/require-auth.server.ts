@@ -27,18 +27,18 @@ export async function requireAuthenticatedUserId(): Promise<string> {
   const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    throw new Error("Configuração do servidor incompleta.");
+    throw new Error("Server configuration is incomplete.");
   }
 
   const request = getRequest();
   const authHeader = request?.headers?.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    throw new Error("Não autorizado.");
+    throw new Error("Unauthorized.");
   }
 
   const token = authHeader.replace("Bearer ", "").trim();
   if (!token || token.split(".").length !== 3) {
-    throw new Error("Não autorizado.");
+    throw new Error("Unauthorized.");
   }
 
   const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -51,7 +51,7 @@ export async function requireAuthenticatedUserId(): Promise<string> {
 
   const { data, error } = await supabase.auth.getClaims(token);
   if (error || !data?.claims?.sub) {
-    throw new Error("Não autorizado.");
+    throw new Error("Unauthorized.");
   }
 
   return data.claims.sub;

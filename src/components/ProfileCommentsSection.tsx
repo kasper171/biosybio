@@ -24,7 +24,7 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [authorName, setAuthorName] = useState("Usuário");
+  const [authorName, setAuthorName] = useState("User");
   const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
   const [ownComment, setOwnComment] = useState<CommentRow | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -93,7 +93,7 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
         (p?.display_name as string | undefined)
           || (p?.username as string | undefined)
           || (u.user_metadata?.username as string | undefined)
-          || "Usuário",
+          || "User",
       );
       setAuthorAvatar((p?.avatar_url as string | null | undefined) ?? null);
     })();
@@ -139,7 +139,7 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
     <div className="pointer-events-none fixed bottom-0 left-0 z-[40] w-full">
       <div className="pointer-events-auto mx-auto w-full max-w-xl px-3 pb-2 text-center">
         <div className="mt-1 min-h-[64px]">
-          {loading && <p className="text-xs text-white/50">Carregando...</p>}
+          {loading && <p className="text-xs text-white/50">Loading...</p>}
           {!loading && active && (
             <div key={active.id} className="animate-[biosy-comment-fade_450ms_ease]">
               <div className="mb-1 flex items-center justify-center gap-2">
@@ -161,30 +161,30 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
             type="button"
             onClick={() => setFormOpen((v) => !v)}
             className="grid h-7 w-7 place-items-center rounded-full border border-white/20 bg-black/35 text-white transition hover:bg-black/55"
-            title="Comentar"
+            title="Comment"
           >
             <MessageCircle className="h-3.5 w-3.5" />
           </button>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/65">Comentários</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/65">Comments</p>
           {currentUserId && ownComment && (
             <button
               type="button"
               onClick={() => void deleteMyComment()}
               className="rounded-md border border-red-300/30 px-2 py-1 text-[11px] text-red-200 transition hover:bg-red-500/20"
             >
-              Apagar
+              Delete
             </button>
           )}
         </div>
         {!loading && !active && (
-          <p className="mt-1 text-[11px] text-white/50">Nenhum comentário publicado no momento</p>
+          <p className="mt-1 text-[11px] text-white/50">No comments published right now</p>
         )}
 
         {formOpen && (
           <div className="mx-auto mt-2 max-w-md rounded-lg border border-white/15 bg-black/50 p-2 text-left backdrop-blur-sm">
             {!currentUserId && (
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-white/65">Entre na conta para comentar.</p>
+                <p className="text-xs text-white/65">Sign in to comment.</p>
                 <button
                   type="button"
                   onClick={() => setFormOpen(false)}
@@ -200,14 +200,14 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   maxLength={280}
-                  placeholder="Comentário..."
+                  placeholder="Comment..."
                   className="w-full rounded-md border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-pink-500/60"
                 />
                 <button
                   type="button"
                   onClick={() => void sendComment()}
                   className="grid h-8 w-8 place-items-center rounded-md bg-white text-black transition hover:bg-white/90"
-                  title="Enviar"
+                  title="Send"
                 >
                   <Send className="h-4 w-4" />
                 </button>
@@ -215,7 +215,7 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
                   type="button"
                   onClick={() => setFormOpen(false)}
                   className="grid h-8 w-8 place-items-center rounded-md text-white/70 transition hover:bg-white/10"
-                  title="Fechar"
+                  title="Close"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -223,12 +223,12 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
             )}
             {currentUserId && ownComment && (
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-white/60">Você já comentou neste perfil.</p>
+                <p className="text-xs text-white/60">You already commented on this profile.</p>
                 <button
                   type="button"
                   onClick={() => setFormOpen(false)}
                   className="grid h-7 w-7 place-items-center rounded-md text-white/70 transition hover:bg-white/10"
-                  title="Fechar"
+                  title="Close"
                 >
                   <X className="h-4 w-4" />
                 </button>

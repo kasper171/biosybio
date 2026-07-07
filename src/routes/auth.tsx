@@ -25,8 +25,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [
-      { title: "Entrar — Biosy" },
-      { name: "description", content: "Entre ou crie sua conta na Biosy." },
+      { title: "Sign in — Biosy" },
+      { name: "description", content: "Sign in or create your Biosy account." },
     ],
   }),
   component: AuthPage,
@@ -77,11 +77,11 @@ function AuthPage() {
   );
   const passedCount = passwordChecks.filter((c) => c.ok).length;
   const strength =
-    passedCount <= 2 ? "fraca" : passedCount === 3 || passedCount === 4 ? "média" : "forte";
+    passedCount <= 2 ? "weak" : passedCount === 3 || passedCount === 4 ? "medium" : "strong";
   const strengthColor =
-    strength === "fraca"
+    strength === "weak"
       ? "oklch(0.65 0.25 25)"
-      : strength === "média"
+      : strength === "medium"
         ? "oklch(0.75 0.18 85)"
         : "oklch(0.72 0.20 145)";
   const strengthPct = (passedCount / PASSWORD_RULES.length) * 100;
@@ -109,13 +109,13 @@ function AuthPage() {
         const cleanUser = cleanUsername(username);
         const lengthError = usernameLengthError(cleanUser);
         if (lengthError) {
-          notify({ title: "Nome de usuário inválido", description: lengthError });
+          notify({ title: "Invalid username", description: lengthError });
           return;
         }
         if (passedCount < PASSWORD_RULES.length) {
           notify({
-            title: "Senha incompleta",
-            description: "Sua senha precisa atender a todos os requisitos abaixo.",
+            title: "Incomplete password",
+            description: "Your password must meet all the requirements below.",
           });
           return;
         }
@@ -124,15 +124,15 @@ function AuthPage() {
         if (taken) {
           if (await trySignIn(email, password)) {
             notify(
-              { title: "Conta encontrada!", description: "Entrando com este email e senha..." },
+              { title: "Account found!", description: "Signing in with this email and password..." },
               "success",
             );
             navigate({ to: "/dashboard" });
             return;
           }
           notify({
-            title: "Usuário já existente",
-            description: `${profileDisplayPath(cleanUser)} já está em uso. Se você tentou criar agora, use Entrar.`,
+            title: "Username already taken",
+            description: `${profileDisplayPath(cleanUser)} is already in use. If you just tried to sign up, use Sign in.`,
           });
           return;
         }
@@ -144,27 +144,27 @@ function AuthPage() {
         if (!result.ok) {
           if ("tryLogin" in result && result.tryLogin && (await trySignIn(email, password))) {
             notify(
-              { title: "Conta encontrada!", description: "Entrando com este email e senha..." },
+              { title: "Account found!", description: "Signing in with this email and password..." },
               "success",
             );
             navigate({ to: "/dashboard" });
             return;
           }
-          notify({ title: "Não foi possível criar a conta", description: result.error });
+          notify({ title: "Could not create account", description: result.error });
           return;
         }
 
         const signedIn = await trySignIn(email, password);
         if (signedIn) {
-          notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
+          notify({ title: "Account created!", description: "Redirecting to dashboard..." }, "success");
           navigate({ to: "/dashboard" });
           return;
         }
 
         notify(
           {
-            title: "Conta criada",
-            description: "Use Entrar com este email e senha para acessar o painel.",
+            title: "Account created",
+            description: "Use Sign in with this email and password to access the dashboard.",
           },
           "success",
         );
@@ -174,7 +174,7 @@ function AuthPage() {
 
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      notify({ title: "Login realizado!", description: "Redirecionando..." }, "success");
+      notify({ title: "Signed in!", description: "Redirecting..." }, "success");
       navigate({ to: "/dashboard" });
     } catch (err) {
       const notice = getAuthNotice(err);
@@ -193,10 +193,10 @@ function AuthPage() {
             Biosy
           </Link>
           <h1 className="mt-6 text-2xl font-bold">
-            {mode === "signin" ? "Bem-vindo de volta" : "Crie sua conta"}
+            {mode === "signin" ? "Welcome back" : "Create your account"}
           </h1>
           <p className="mt-1 text-sm text-white/60">
-            {mode === "signin" ? "Entre para gerenciar seu perfil" : "Comece a criar seu perfil em segundos"}
+            {mode === "signin" ? "Sign in to manage your profile" : "Start building your profile in seconds"}
           </p>
         </div>
 
@@ -204,14 +204,14 @@ function AuthPage() {
           <form onSubmit={handleEmail} className="space-y-3">
             {mode === "signup" && (
               <div>
-                <label className="mb-1 block text-xs text-white/60">Nome de usuário</label>
+                <label className="mb-1 block text-xs text-white/60">Username</label>
                 <div className="flex items-center rounded-lg border border-white/15 bg-white/5 px-3">
                   <span className="text-sm text-white/40">{SITE_PROFILE_PREFIX}</span>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(cleanUsername(e.target.value))}
-                    placeholder="seunome"
+                    placeholder="yourname"
                     required
                     minLength={MIN_USERNAME_LENGTH}
                     maxLength={MAX_USERNAME_LENGTH}
@@ -233,7 +233,7 @@ function AuthPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Senha</label>
+              <label className="mb-1 block text-xs text-white/60">Password</label>
               <input
                 type="password"
                 value={password}
@@ -252,7 +252,7 @@ function AuthPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-white/50">Força da senha</span>
+                    <span className="text-white/50">Password strength</span>
                     <span className="font-semibold capitalize" style={{ color: strengthColor }}>
                       {strength}
                     </span>
@@ -280,7 +280,7 @@ function AuthPage() {
                 background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))",
               }}
             >
-              {loading ? "Aguarde..." : mode === "signin" ? "Entrar" : "Criar conta"}
+              {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
             </button>
 
             {formNotice && (
@@ -307,7 +307,7 @@ function AuthPage() {
           </form>
 
           <p className="mt-6 text-center text-sm text-white/60">
-            {mode === "signin" ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
+            {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               onClick={() => {
                 setFormNotice(null);
@@ -316,7 +316,7 @@ function AuthPage() {
               className="font-semibold text-pink-hot hover:underline"
               style={{ color: "oklch(0.65 0.28 0)" }}
             >
-              {mode === "signin" ? "Cadastre-se" : "Entrar"}
+              {mode === "signin" ? "Sign up" : "Sign in"}
             </button>
           </p>
         </div>

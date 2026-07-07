@@ -135,7 +135,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
         .maybeSingle();
       if (taken) {
         setSavingProfile(false);
-        toast.error("Este nome de usuário já está em uso");
+        toast.error("This username is already taken");
         return;
       }
     }
@@ -172,13 +172,13 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     };
     onProfileChange(updated);
     setUsername(clean);
-    toast.success("Configurações salvas!");
+    toast.success("Settings saved!");
   };
 
   const handleEmailChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail.trim() || newEmail === email) {
-      toast.error("Informe um e-mail diferente do atual");
+      toast.error("Enter an email different from the current one");
       return;
     }
     setSavingEmail(true);
@@ -188,17 +188,17 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
       toast.error(error.message);
       return;
     }
-    toast.success("Verifique sua caixa de entrada para confirmar o novo e-mail");
+    toast.success("Check your inbox to confirm the new email");
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 8) {
-      toast.error("A senha precisa ter pelo menos 8 caracteres");
+      toast.error("Password must be at least 8 characters");
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("As senhas não coincidem");
+      toast.error("Passwords do not match");
       return;
     }
     setSavingPassword(true);
@@ -210,7 +210,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     }
     setNewPassword("");
     setConfirmPassword("");
-    toast.success("Senha atualizada com sucesso!");
+    toast.success("Password updated successfully!");
   };
 
   const handlePublicTemplateToggle = async (enabled: boolean) => {
@@ -221,12 +221,12 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
       onProfileChange(updated);
       toast.success(
         enabled
-          ? "Template público ativado! Seu estilo será publicado e atualizado automaticamente."
-          : "Template público desativado.",
+          ? "Public template enabled! Your style will be published and updated automatically."
+          : "Public template disabled.",
       );
     } catch (e) {
       setPublicTemplate(!enabled);
-      toast.error(e instanceof Error ? e.message : "Erro ao atualizar template público");
+      toast.error(e instanceof Error ? e.message : "Error updating public template");
     } finally {
       setTogglingTemplate(false);
     }
@@ -238,9 +238,9 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     try {
       const url = await uploadProfileAsset(profile.id, "share_embed", file);
       setEmbedImageUrl(url);
-      toast.success("Banner do embed enviado!");
+      toast.success("Embed banner uploaded!");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+      toast.error(e instanceof Error ? e.message : "Failed to upload image");
     } finally {
       setUploadingEmbedImage(false);
     }
@@ -250,7 +250,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     setEmbedTitle("");
     setEmbedDescription("");
     setEmbedImageUrl("");
-    toast.message("Campos restaurados para o padrão. Salve para aplicar.");
+    toast.message("Fields reset to defaults. Save to apply.");
   };
 
   const previewSource = {
@@ -269,19 +269,19 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
         <div>
           <h1 className="flex items-center gap-2 text-xl font-bold text-white">
             <Shield className="h-5 w-5 text-pink-400" />
-            Conta
+            Account
           </h1>
           <p className="mt-1 text-sm text-white/45">
-            Link do perfil, embed ao compartilhar, privacidade e dados da conta.
+            Profile link, share embed, privacy, and account details.
           </p>
         </div>
 
-        <DashCard title="Nome de usuário">
+        <DashCard title="Username">
           <p className="mb-4 text-xs leading-relaxed text-white/45">
-            Seu link público é baseado no nome de usuário. Ao alterá-lo, o link antigo deixa de
-            funcionar.
+            Your public link is based on your username. When you change it, the old link stops
+            working.
           </p>
-          <label className="mb-1 block text-xs font-medium text-white/55">Link do perfil</label>
+          <label className="mb-1 block text-xs font-medium text-white/55">Profile link</label>
           <div className="mb-3 flex items-center rounded-xl border border-white/[0.08] bg-black/30 px-3">
             <Link2 className="mr-2 h-4 w-4 shrink-0 text-white/35" />
             <span className="shrink-0 text-sm text-white/40">{origin ? `${origin.replace(/^https?:\/\//, "")}/` : "/"}</span>
@@ -293,7 +293,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               minLength={MIN_USERNAME_LENGTH}
               maxLength={MAX_USERNAME_LENGTH}
               className="w-full bg-transparent py-3 text-sm text-white outline-none"
-              placeholder="seuusuario"
+              placeholder="yourusername"
             />
           </div>
           <Link
@@ -303,21 +303,21 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             className="inline-flex items-center gap-1.5 text-xs text-pink-400 transition hover:text-pink-300"
           >
             <AtSign className="h-3.5 w-3.5" />
-            Ver página @{username || profile.username}
+            View page @{username || profile.username}
           </Link>
         </DashCard>
 
-        <DashCard title="Template público">
+        <DashCard title="Public template">
           <p className="mb-4 text-xs leading-relaxed text-white/45">
-            Publique seu estilo atual como template da comunidade. Qualquer pessoa pode copiar layout,
-            cores, tamanhos e efeitos — avatar, imagens e músicas de quem usar continuam os deles.
-            O template aparece como{" "}
-            <span className="text-white/70">Template de {profile.display_name || profile.username}</span>{" "}
-            e atualiza automaticamente quando você salva o perfil.
+            Publish your current style as a community template. Anyone can copy layout,
+            colors, sizes, and effects — avatars, images, and music from users who apply it remain their own.
+            The template appears as{" "}
+            <span className="text-white/70">{profile.display_name || profile.username}&apos;s Template</span>{" "}
+            and updates automatically when you save your profile.
           </p>
           <PrivacyToggle
-            label="Template público"
-            description="Sincroniza seu estilo ao vivo na galeria de templates públicos"
+            label="Public template"
+            description="Syncs your live style to the public template gallery"
             checked={publicTemplate}
             onChange={(v) => {
               if (!togglingTemplate) void handlePublicTemplateToggle(v);
@@ -329,21 +329,21 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             className="mt-4 inline-flex items-center gap-1.5 text-xs text-pink-400 transition hover:text-pink-300"
           >
             <Globe className="h-3.5 w-3.5" />
-            Ver galeria de templates
+            View template gallery
           </Link>
         </DashCard>
 
-        <DashCard title="Embed ao compartilhar">
+        <DashCard title="Share embed">
           <p className="mb-4 text-xs leading-relaxed text-white/45">
-            Personalize como o seu link aparece no Discord, WhatsApp, Twitter e outros apps.
-            As alterações valem só para{" "}
-            <span className="text-white/70">{previewUrl}</span>. Campos vazios usam o padrão da
-            Biosy.
+            Customize how your link appears on Discord, WhatsApp, Twitter, and other apps.
+            Changes apply only to{" "}
+            <span className="text-white/70">{previewUrl}</span>. Empty fields use Biosy
+            defaults.
           </p>
 
           <div className="mb-5 overflow-hidden rounded-xl border border-[#1e1f22] bg-[#2b2d31]">
             <div className="border-b border-[#1e1f22] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[#949ba4]">
-              Prévia (Discord)
+              Preview (Discord)
             </div>
             <div className="space-y-2 p-3">
               <p className="text-xs text-[#00a8fc]">{previewUrl}</p>
@@ -363,7 +363,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-white/55">Título</label>
+              <label className="mb-1.5 block text-xs font-medium text-white/55">Title</label>
               <input
                 value={embedTitle}
                 onChange={(e) => setEmbedTitle(e.target.value.slice(0, SHARE_EMBED_TITLE_MAX))}
@@ -372,12 +372,12 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
                 className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
               />
               <p className="mt-1 text-[10px] text-white/35">
-                {embedTitle.length}/{SHARE_EMBED_TITLE_MAX} · Padrão: {DEFAULT_SHARE_EMBED_TITLE}
+                {embedTitle.length}/{SHARE_EMBED_TITLE_MAX} · Default: {DEFAULT_SHARE_EMBED_TITLE}
               </p>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-white/55">Descrição</label>
+              <label className="mb-1.5 block text-xs font-medium text-white/55">Description</label>
               <textarea
                 value={embedDescription}
                 onChange={(e) =>
@@ -396,19 +396,19 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/55">
                 <ImageIcon className="h-3.5 w-3.5" />
-                Banner da mensagem
+                Banner image
               </label>
               {embedImageUrl ? (
                 <div className="mb-3 overflow-hidden rounded-xl border border-white/[0.08]">
                   <img src={embedImageUrl} alt="" className="max-h-40 w-full object-cover" />
                 </div>
               ) : (
-                <p className="mb-3 text-xs text-white/40">Usando banner padrão da Biosy.</p>
+                <p className="mb-3 text-xs text-white/40">Using default Biosy banner.</p>
               )}
               <div className="flex flex-wrap gap-2">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10">
                   <Upload className="h-4 w-4" />
-                  {uploadingEmbedImage ? "Enviando..." : "Enviar imagem"}
+                  {uploadingEmbedImage ? "Uploading..." : "Upload image"}
                   <input
                     type="file"
                     accept="image/*"
@@ -423,12 +423,12 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
                     onClick={() => setEmbedImageUrl("")}
                     className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/70 transition hover:bg-white/[0.06]"
                   >
-                    Remover imagem
+                    Remove image
                   </button>
                 ) : null}
               </div>
               <p className="mt-2 text-[10px] text-white/35">
-                Recomendado: 1200×630 px (proporção larga). Discord usa essa imagem no topo do
+                Recommended: 1200×630 px (wide ratio). Discord uses this image at the top of the
                 embed.
               </p>
             </div>
@@ -442,7 +442,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              {savingProfile ? "Salvando..." : "Salvar embed"}
+              {savingProfile ? "Saving..." : "Save embed"}
             </button>
             <button
               type="button"
@@ -450,34 +450,34 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition hover:bg-white/[0.06]"
             >
               <RotateCcw className="h-4 w-4" />
-              Restaurar padrão
+              Reset to default
             </button>
           </div>
         </DashCard>
 
-        <DashCard title="Visibilidade no card">
+        <DashCard title="Card visibility">
           <p className="mb-4 text-xs text-white/45">
-            Escolha quais informações ficam visíveis no canto do seu card público.
+            Choose which information is visible in the corner of your public card.
           </p>
           <div className="space-y-2">
             <PrivacyToggle
-              label="Mostrar @ no card"
-              description="Exibe o nome de usuário (@username) abaixo do nome exibido"
+              label="Show @ on card"
+              description="Displays the username (@username) below the display name"
               checked={showUsername}
               onChange={setShowUsername}
             />
             <PrivacyToggle
-              label="Mostrar visualizações"
-              description="Exibe o contador de visualizações no canto superior direito"
+              label="Show views"
+              description="Displays the view counter in the top-right corner"
               checked={showViews}
               onChange={setShowViews}
             />
             <PrivacyToggle
-              label="Mostrar UID"
+              label="Show UID"
               description={
                 profile.public_uid != null
-                  ? `Exibe #${profile.public_uid.toLocaleString("pt-BR")} no canto superior esquerdo`
-                  : "Exibe seu UID no canto superior esquerdo do card"
+                  ? `Displays #${profile.public_uid.toLocaleString("en-US")} in the top-left corner`
+                  : "Displays your UID in the top-left corner of the card"
               }
               checked={showUid}
               onChange={setShowUid}
@@ -490,16 +490,16 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
-            {savingProfile ? "Salvando..." : "Salvar alterações"}
+            {savingProfile ? "Saving..." : "Save changes"}
           </button>
         </DashCard>
 
-        <DashCard title="E-mail da conta">
+        <DashCard title="Account email">
           <form onSubmit={handleEmailChange} className="space-y-3">
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/55">
                 <Mail className="h-3.5 w-3.5" />
-                E-mail atual
+                Current email
               </label>
               <input
                 value={email}
@@ -508,7 +508,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-white/55">Novo e-mail</label>
+              <label className="mb-1.5 block text-xs font-medium text-white/55">New email</label>
               <input
                 type="email"
                 value={newEmail}
@@ -522,17 +522,17 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               disabled={savingEmail}
               className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
             >
-              {savingEmail ? "Enviando..." : "Alterar e-mail"}
+              {savingEmail ? "Sending..." : "Change email"}
             </button>
           </form>
         </DashCard>
 
-        <DashCard title="Senha">
+        <DashCard title="Password">
           <form onSubmit={handlePasswordChange} className="space-y-3">
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/55">
                 <KeyRound className="h-3.5 w-3.5" />
-                Nova senha
+                New password
               </label>
               <input
                 type="password"
@@ -540,12 +540,12 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
                 onChange={(e) => setNewPassword(e.target.value)}
                 autoComplete="new-password"
                 className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
-                placeholder="Mínimo 8 caracteres"
+                placeholder="Minimum 8 characters"
               />
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-white/55">
-                Confirmar nova senha
+                Confirm new password
               </label>
               <input
                 type="password"
@@ -553,7 +553,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 autoComplete="new-password"
                 className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
-                placeholder="Repita a senha"
+                placeholder="Repeat password"
               />
             </div>
             <button
@@ -561,7 +561,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               disabled={savingPassword}
               className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
             >
-              {savingPassword ? "Salvando..." : "Alterar senha"}
+              {savingPassword ? "Saving..." : "Change password"}
             </button>
           </form>
         </DashCard>

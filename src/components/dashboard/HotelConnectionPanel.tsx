@@ -225,7 +225,7 @@ function PlatformConnectSection({
     setValidateUnlockAt(now + HOTEL_OTP_WAIT_MS);
     setOtpExpiresAt(now + HOTEL_OTP_WAIT_MS + HOTEL_OTP_VALIDATE_WINDOW_MS);
     setTransferPending(false);
-    toast.success("Código gerado — coloque na missão do personagem");
+    toast.success("Code generated — add it to your character's motto");
   };
 
   const fetchFreshMotto = async (lookupName: string, hotelDomainValue: string | null) => {
@@ -335,8 +335,8 @@ function PlatformConnectSection({
         resetVerification();
         toast.success(
           forceTransfer
-            ? `${PLATFORM_LABELS[platform]} transferido e conectado!`
-            : `${PLATFORM_LABELS[platform]} verificado e conectado!`,
+            ? `${PLATFORM_LABELS[platform]} transferred and connected!`
+            : `${PLATFORM_LABELS[platform]} verified and connected!`,
         );
         return;
       }
@@ -346,7 +346,7 @@ function PlatformConnectSection({
         return;
       }
 
-      toast.error(result.error ?? "Falha ao validar.");
+      toast.error(result.error ?? "Validation failed.");
       if (result.code === "expired") {
         resetVerification();
       }
@@ -359,9 +359,9 @@ function PlatformConnectSection({
     if (!otp) return;
     try {
       await navigator.clipboard.writeText(otp);
-      toast.success("Código copiado");
+      toast.success("Code copied");
     } catch {
-      toast.error("Não foi possível copiar o código");
+      toast.error("Could not copy code");
     }
   };
 
@@ -371,7 +371,7 @@ function PlatformConnectSection({
     setPreview(null);
     setConnecting(false);
     resetVerification();
-    toast.success(`${PLATFORM_LABELS[platform]} desconectado`);
+    toast.success(`${PLATFORM_LABELS[platform]} disconnected`);
   };
 
   const displayData = preview ?? storedData;
@@ -384,7 +384,7 @@ function PlatformConnectSection({
         <p className="text-xs font-semibold text-white/80">{PLATFORM_LABELS[platform]}</p>
         {connected && (
           <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-            Conectado
+            Connected
           </span>
         )}
       </div>
@@ -406,7 +406,7 @@ function PlatformConnectSection({
           onClick={() => setConnecting(true)}
           className="w-full rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2.5 text-xs font-medium text-white/80 transition hover:bg-white/[0.1]"
         >
-          Conectar {PLATFORM_LABELS[platform]}
+          Connect {PLATFORM_LABELS[platform]}
         </button>
       )}
 
@@ -435,7 +435,7 @@ function PlatformConnectSection({
 
           <label className="block">
             <span className="mb-1 flex items-center gap-2 text-xs text-white/50">
-              Nome do jogador
+              Player name
               {loading && <Loader2 className="h-3 w-3 animate-spin" />}
             </span>
             <input
@@ -446,14 +446,14 @@ function PlatformConnectSection({
                 resetVerification();
               }}
               disabled={loading || verificationPending}
-              placeholder="Ex: Grabando"
+              placeholder="e.g. Grabando"
               className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 disabled:opacity-60"
             />
           </label>
 
           <p className="text-[11px] leading-relaxed text-white/45">
-            Gere um código e coloque na <strong className="font-medium text-white/60">missão</strong> do
-            personagem no {PLATFORM_LABELS[platform]} para provar que a conta é sua.
+            Generate a code and add it to your character&apos;s <strong className="font-medium text-white/60">motto</strong> on
+            {PLATFORM_LABELS[platform]} to prove the account is yours.
           </p>
 
           {error && (
@@ -465,7 +465,7 @@ function PlatformConnectSection({
           {preview && (
             <div className="overflow-hidden rounded-xl border border-pink-500/20 bg-pink-500/5 p-2">
               <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-white/45">
-                Pré-visualização
+                Preview
               </p>
               <HotelProfileCard
                 data={preview}
@@ -483,18 +483,18 @@ function PlatformConnectSection({
               disabled={loading}
               className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Gerar código de verificação
+              Generate verification code
             </button>
           )}
 
           {verificationPending && (
             <div className="space-y-3 rounded-lg border border-pink-500/30 bg-pink-500/10 p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-white/70">Coloque este código na missão do personagem:</p>
+                <p className="text-xs text-white/70">Add this code to your character&apos;s motto:</p>
                 {waitSecondsLeft > 0 ? (
                   <span className="text-xs font-semibold text-pink-200">{waitSecondsLeft}s</span>
                 ) : (
-                  <span className="text-xs font-semibold text-emerald-300">Pronto</span>
+                  <span className="text-xs font-semibold text-emerald-300">Ready</span>
                 )}
               </div>
               <button
@@ -505,12 +505,12 @@ function PlatformConnectSection({
                 {otp}
               </button>
               <p className="text-[11px] leading-relaxed text-white/50">
-                No jogo, abra o perfil do personagem e edite a missão. Cole o código, salve e aguarde
-                65s. Ao clicar em Validar, buscamos a missão atualizada na API do hotel.
+                In-game, open your character profile and edit the motto. Paste the code, save, and wait
+                65s. When you click Validate, we fetch the updated motto from the hotel API.
               </p>
               {preview.motto ? (
                 <p className="rounded-md border border-white/10 bg-black/30 px-2.5 py-2 text-[11px] text-white/55">
-                  <span className="font-medium text-white/70">Missão na API agora: </span>
+                  <span className="font-medium text-white/70">Current motto from API: </span>
                   {preview.motto}
                 </p>
               ) : null}
@@ -521,10 +521,10 @@ function PlatformConnectSection({
                 className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {verifying
-                  ? "Verificando missão..."
+                  ? "Verifying motto..."
                   : waitSecondsLeft > 0
-                    ? `Aguarde ${waitSecondsLeft}s`
-                    : "Validar"}
+                    ? `Wait ${waitSecondsLeft}s`
+                    : "Validate"}
               </button>
               {transferPending && (
                 <div className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
@@ -537,7 +537,7 @@ function PlatformConnectSection({
                     disabled={verifying || !canValidate}
                     className="w-full rounded-lg border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-50 transition hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {verifying ? "Transferindo..." : "Continuar e vincular aqui"}
+                    {verifying ? "Transferring..." : "Continue and link here"}
                   </button>
                 </div>
               )}
@@ -554,7 +554,7 @@ function PlatformConnectSection({
             }}
             className="w-full rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"
           >
-            Cancelar
+            Cancel
           </button>
         </div>
       )}
@@ -566,7 +566,7 @@ function PlatformConnectSection({
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-300 transition hover:bg-red-500/15"
         >
           <Unplug className="h-3.5 w-3.5" />
-          Desconectar {PLATFORM_LABELS[platform]}
+          Disconnect {PLATFORM_LABELS[platform]}
         </button>
       )}
     </div>
@@ -592,8 +592,8 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
         Habbo & Habblet
       </p>
       <p className="text-[11px] leading-relaxed text-white/40">
-        Você pode conectar Habbo Hotel e Habblet ao mesmo tempo — são perfis separados. A verificação
-        exige colocar um código na missão do personagem.
+        You can connect Habbo Hotel and Habblet at the same time — they are separate profiles. Verification
+        requires adding a code to your character&apos;s motto.
       </p>
 
       <PlatformConnectSection
@@ -615,10 +615,10 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
       {anyConnected && (
         <div className="space-y-3 border-t border-white/[0.06] pt-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
-            Layout dos cards
+            Card layout
           </p>
           <OptionGrid
-            label="Posição"
+            label="Position"
             value={layout.placement}
             options={["inside", "outside"]}
             labels={HOTEL_CARD_PLACEMENT_LABELS}
@@ -629,7 +629,7 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
             }
           />
           <OptionGrid
-            label="Disposição"
+            label="Arrangement"
             value={layout.row}
             options={["same_row", "separate_row"]}
             labels={HOTEL_CARD_ROW_LABELS}
@@ -639,16 +639,16 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
           />
           {layout.placement === "outside" && (
             <p className="text-[10px] leading-relaxed text-white/35">
-              Ao lado: coluna estreita em pé, mesma altura do card — nome em cima, avatar grande no centro, info embaixo. Abaixo: faixa horizontal na largura do card — um ocupa tudo, dois dividem a linha.
+              Beside: narrow vertical column, same height as the card — name on top, large avatar in the center, info below. Below: horizontal strip across the card width — one fills the row, two split it.
             </p>
           )}
           {layout.placement === "inside" && (
             <p className="text-[10px] leading-relaxed text-white/35">
-              Ao lado: Habbo e Habblet lado a lado no rodapé do card. Abaixo: um embaixo do outro. Com um só conectado, ocupa a largura inteira.
+              Beside: Habbo and Habblet side by side in the card footer. Below: stacked vertically. With only one connected, it spans the full width.
             </p>
           )}
           <OptionGrid
-            label="Forma"
+            label="Shape"
             value={layout.shape}
             options={["rectangle", "square"]}
             labels={HOTEL_CARD_SHAPE_LABELS}
@@ -658,11 +658,11 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
           />
           {layout.placement === "outside" && layout.row === "same_row" && (
             <p className="text-[10px] leading-relaxed text-white/35">
-              Ao lado: altura sempre igual ao card principal. Tamanho só muda a finura (largura) do retângulo.
+              Beside: height always matches the main card. Size only changes the width of the rectangle.
             </p>
           )}
           <OptionGrid
-            label="Tamanho"
+            label="Size"
             value={layout.size}
             options={["sm", "md", "lg"]}
             labels={HOTEL_CARD_SIZE_LABELS}

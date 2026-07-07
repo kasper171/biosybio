@@ -79,16 +79,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Biosy — Seu mundo. Seu perfil. Seu jeito." },
-      { name: "description", content: "Crie um perfil único com links, músicas, álbuns, cards, redes sociais e muito mais. Tudo em um só lugar." },
+      { title: "Biosy — Your world. Your profile. Your way." },
+      { name: "description", content: "Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place." },
       { name: "author", content: "Biosy" },
-      { property: "og:title", content: "Biosy — Seu mundo. Seu perfil. Seu jeito." },
-      { property: "og:description", content: "Crie um perfil único com links, músicas, álbuns, cards, redes sociais e muito mais. Tudo em um só lugar." },
+      { property: "og:title", content: "Biosy — Your world. Your profile. Your way." },
+      { property: "og:description", content: "Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_ORIGIN },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Biosy — Seu mundo. Seu perfil. Seu jeito." },
-      { name: "twitter:description", content: "Crie um perfil único com links, músicas, álbuns, cards, redes sociais e muito mais. Tudo em um só lugar." },
+      { name: "twitter:title", content: "Biosy — Your world. Your profile. Your way." },
+      { name: "twitter:description", content: "Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place." },
     ],
     links: [
       {

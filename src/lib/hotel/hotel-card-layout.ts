@@ -18,24 +18,24 @@ export type HotelCardLayoutConfig = {
 };
 
 export const HOTEL_CARD_PLACEMENT_LABELS: Record<HotelCardPlacement, string> = {
-  inside: "Dentro do card principal",
-  outside: "Card separado",
+  inside: "Inside main card",
+  outside: "Separate card",
 };
 
 export const HOTEL_CARD_ROW_LABELS: Record<HotelCardRow, string> = {
-  same_row: "Ao lado",
-  separate_row: "Abaixo",
+  same_row: "Beside",
+  separate_row: "Below",
 };
 
 export const HOTEL_CARD_SHAPE_LABELS: Record<HotelCardShape, string> = {
-  rectangle: "Retângulo",
-  square: "Quadrado",
+  rectangle: "Rectangle",
+  square: "Square",
 };
 
 export const HOTEL_CARD_SIZE_LABELS: Record<HotelCardSize, string> = {
-  sm: "Pequeno",
-  md: "Médio",
-  lg: "Grande",
+  sm: "Small",
+  md: "Medium",
+  lg: "Large",
 };
 
 const RECT_HEIGHT: Record<HotelCardSize, number> = {

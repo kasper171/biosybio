@@ -22,8 +22,8 @@ export type HotelFetchResult =
   | { ok: false; error: HotelFetchErrorCode; message: string };
 
 export const HOTEL_FETCH_MESSAGES: Record<HotelFetchErrorCode, string> = {
-  user_not_found: "Jogador não encontrado. Verifique o nome e o hotel selecionado.",
-  service_unavailable: "Serviço temporariamente indisponível. Tente novamente em instantes.",
-  invalid_username: "Informe um nome de jogador válido.",
-  invalid_hotel: "Hotel inválido. Selecione um hotel da lista.",
+  user_not_found: "Player not found. Check the name and selected hotel.",
+  service_unavailable: "Service temporarily unavailable. Try again in a moment.",
+  invalid_username: "Enter a valid player name.",
+  invalid_hotel: "Invalid hotel. Select a hotel from the list.",
 };

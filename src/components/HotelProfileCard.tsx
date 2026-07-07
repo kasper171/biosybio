@@ -108,7 +108,7 @@ function HotelStats({
         ? String(data.level)
         : null
       : data.achievementPoints != null
-        ? data.achievementPoints.toLocaleString("pt-BR")
+        ? data.achievementPoints.toLocaleString("en-US")
         : null;
 
   return (

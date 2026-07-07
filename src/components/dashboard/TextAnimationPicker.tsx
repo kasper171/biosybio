@@ -104,7 +104,7 @@ export function TextAnimationPicker({
             : "border-white/[0.08] bg-white/[0.03] text-white/70 hover:border-white/15 hover:bg-white/[0.05]",
         )}
       >
-        <span className="font-medium">Nenhum efeito</span>
+        <span className="font-medium">No effect</span>
         {value === "none" && <Check className="ml-auto h-4 w-4 text-pink-400" />}
       </button>
 

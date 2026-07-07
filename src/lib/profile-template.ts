@@ -151,7 +151,7 @@ export function extractThemeFromProfile(profile: Profile): ProfileTheme {
     tap_reveal_blur: profile.tap_reveal_blur ?? 20,
     tap_reveal_brightness: profile.tap_reveal_brightness ?? 55,
     tap_reveal_mode: profile.tap_reveal_mode ?? "avatar_text",
-    tap_reveal_text: profile.tap_reveal_text ?? "Toque para revelar",
+    tap_reveal_text: profile.tap_reveal_text ?? "Tap to reveal",
     card_reveal_effect: profile.card_reveal_effect ?? "fade",
     text_typing_name_effect: profile.text_typing_name_effect !== false,
     text_typing_bio_effect: profile.text_typing_bio_effect !== false,
@@ -168,7 +168,7 @@ export function themeToProfileUpdate(theme: ProfileTheme): Record<string, unknow
 
 export function liveTemplateName(profile: Profile): string {
   const label = profile.display_name?.trim() || profile.username;
-  return `Template de ${label}`;
+  return `Template of ${label}`;
 }
 
 function mapTemplateRow(
@@ -366,7 +366,7 @@ export async function applyTemplateToProfile(
     .eq("id", templateId)
     .maybeSingle();
   if (error) throw error;
-  if (!data) throw new Error("Template não encontrado");
+  if (!data) throw new Error("Template not found");
 
   const theme = data.theme as ProfileTheme;
   const updated = applyThemeToProfile(profile, theme);
@@ -435,5 +435,5 @@ export async function setPublicTemplateEnabled(
 export function formatTemplateCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return n.toLocaleString("pt-BR");
+  return n.toLocaleString("en-US");
 }

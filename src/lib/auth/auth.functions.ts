@@ -41,7 +41,7 @@ export const signUpFn = createServerFn({ method: "POST" })
     } catch {
       return {
         ok: false as const,
-        error: "Servidor de cadastro não configurado. Tente novamente em instantes.",
+        error: "Sign-up server is not configured. Try again in a moment.",
         code: "server_misconfigured" as const,
       };
     }
@@ -56,7 +56,7 @@ export const signUpFn = createServerFn({ method: "POST" })
       return {
         ok: false as const,
         error:
-          "Este nome de usuário já está em uso. Se você tentou criar agora, use Entrar com seu email.",
+          "This username is already taken. If you just tried to sign up, sign in with your email.",
         code: "username_taken" as const,
         tryLogin: true as const,
       };
@@ -78,7 +78,7 @@ export const signUpFn = createServerFn({ method: "POST" })
         return {
           ok: false as const,
           error:
-            "Este email já está cadastrado. Se você tentou criar agora, use Entrar com este email e senha.",
+            "This email is already registered. If you just tried to sign up, sign in with this email and password.",
           code: "email_exists" as const,
           tryLogin: true as const,
         };
@@ -86,14 +86,14 @@ export const signUpFn = createServerFn({ method: "POST" })
       if (msg.includes("weak") || msg.includes("pwned")) {
         return {
           ok: false as const,
-          error: "Senha fraca ou já vazada. Escolha outra senha.",
+          error: "Weak or leaked password. Choose another password.",
           code: "weak_password" as const,
         };
       }
       console.error("[signUpFn]", error.message);
       return {
         ok: false as const,
-        error: "Não foi possível criar a conta. Tente novamente em instantes.",
+        error: "Could not create the account. Try again in a moment.",
         code: "signup_failed" as const,
       };
     }

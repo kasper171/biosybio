@@ -80,7 +80,7 @@ export function useDashboardProfile() {
       if (fetchErr) toast.error(fetchErr.message);
       else if (created && active) await applyProfile(created as Record<string, unknown>);
       else if (upsertErr) toast.error(upsertErr.message);
-      else toast.error("Não foi possível carregar seu perfil. Recarregue a página.");
+      else toast.error("Could not load your profile. Reload the page.");
 
       if (active) setLoading(false);
     })();

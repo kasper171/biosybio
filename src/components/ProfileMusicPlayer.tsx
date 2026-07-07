@@ -30,7 +30,7 @@ export function ProfileMusicPlayerFloating() {
                 type="button"
                 onClick={togglePlay}
                 className="grid h-7 w-7 shrink-0 place-items-center rounded-sm text-white/90 transition hover:bg-white/10"
-                title={isPlaying ? "Pausar" : "Tocar"}
+                title={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               </button>
@@ -51,7 +51,7 @@ export function ProfileMusicPlayerFloating() {
                 type="button"
                 onClick={() => setOpen(false)}
                 className="grid h-7 w-7 place-items-center rounded-sm text-white/80 transition hover:bg-white/10"
-                title="Fechar player"
+                title="Close player"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -68,7 +68,7 @@ export function ProfileMusicPlayerFloating() {
                   onInput={(e) => seek(Number(e.currentTarget.value))}
                   onChange={(e) => seek(Number(e.currentTarget.value))}
                   className="biosy-range-input w-full"
-                  aria-label="Progresso da faixa"
+                  aria-label="Track progress"
                 />
               </div>
             </div>
@@ -80,7 +80,7 @@ export function ProfileMusicPlayerFloating() {
           className={`grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:scale-105 hover:bg-black/55 ${
             isPlaying ? "animate-[biosy-music-pulse_1s_ease-in-out_infinite]" : ""
           }`}
-          title="Abrir player de música"
+          title="Open music player"
         >
           <Music2 className="h-5 w-5" />
         </button>

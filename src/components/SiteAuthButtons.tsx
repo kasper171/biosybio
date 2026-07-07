@@ -37,7 +37,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
           className={cn(gradientBtn, "px-6 py-3", className)}
           style={gradientStyle}
         >
-          Ir para o Dashboard <ArrowRight className="h-4 w-4" />
+          Go to Dashboard <ArrowRight className="h-4 w-4" />
         </Link>
       );
     }
@@ -70,7 +70,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
         className={cn(gradientBtn, "px-6 py-3", className)}
         style={gradientStyle}
       >
-        Criar meu perfil grátis <ArrowRight className="h-4 w-4" />
+        Create my profile for free <ArrowRight className="h-4 w-4" />
       </Link>
     );
   }
@@ -78,7 +78,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <Link to="/auth" className="hidden text-sm text-white/80 transition hover:text-white sm:block">
-        Entrar
+        Sign in
       </Link>
       <Link
         to="/auth"
@@ -86,7 +86,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
         className={gradientBtn}
         style={gradientStyle}
       >
-        Criar meu perfil <ArrowRight className="h-4 w-4" />
+        Create my profile <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
   );

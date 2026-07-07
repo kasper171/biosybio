@@ -1,9 +1,9 @@
 export type CardRevealEffect = "fade" | "slide_up" | "scale";
 
 export const CARD_REVEAL_OPTIONS: { key: CardRevealEffect; label: string; hint: string }[] = [
-  { key: "fade", label: "Lento", hint: "Aparece aos poucos" },
-  { key: "slide_up", label: "Subir", hint: "Sobe suavemente" },
-  { key: "scale", label: "Zoom", hint: "Cresce do centro" },
+  { key: "fade", label: "Slow", hint: "Fades in gradually" },
+  { key: "slide_up", label: "Rise", hint: "Slides up smoothly" },
+  { key: "scale", label: "Zoom", hint: "Grows from the center" },
 ];
 
 export function normalizeCardRevealEffect(raw: string | undefined): CardRevealEffect {

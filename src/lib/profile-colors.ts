@@ -32,9 +32,9 @@ export type TextGlowTarget =
   | "discord_body";
 
 export const TEXT_GLOW_SCOPE_LABELS: Record<TextGlowScope, string> = {
-  display_name: "Apenas no nome de exibição",
-  titles: "Apenas em títulos",
-  all: "Em todos os textos da página",
+  display_name: "Display name only",
+  titles: "Titles only",
+  all: "All page text",
 };
 
 export function normalizeTextGlowScope(value: unknown): TextGlowScope {

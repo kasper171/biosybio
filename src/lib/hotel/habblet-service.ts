@@ -23,7 +23,7 @@ export async function fetchHabbletProfile(
 ): Promise<HotelFetchResult> {
   const name = username.trim();
   if (!name) {
-    return { ok: false, error: "invalid_username", message: "Nome inválido" };
+    return { ok: false, error: "invalid_username", message: "Invalid name" };
   }
 
   const url = `https://api.habblet.city/player/${encodeURIComponent(name)}`;
@@ -39,19 +39,19 @@ export async function fetchHabbletProfile(
     return {
       ok: false,
       error: "service_unavailable",
-      message: "Não foi possível contactar o Habblet",
+      message: "Could not reach Habblet",
     };
   }
 
   if (response.status === 404) {
-    return { ok: false, error: "user_not_found", message: "Jogador não encontrado" };
+    return { ok: false, error: "user_not_found", message: "Player not found" };
   }
 
   if (!response.ok) {
     return {
       ok: false,
       error: "service_unavailable",
-      message: `Habblet retornou erro (${response.status})`,
+      message: `Habblet returned an error (${response.status})`,
     };
   }
 
@@ -59,11 +59,11 @@ export async function fetchHabbletProfile(
   try {
     user = await response.json();
   } catch {
-    return { ok: false, error: "service_unavailable", message: "Resposta inválida do Habblet" };
+    return { ok: false, error: "service_unavailable", message: "Invalid response from Habblet" };
   }
 
   if (!user?.username || !user.figure) {
-    return { ok: false, error: "user_not_found", message: "Jogador não encontrado" };
+    return { ok: false, error: "user_not_found", message: "Player not found" };
   }
 
   const data: HotelProfileData = {

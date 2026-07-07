@@ -33,7 +33,7 @@ export function LanyardCard({ userId, role }: { userId: string; role: string }) 
     };
   }, [userId]);
 
-  const name = data?.user?.global_name || data?.user?.username || "Carregando...";
+  const name = data?.user?.global_name || data?.user?.username || "Loading...";
   const avatarUrl = data?.user?.avatar
     ? `https://cdn.discordapp.com/avatars/${userId}/${data.user.avatar}.png?size=256`
     : `https://cdn.discordapp.com/embed/avatars/0.png`;

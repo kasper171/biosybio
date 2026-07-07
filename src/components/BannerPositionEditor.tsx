@@ -28,9 +28,9 @@ export function BannerPositionEditor({ url, posX, posY, onChange }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-white/60">Posição do banner</p>
+        <p className="text-xs font-medium text-white/60">Banner position</p>
         <span className="flex items-center gap-1 text-[10px] text-white/40">
-          <Move className="h-3 w-3" /> Arraste a imagem
+          <Move className="h-3 w-3" /> Drag the image
         </span>
       </div>
       <div
@@ -71,7 +71,7 @@ export function BannerPositionEditor({ url, posX, posY, onChange }: Props) {
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/80 bg-pink-500/40 shadow" />
       </div>
       <p className="text-[10px] text-white/40">
-        Foco: {Math.round(posX)}% horizontal · {Math.round(posY)}% vertical
+        Focus: {Math.round(posX)}% horizontal · {Math.round(posY)}% vertical
       </p>
     </div>
   );

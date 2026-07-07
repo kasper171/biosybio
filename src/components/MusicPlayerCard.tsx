@@ -110,7 +110,7 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
           className={`relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full border border-white/15 bg-black/25 transition hover:scale-[1.03] hover:bg-black/35 sm:h-16 sm:w-16 ${
             isPlaying ? "animate-[biosy-music-pulse_1.2s_ease-in-out_infinite]" : ""
           }`}
-          title={isPlaying ? "Pausar" : "Tocar"}
+          title={isPlaying ? "Pause" : "Play"}
         >
           {artUrl ? (
             <img src={artUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -136,7 +136,7 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
             </p>
           ) : (
             <p className="truncate text-xs" style={mutedStyle}>
-              {trackTitle !== displayTitle ? trackTitle : "Tocando agora"}
+              {trackTitle !== displayTitle ? trackTitle : "Now playing"}
             </p>
           )}
 
@@ -154,7 +154,7 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
                 onInput={(e) => seek(Number(e.currentTarget.value))}
                 onChange={(e) => seek(Number(e.currentTarget.value))}
                 className="biosy-range-input w-full"
-                aria-label="Progresso da faixa"
+                aria-label="Track progress"
               />
             </div>
             <span className="shrink-0 text-[10px] tabular-nums sm:text-xs" style={mutedStyle}>
@@ -173,7 +173,7 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
             type="button"
             onClick={togglePlay}
             className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-white/5 text-white/90 transition hover:bg-white/10"
-            title={isPlaying ? "Pausar" : "Tocar"}
+            title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </button>

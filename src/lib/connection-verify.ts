@@ -5,7 +5,7 @@ export const CONNECTION_OTP_WAIT_MS = 50_000;
 export const CONNECTION_OTP_VALIDATE_WINDOW_MS = 120_000;
 
 export const CONNECTION_ALREADY_LINKED_MESSAGE =
-  "Esse usuário já está vinculado. Se você continuar, será desvinculado do outro perfil.";
+  "This user is already linked. If you continue, they will be unlinked from the other profile.";
 
 export function generateConnectionOtp(): string {
   let code = "";

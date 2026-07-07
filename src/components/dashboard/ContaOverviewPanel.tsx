@@ -42,7 +42,7 @@ type PersonalizePanel = "midia" | "perfil" | "conexoes" | "redes";
 function formatViews(count: number): string {
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return count.toLocaleString("pt-BR");
+  return count.toLocaleString("en-US");
 }
 
 export function ContaOverviewPanel({ profile }: Props) {
@@ -82,37 +82,37 @@ export function ContaOverviewPanel({ profile }: Props) {
     const url = profilePublicUrl(profile.username);
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copiado!");
+      toast.success("Link copied!");
     } catch {
-      toast.error("Não foi possível copiar");
+      toast.error("Could not copy");
     }
   };
 
   const shortcuts = [
     {
-      label: "Estúdio",
-      desc: "Editar card",
+      label: "Studio",
+      desc: "Edit card",
       icon: Palette,
       search: { view: "personalizar" as const, panel: "aparencia" as const },
       accent: "from-violet-500/20 to-fuchsia-500/10",
     },
     {
-      label: "Mídia",
-      desc: "Fotos e banner",
+      label: "Media",
+      desc: "Photos & banner",
       icon: ImageIcon,
       search: { view: "personalizar" as const, panel: "midia" as const },
       accent: "from-sky-500/20 to-blue-500/10",
     },
     {
-      label: "Perfil",
-      desc: "Nome e bio",
+      label: "Profile",
+      desc: "Name & bio",
       icon: User,
       search: { view: "personalizar" as const, panel: "perfil" as const },
       accent: "from-emerald-500/20 to-teal-500/10",
     },
     {
-      label: "Métricas",
-      desc: "Ver tudo",
+      label: "Analytics",
+      desc: "View all",
       icon: Eye,
       search: { section: "estatisticas" as const },
       accent: "from-pink-500/20 to-rose-500/10",
@@ -146,7 +146,7 @@ export function ContaOverviewPanel({ profile }: Props) {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="dash-t-caption font-medium uppercase tracking-widest text-pink-300/80">
-                    Seu espaço Biosy
+                    Your Biosy space
                   </p>
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 dash-t-caption font-semibold ${
@@ -156,7 +156,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                     }`}
                   >
                     {isPremiumPlan && <Crown className="h-3 w-3 shrink-0" aria-hidden />}
-                    {isPremiumPlan ? "Plano Premium" : "Plano: Free"}
+                    {isPremiumPlan ? "Premium plan" : "Plan: Free"}
                   </span>
                 </div>
                 <h1 className="mt-1 dash-t-heading font-bold tracking-tight text-white">
@@ -165,18 +165,18 @@ export function ContaOverviewPanel({ profile }: Props) {
                 <p className="mt-1 dash-t-body text-white/50">
                   <span className="text-white/70">@{profile.username}</span>
                   {profile.public_uid != null && (
-                    <span className="text-white/35"> · membro {profile.public_uid}</span>
+                    <span className="text-white/35"> · member {profile.public_uid}</span>
                   )}
                 </p>
                 <p className="mt-2 dash-t-caption text-white/40">
                   <span className="font-semibold text-white/80">
                     {formatViews(profile.view_count ?? 0)}
                   </span>{" "}
-                  visitas no total
+                  total views
                   {viewsLast7 > 0 && (
                     <span className="text-emerald-400/90">
                       {" "}
-                      · +{formatViews(viewsLast7)} nos últimos 7 dias
+                      · +{formatViews(viewsLast7)} in the last 7 days
                     </span>
                   )}
                 </p>
@@ -190,7 +190,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                 target="_blank"
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 dash-t-body font-semibold text-[#0b0b0f] transition hover:bg-white/90"
               >
-                Ver ao vivo
+                View live
                 <ArrowUpRight className="dash-icon-sm" />
               </Link>
               <Link
@@ -198,7 +198,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                 search={{ view: "personalizar", panel: "perfil" }}
                 className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-2.5 dash-t-body font-medium text-white transition hover:bg-white/10"
               >
-                Abrir editor
+                Open editor
               </Link>
               <button
                 type="button"
@@ -206,7 +206,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                 className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 dash-t-body text-white/60 transition hover:border-white/20 hover:text-white"
               >
                 <Copy className="dash-icon-sm" />
-                Copiar link
+                Copy link
               </button>
             </div>
           </div>
@@ -218,9 +218,9 @@ export function ContaOverviewPanel({ profile }: Props) {
           <section className="biosy-dash-panel lg:col-span-8 lg:row-span-2">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h2 className="dash-t-title font-semibold text-white">Tráfego da semana</h2>
+                <h2 className="dash-t-title font-semibold text-white">Weekly traffic</h2>
                 <p className="mt-1 dash-t-caption text-white/40">
-                  Visitas únicas por dia no seu perfil público
+                  Unique visits per day on your public profile
                 </p>
               </div>
               <Link
@@ -228,7 +228,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                 search={{ section: "estatisticas" }}
                 className="dash-t-caption font-medium text-pink-400 transition hover:text-pink-300"
               >
-                Relatório completo →
+                Full report →
               </Link>
             </div>
 
@@ -259,7 +259,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                         borderRadius: 12,
                         fontSize: 14,
                       }}
-                      formatter={(value) => [`${value} visitas`, "Dia"]}
+                      formatter={(value) => [`${value} views`, "Day"]}
                     />
                     <Bar
                       dataKey="views"
@@ -281,11 +281,11 @@ export function ContaOverviewPanel({ profile }: Props) {
 
           {/* Completion ring + checklist */}
           <section className="biosy-dash-panel flex flex-col lg:col-span-4">
-            <h2 className="dash-t-title font-semibold text-white">Montagem do perfil</h2>
+            <h2 className="dash-t-title font-semibold text-white">Profile setup</h2>
             <p className="mt-1 dash-t-caption text-white/40">
               {completion === 100
-                ? "Tudo pronto — seu card está completo."
-                : `${pendingTasks.length} detalhe${pendingTasks.length === 1 ? "" : "s"} pendente${pendingTasks.length === 1 ? "" : "s"}`}
+                ? "All set — your card is complete."
+                : `${pendingTasks.length} pending detail${pendingTasks.length === 1 ? "" : "s"}`}
             </p>
 
             <div className="my-6 flex items-center gap-5">
@@ -325,7 +325,7 @@ export function ContaOverviewPanel({ profile }: Props) {
 
           {/* Integrations — compact */}
           <section className="biosy-dash-panel lg:col-span-4">
-            <h2 className="mb-4 dash-t-title font-semibold text-white">Vínculos</h2>
+            <h2 className="mb-4 dash-t-title font-semibold text-white">Connections</h2>
             <div className="space-y-2.5">
               <Link
                 to="/dashboard"
@@ -340,7 +340,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                 <div className="min-w-0 flex-1">
                   <p className="dash-t-body font-medium text-white">Discord</p>
                   <p className="dash-t-caption text-white/40">
-                    {hasDiscord ? "Conectado ao card" : "Mostrar status no perfil"}
+                    {hasDiscord ? "Connected to card" : "Show status on profile"}
                   </p>
                 </div>
                 <ArrowUpRight className="dash-icon-sm shrink-0 text-white/25" />
@@ -355,8 +355,8 @@ export function ContaOverviewPanel({ profile }: Props) {
                   <Link2 className="dash-icon-md text-white/55" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="dash-t-body font-medium text-white">Links externos</p>
-                  <p className="dash-t-caption text-white/40">Redes e portfólios</p>
+                  <p className="dash-t-body font-medium text-white">External links</p>
+                  <p className="dash-t-caption text-white/40">Socials & portfolios</p>
                 </div>
                 <ArrowUpRight className="dash-icon-sm shrink-0 text-white/25" />
               </Link>
@@ -370,8 +370,8 @@ export function ContaOverviewPanel({ profile }: Props) {
                   <Share2 className="dash-icon-md text-pink-300" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="dash-t-body font-medium text-white">Divulgar</p>
-                  <p className="dash-t-caption text-white/40">Copiar URL pública</p>
+                  <p className="dash-t-body font-medium text-white">Share</p>
+                  <p className="dash-t-caption text-white/40">Copy public URL</p>
                 </div>
               </button>
             </div>
@@ -380,7 +380,7 @@ export function ContaOverviewPanel({ profile }: Props) {
 
         {/* Shortcuts row */}
         <section>
-          <h2 className="mb-4 dash-t-title font-semibold text-white">Atalhos rápidos</h2>
+          <h2 className="mb-4 dash-t-title font-semibold text-white">Quick shortcuts</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {shortcuts.map((item) => (
               <Link

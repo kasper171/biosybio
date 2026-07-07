@@ -118,7 +118,7 @@ export function ProfileRoleBadges({
         align === "center" ? "justify-center" : "justify-start",
         className,
       )}
-      aria-label="Cargos do perfil"
+      aria-label="Profile roles"
     >
       {roles.map((role) => (
         <RoleBadgeIcon

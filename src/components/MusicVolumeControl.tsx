@@ -30,8 +30,8 @@ export function MusicVolumeControl({
         type="button"
         onClick={onToggleMute}
         className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-white/70 transition hover:bg-white/10 hover:text-white"
-        title="Mutar / desmutar"
-        aria-label="Mutar ou desmutar"
+        title="Mute / unmute"
+        aria-label="Mute or unmute"
       >
         {muted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
       </button>

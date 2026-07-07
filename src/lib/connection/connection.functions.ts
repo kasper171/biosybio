@@ -86,19 +86,19 @@ export const checkConnectionConflictFn = createServerFn({ method: "POST" })
 function mapHotelVerifyError(code: string): string {
   switch (code) {
     case "invalid_username":
-      return "Nome do jogador inválido.";
+      return "Invalid player name.";
     case "invalid_hotel":
-      return "Hotel inválido.";
+      return "Invalid hotel.";
     case "user_not_found":
-      return "Jogador não encontrado.";
+      return "Player not found.";
     case "code_not_found":
-      return "O código não foi encontrado na missão do seu personagem.";
+      return "The code was not found in your character's motto.";
     case "expired":
-      return "O código expirou. Gere um novo código e tente novamente.";
+      return "The code expired. Generate a new one and try again.";
     case "waiting":
-      return `Aguarde ${HOTEL_OTP_WAIT_SECONDS} segundos antes de validar.`;
+      return `Wait ${HOTEL_OTP_WAIT_SECONDS} seconds before validating.`;
     default:
-      return "Falha ao validar. Tente novamente em instantes.";
+      return "Validation failed. Try again in a moment.";
   }
 }
 
@@ -162,7 +162,7 @@ export const linkVerifiedConnectionFn = createServerFn({ method: "POST" })
       return {
         ok: false as const,
         needsTransfer: false as const,
-        error: "Não foi possível salvar a conexão. Tente novamente.",
+        error: "Could not save the connection. Try again.",
       };
     }
 

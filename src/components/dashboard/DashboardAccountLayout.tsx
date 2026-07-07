@@ -60,17 +60,17 @@ type NavLink = {
 };
 
 const PERSONALIZE_PANELS: { key: PersonalizePanelKey; label: string; icon: LucideIcon }[] = [
-  { key: "perfil", label: "Perfil", icon: User },
-  { key: "midia", label: "Mídia", icon: ImageIcon },
-  { key: "audio", label: "Áudio", icon: Music2 },
-  { key: "blocos", label: "Blocos", icon: LayoutGrid },
-  { key: "aparencia", label: "Aparência", icon: Palette },
-  { key: "molduras", label: "Molduras", icon: Frame },
-  { key: "efeitos", label: "Efeitos", icon: Sparkles },
+  { key: "perfil", label: "Profile", icon: User },
+  { key: "midia", label: "Media", icon: ImageIcon },
+  { key: "audio", label: "Audio", icon: Music2 },
+  { key: "blocos", label: "Blocks", icon: LayoutGrid },
+  { key: "aparencia", label: "Appearance", icon: Palette },
+  { key: "molduras", label: "Frames", icon: Frame },
+  { key: "efeitos", label: "Effects", icon: Sparkles },
   { key: "colors", label: "Colors", icon: Paintbrush },
-  { key: "redes", label: "Redes sociais", icon: Link2 },
-  { key: "conexoes", label: "Conexões", icon: Link2 },
-  { key: "comentarios", label: "Comentários", icon: MessageSquare },
+  { key: "redes", label: "Social links", icon: Link2 },
+  { key: "conexoes", label: "Connections", icon: Link2 },
+  { key: "comentarios", label: "Comments", icon: MessageSquare },
 ];
 
 type Props = {
@@ -104,14 +104,14 @@ export function DashboardAccountLayout({
   const contaLinks: NavLink[] = [
     {
       id: "overview",
-      label: "Painel",
+      label: "Dashboard",
       icon: LayoutDashboard,
       to: "/dashboard",
       active: activeSection === "overview",
     },
     {
       id: "stats",
-      label: "Métricas",
+      label: "Analytics",
       icon: BarChart3,
       to: "/dashboard",
       search: { section: "estatisticas" },
@@ -127,7 +127,7 @@ export function DashboardAccountLayout({
     },
     {
       id: "privacidade",
-      label: "Conta",
+      label: "Account",
       icon: Shield,
       to: "/dashboard",
       search: { section: "privacidade" },
@@ -144,9 +144,9 @@ export function DashboardAccountLayout({
     const url = profilePublicUrl(profile.username);
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copiado!");
+      toast.success("Link copied!");
     } catch {
-      toast.error("Não foi possível copiar o link");
+      toast.error("Could not copy link");
     }
   };
 
@@ -168,7 +168,7 @@ export function DashboardAccountLayout({
 
         <nav className="biosy-nav-no-scrollbar min-h-0 flex-1 px-3 py-4">
           <p className="dash-t-section mb-2 px-3 font-semibold uppercase tracking-wider text-white/30">
-            Navegação
+            Navigation
           </p>
           <div className="mb-6 space-y-0.5">
             {contaLinks.map((item) => (
@@ -177,7 +177,7 @@ export function DashboardAccountLayout({
           </div>
 
           <p className="dash-t-section mb-2 px-3 font-semibold uppercase tracking-wider text-white/30">
-            Estúdio
+            Studio
           </p>
           <div className="mb-4 space-y-0.5">
             {isPersonalizar ? (
@@ -198,7 +198,7 @@ export function DashboardAccountLayout({
               <SidebarLink
                 item={{
                   id: "personalizar",
-                  label: "Abrir editor",
+                  label: "Open editor",
                   icon: Palette,
                   to: "/dashboard",
                   search: { view: "personalizar", panel: "perfil" },
@@ -218,7 +218,7 @@ export function DashboardAccountLayout({
               className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
             >
               <ExternalLink className="dash-icon-md" />
-              Minha página
+              My page
             </Link>
             <button
               type="button"
@@ -226,7 +226,7 @@ export function DashboardAccountLayout({
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
             >
               <Share2 className="dash-icon-md" />
-              Compartilhar link
+              Share link
             </button>
           </div>
 
@@ -253,7 +253,7 @@ export function DashboardAccountLayout({
               type="button"
               onClick={handleLogout}
               className="shrink-0 rounded-lg p-1.5 text-white/35 transition hover:bg-white/10 hover:text-white"
-              title="Sair"
+              title="Log out"
             >
               <LogOut className="dash-icon-sm" />
             </button>

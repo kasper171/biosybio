@@ -71,7 +71,7 @@ export function HomeDashboardPreview({ variant = "standalone" }: HomeDashboardPr
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0b0b0f]">
                     <img
                       src={dashboardPreview}
-                      alt="Prévia do dashboard Biosy"
+                      alt="Biosy dashboard preview"
                       className="h-full w-full object-cover object-left-top"
                       draggable={false}
                     />

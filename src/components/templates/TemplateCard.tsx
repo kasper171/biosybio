@@ -14,7 +14,7 @@ function buildTemplatePreviewProfile(template: ProfileTemplateWithAuthor): Profi
     // conteúdo fictício (não copiar dados do autor)
     username: "template",
     display_name: "Template",
-    bio: "Prévia do estilo",
+    bio: "Style preview",
     // mídia (fica vazio no preview)
     avatar_url: null,
     banner_url: null,
@@ -121,7 +121,7 @@ export function TemplateCard({
   className,
 }: Props) {
   const theme = template.theme;
-  const authorLabel = template.author_display_name || template.author_username || "Usuário";
+  const authorLabel = template.author_display_name || template.author_username || "User";
   const previewProfile = buildTemplatePreviewProfile(template);
 
   return (
@@ -147,7 +147,7 @@ export function TemplateCard({
         {template.is_live && (
           <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300 ring-1 ring-emerald-400/30">
             <Zap className="h-3 w-3" />
-            Ao vivo
+            Live
           </span>
         )}
       </div>
@@ -178,11 +178,11 @@ export function TemplateCard({
 
         <div className="mt-auto flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 text-xs text-white/45">
-            <span className="inline-flex items-center gap-1" title="Usos">
+            <span className="inline-flex items-center gap-1" title="Uses">
               <Heart className="h-3.5 w-3.5 text-rose-400/80" />
               {formatTemplateCount(template.use_count)}
             </span>
-            <span className="inline-flex items-center gap-1" title="Favoritos">
+            <span className="inline-flex items-center gap-1" title="Favorites">
               <Star className="h-3.5 w-3.5 text-amber-400/80" />
               {formatTemplateCount(template.favorite_count)}
             </span>
@@ -198,8 +198,8 @@ export function TemplateCard({
                   ? "border-amber-400/30 bg-amber-400/10 text-amber-300"
                   : "border-white/10 bg-white/[0.03] text-white/55 hover:bg-white/[0.06] hover:text-white",
               )}
-              title={template.is_favorited ? "Remover dos favoritos" : "Favoritar"}
-              aria-label={template.is_favorited ? "Remover dos favoritos" : "Favoritar"}
+              title={template.is_favorited ? "Remove from favorites" : "Favorite"}
+              aria-label={template.is_favorited ? "Remove from favorites" : "Favorite"}
             >
               <Star className={cn("h-3.5 w-3.5", template.is_favorited && "fill-current")} />
             </button>
@@ -209,7 +209,7 @@ export function TemplateCard({
               disabled={using}
               className="rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
             >
-              {using ? "Aplicando..." : "Usar"}
+              {using ? "Applying..." : "Use"}
             </button>
           </div>
         </div>

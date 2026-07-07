@@ -97,22 +97,22 @@ export type ProfileBlockInput = {
 };
 
 export const BLOCK_TYPE_LABELS: Record<ProfileBlockType, string> = {
-  link: "Link destacado",
-  button: "Botão de ação",
+  link: "Featured link",
+  button: "Action button",
   spotify: "Spotify",
   youtube: "YouTube",
-  discord_invite: "Convite Discord",
+  discord_invite: "Discord invite",
 };
 
 export const BLOCK_PLACEMENT_LABELS: Record<ProfileBlockPlacement, string> = {
-  inside: "Dentro do card",
-  outside: "Card separado abaixo",
+  inside: "Inside card",
+  outside: "Separate card below",
 };
 
 export const BLOCK_SIZE_LABELS: Record<ProfileBlockSize, string> = {
-  sm: "Pequeno",
-  md: "Médio",
-  lg: "Grande",
+  sm: "Small",
+  md: "Medium",
+  lg: "Large",
 };
 
 export function normalizeBlockSize(
@@ -526,7 +526,7 @@ export function getErrorMessage(err: unknown): string {
   if (err && typeof err === "object" && "message" in err) {
     return String((err as { message: string }).message);
   }
-  return "Erro desconhecido";
+  return "Unknown error";
 }
 
 async function fetchOEmbed(url: string): Promise<{ title?: string; author_name?: string; thumbnail_url?: string } | null> {

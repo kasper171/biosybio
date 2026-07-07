@@ -242,28 +242,28 @@ function mapVerifyError(
 ): string {
   switch (error) {
     case "invalid_id":
-      return "ID do Discord inválido.";
+      return "Invalid Discord ID.";
     case "invalid_username":
-      return "Nome do jogador inválido.";
+      return "Invalid player name.";
     case "invalid_hotel":
-      return "Hotel inválido.";
+      return "Invalid hotel.";
     case "not_in_lanyard":
-      return "Você não está no servidor Lanyard.";
+      return "You are not in the Lanyard server.";
     case "profile_not_found":
-      return "Não foi possível encontrar este perfil do Discord.";
+      return "Could not find this Discord profile.";
     case "user_not_found":
-      return "Jogador não encontrado.";
+      return "Player not found.";
     case "code_not_found":
       return platform === "discord"
-        ? "O código não foi encontrado na descrição do seu perfil."
-        : "O código não foi encontrado na missão do seu personagem.";
+        ? "The code was not found in your profile description."
+        : "The code was not found in your character's motto.";
     case "expired":
-      return "O código expirou. Gere um novo código e tente novamente.";
+      return "The code expired. Generate a new one and try again.";
     case "waiting":
       return platform === "discord"
-        ? `Aguarde ${CONNECTION_OTP_WAIT_MS / 1000} segundos antes de validar.`
-        : `Aguarde ${HOTEL_OTP_WAIT_SECONDS} segundos antes de validar.`;
+        ? `Wait ${CONNECTION_OTP_WAIT_MS / 1000} seconds before validating.`
+        : `Wait ${HOTEL_OTP_WAIT_SECONDS} seconds before validating.`;
     default:
-      return "Falha ao validar. Tente novamente em instantes.";
+      return "Validation failed. Try again in a moment.";
   }
 }

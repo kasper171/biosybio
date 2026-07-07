@@ -221,13 +221,13 @@ function CardLayoutContent({
           style={badgeStyle}
         >
           <Hash className="h-3.5 w-3.5 shrink-0" aria-hidden style={iconStyle} />
-          <span>{profile.public_uid.toLocaleString("pt-BR")}</span>
+          <span>{profile.public_uid.toLocaleString("en-US")}</span>
         </div>
       )}
       {profile.show_view_count !== false && (
         <div
           className="absolute right-3 top-3 z-[10] flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium backdrop-blur-sm"
-          title="Visualizações"
+          title="Views"
           style={badgeStyle}
         >
           <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden style={iconStyle} />
@@ -480,7 +480,7 @@ function CardLayoutContent({
 function formatViewCount(count: number): string {
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return count.toLocaleString("pt-BR");
+  return count.toLocaleString("en-US");
 }
 
 type Props = {

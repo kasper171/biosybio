@@ -99,8 +99,8 @@ function BlockDisplayOptions({
     <div className="space-y-2">
       <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2.5">
         <div>
-          <p className="text-xs font-medium text-white">Dividir espaço</p>
-          <p className="text-[10px] text-white/45">Alinha na mesma linha (máx. 3 juntos)</p>
+          <p className="text-xs font-medium text-white">Share row</p>
+          <p className="text-[10px] text-white/45">Aligns on the same row (max. 3 together)</p>
         </div>
         <input
           type="checkbox"
@@ -112,7 +112,7 @@ function BlockDisplayOptions({
       <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2.5">
         <div>
           <p className="text-xs font-medium text-white">Card</p>
-          <p className="text-[10px] text-white/45">Desligado = só o embed/mídia, sem moldura do site</p>
+          <p className="text-[10px] text-white/45">Off = embed/media only, no site frame</p>
         </div>
         <input
           type="checkbox"
@@ -136,7 +136,7 @@ function BlockShapeSelect({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs text-white/50">Forma</span>
+      <span className="mb-1 block text-xs text-white/50">Shape</span>
       <div className={`grid gap-1.5 ${shapes.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
         {shapes.map((s) => (
           <button
@@ -169,7 +169,7 @@ function BlockSizeSelect({
   if (sizes.length === 1) {
     return (
       <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2.5">
-        <p className="text-xs text-white/50">Tamanho</p>
+        <p className="text-xs text-white/50">Size</p>
         <p className="mt-0.5 text-sm font-medium text-white">{BLOCK_SIZE_LABELS[sizes[0]]}</p>
       </div>
     );
@@ -177,7 +177,7 @@ function BlockSizeSelect({
 
   return (
     <label className="block">
-      <span className="mb-1 block text-xs text-white/50">Tamanho</span>
+      <span className="mb-1 block text-xs text-white/50">Size</span>
       <div className="grid grid-cols-3 gap-1.5">
         {sizes.map((s) => (
           <button
@@ -258,11 +258,11 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
 
   const handleCreate = async () => {
     if (blocks.length >= MAX_PROFILE_BLOCKS) {
-      toast.error(`Limite de ${MAX_PROFILE_BLOCKS} blocos atingido`);
+      toast.error(`Block limit of ${MAX_PROFILE_BLOCKS} reached`);
       return;
     }
     if (!draft.url.trim()) {
-      toast.error("Informe um link");
+      toast.error("Enter a link");
       return;
     }
     setSaving(true);
@@ -319,9 +319,9 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
       refresh([...blocks, created]);
       setDraft(emptyDraft(draft.placement));
       setAdding(false);
-      toast.success("Bloco adicionado");
+      toast.success("Block added");
     } catch (err) {
-      toast.error(getErrorMessage(err) || "Erro ao criar bloco");
+      toast.error(getErrorMessage(err) || "Error creating block");
     } finally {
       setSaving(false);
     }
@@ -358,9 +358,9 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
       });
       refresh(blocks.map((b) => (b.id === block.id ? updated : b)));
       setEditingId(null);
-      toast.success("Bloco atualizado");
+      toast.success("Block updated");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar");
+      toast.error(err instanceof Error ? err.message : "Error saving");
     } finally {
       setSaving(false);
     }
@@ -370,9 +370,9 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
     try {
       await deleteProfileBlock(id);
       refresh(blocks.filter((b) => b.id !== id));
-      toast.success("Bloco removido");
+      toast.success("Block removed");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao remover");
+      toast.error(err instanceof Error ? err.message : "Error removing");
     }
   };
 
@@ -392,7 +392,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
       const next = reordered.map((b, i) => ({ ...b, sort_order: i }));
       refresh([...others, ...next]);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao reordenar");
+      toast.error(err instanceof Error ? err.message : "Error reordering");
     }
   };
 
@@ -401,7 +401,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
       const updated = await updateProfileBlock(block.id, { enabled: !block.enabled });
       refresh(blocks.map((b) => (b.id === block.id ? updated : b)));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao atualizar");
+      toast.error(err instanceof Error ? err.message : "Error updating");
     }
   };
 
@@ -414,12 +414,12 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-xs leading-relaxed text-white/50">
-        Máximo de <strong className="text-white/70">{MAX_PROFILE_BLOCKS} blocos</strong>.
-        Tamanhos são fixos (pequeno, médio, grande) para todos os tipos. Escolha a forma: retângulo, quadrado ou redondo.
-        Use <strong className="text-white/70">Dividir espaço</strong> para alinhar até 3 na mesma linha.
-        Desative <strong className="text-white/70">Card</strong> para mostrar só o embed (ex.: player Spotify).
+        Maximum of <strong className="text-white/70">{MAX_PROFILE_BLOCKS} blocks</strong>.
+        Sizes are fixed (small, medium, large) for all types. Choose the shape: rectangle, square, or round.
+        Use <strong className="text-white/70">Share row</strong> to align up to 3 on the same line.
+        Turn off <strong className="text-white/70">Card</strong> to show only the embed (e.g. Spotify player).
       </p>
-      <p className="text-[11px] text-white/35">{blocks.length}/{MAX_PROFILE_BLOCKS} blocos</p>
+      <p className="text-[11px] text-white/35">{blocks.length}/{MAX_PROFILE_BLOCKS} blocks</p>
 
       {!adding ? (
         <button
@@ -429,14 +429,14 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-3 text-sm font-medium text-white/70 transition hover:border-pink-hot/40 hover:bg-white/[0.05] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Plus className="h-4 w-4" />
-          Novo bloco
+          New block
         </button>
       ) : (
         <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-          <h3 className="text-sm font-semibold text-white">Novo bloco</h3>
+          <h3 className="text-sm font-semibold text-white">New block</h3>
 
           <label className="block">
-            <span className="mb-1 block text-xs text-white/50">Posição</span>
+            <span className="mb-1 block text-xs text-white/50">Position</span>
             <select
               value={draft.placement}
               onChange={(e) => {
@@ -458,7 +458,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-xs text-white/50">Tipo</span>
+            <span className="mb-1 block text-xs text-white/50">Type</span>
             <select
               value={draft.block_type}
               onChange={(e) => {
@@ -479,7 +479,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
 
           {isDiscordBlock(draft.block_type) && (
             <p className="text-[10px] leading-relaxed text-white/40">
-              Convite Discord: apenas tamanho grande, formato quadrado ou retângulo.
+              Discord invite: large size only, square or rectangle shape.
             </p>
           )}
 
@@ -517,7 +517,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
               }}
               placeholder={
                 draft.block_type === "discord_invite"
-                  ? "https://discord.gg/seu-convite"
+                  ? "https://discord.gg/your-invite"
                   : "https://open.spotify.com/track/..."
               }
               className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30"
@@ -526,7 +526,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
 
           <label className="block">
             <span className="mb-1 block text-xs text-white/50">
-              {draft.block_type === "button" ? "Texto do botão" : "Título"}
+              {draft.block_type === "button" ? "Button text" : "Title"}
             </span>
             <input
               type="text"
@@ -537,7 +537,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-xs text-white/50">Subtítulo / descrição</span>
+            <span className="mb-1 block text-xs text-white/50">Subtitle / description</span>
             <textarea
               value={draft.subtitle}
               onChange={(e) => setDraft((d) => ({ ...d, subtitle: e.target.value }))}
@@ -548,7 +548,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
 
           {draft.block_type === "link" && (
             <label className="block">
-              <span className="mb-1 block text-xs text-white/50">URL da imagem (opcional)</span>
+              <span className="mb-1 block text-xs text-white/50">Image URL (optional)</span>
               <input
                 type="url"
                 value={draft.image_url}
@@ -565,7 +565,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
               onClick={() => void handleCreate()}
               className="flex-1 rounded-lg bg-pink-hot px-3 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
             >
-              {saving ? "Salvando..." : "Adicionar"}
+              {saving ? "Saving..." : "Add"}
             </button>
             <button
               type="button"
@@ -575,7 +575,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
               }}
               className="rounded-lg border border-white/10 px-3 py-2 text-sm text-white/60 hover:bg-white/5"
             >
-              Cancelar
+              Cancel
             </button>
           </div>
         </div>
@@ -583,7 +583,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
 
       {sorted.length === 0 && !adding && (
         <p className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-6 text-center text-xs text-white/40">
-          Nenhum bloco ainda. Adicione Spotify, YouTube ou links personalizados.
+          No blocks yet. Add Spotify, YouTube, or custom links.
         </p>
       )}
 
@@ -612,14 +612,14 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
                     · {BLOCK_SHAPE_LABELS[block.config.block_shape ?? "rectangle"]}
                   </span>
                   {block.config.share_row && (
-                    <span className="text-[10px] text-pink-hot/80">· divide espaço</span>
+                    <span className="text-[10px] text-pink-hot/80">· shares row</span>
                   )}
                   {block.config.show_card === false && (
-                    <span className="text-[10px] text-white/35">· sem card</span>
+                    <span className="text-[10px] text-white/35">· no card</span>
                   )}
                 </div>
                 <p className="mt-1 truncate text-sm font-medium text-white">
-                  {block.title || block.url || "Sem título"}
+                  {block.title || block.url || "Untitled"}
                 </p>
                 {block.subtitle && (
                   <p className="truncate text-xs text-white/45">{block.subtitle}</p>
@@ -630,7 +630,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
                   type="button"
                   onClick={() => void moveBlock(block, -1)}
                   className="rounded p-1 text-white/40 hover:bg-white/10 hover:text-white"
-                  title="Mover para cima"
+                  title="Move up"
                 >
                   <ArrowUp className="h-3.5 w-3.5" />
                 </button>
@@ -638,7 +638,7 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
                   type="button"
                   onClick={() => void moveBlock(block, 1)}
                   className="rounded p-1 text-white/40 hover:bg-white/10 hover:text-white"
-                  title="Mover para baixo"
+                  title="Move down"
                 >
                   <ArrowDown className="h-3.5 w-3.5" />
                 </button>
@@ -651,14 +651,14 @@ export function BlocosPanel({ profile, blocks, onBlocksChange }: Props) {
                 onClick={() => setEditingId(editingId === block.id ? null : block.id)}
                 className="rounded-lg border border-white/10 px-2.5 py-1 text-xs text-white/70 hover:bg-white/5"
               >
-                {editingId === block.id ? "Fechar" : "Editar"}
+                {editingId === block.id ? "Close" : "Edit"}
               </button>
               <button
                 type="button"
                 onClick={() => void toggleEnabled(block)}
                 className="rounded-lg border border-white/10 px-2.5 py-1 text-xs text-white/70 hover:bg-white/5"
               >
-                {block.enabled ? "Desativar" : "Ativar"}
+                {block.enabled ? "Disable" : "Enable"}
               </button>
               <button
                 type="button"
@@ -802,20 +802,20 @@ function BlockEditForm({
       />
       {fetchingMeta && (
         <p className="flex items-center gap-1 text-[10px] text-white/40">
-          <Loader2 className="h-3 w-3 animate-spin" /> Buscando informações...
+          <Loader2 className="h-3 w-3 animate-spin" /> Fetching details...
         </p>
       )}
       <input
         type="text"
         value={local.title}
         onChange={(e) => setLocal((b) => ({ ...b, title: e.target.value }))}
-        placeholder="Título"
+        placeholder="Title"
         className="w-full rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-xs text-white"
       />
       <textarea
         value={local.subtitle}
         onChange={(e) => setLocal((b) => ({ ...b, subtitle: e.target.value }))}
-        placeholder="Subtítulo / texto"
+        placeholder="Subtitle / text"
         rows={2}
         className="w-full resize-none rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-xs text-white"
       />
@@ -826,14 +826,14 @@ function BlockEditForm({
           onClick={() => onSave(local)}
           className="rounded-lg bg-pink-hot px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
         >
-          Salvar
+          Save
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/60"
         >
-          Cancelar
+          Cancel
         </button>
       </div>
     </div>

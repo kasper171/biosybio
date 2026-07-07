@@ -19,13 +19,13 @@ export function isValidUsernameLength(username: string): boolean {
 export function usernameLengthError(username: string): string | null {
   const clean = cleanUsername(username);
   if (clean.length < MIN_USERNAME_LENGTH) {
-    return `Use pelo menos ${MIN_USERNAME_LENGTH} letras, números ou _.`;
+    return `Use at least ${MIN_USERNAME_LENGTH} letters, numbers, or _.`;
   }
   if (clean.length > MAX_USERNAME_LENGTH) {
-    return `Use no máximo ${MAX_USERNAME_LENGTH} caracteres.`;
+    return `Use at most ${MAX_USERNAME_LENGTH} characters.`;
   }
   if (!USERNAME_PATTERN.test(clean)) {
-    return `Use apenas letras minúsculas, números e _.`;
+    return `Use only lowercase letters, numbers, and _.`;
   }
   return null;
 }

@@ -18,9 +18,9 @@ export type ProfileStatsBundle = {
 
 function formatDayLabel(date: Date, short = true): string {
   if (short) {
-    return date.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit" });
+    return date.toLocaleDateString("en-US", { weekday: "short", day: "2-digit" });
   }
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  return date.toLocaleDateString("en-US", { day: "2-digit", month: "short" });
 }
 
 function toDateKey(date: Date): string {

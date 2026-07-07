@@ -4,9 +4,9 @@ import type { ProfileBlock, ProfileBlockSize } from "@/lib/profile-blocks";
 export type BlockShape = "rectangle" | "square" | "round";
 
 export const BLOCK_SHAPE_LABELS: Record<BlockShape, string> = {
-  rectangle: "Retângulo",
-  square: "Quadrado",
-  round: "Redondo",
+  rectangle: "Rectangle",
+  square: "Square",
+  round: "Round",
 };
 
 const RECT_HEIGHT: Record<ProfileBlockSize, number> = {

@@ -79,9 +79,9 @@ export function HomeStatsSection() {
 
   const items = stats
     ? [
-        { t: "Perfis criados", v: formatPlatformMetric(stats.profileCount) },
-        { t: "Visualizações", v: formatPlatformMetric(stats.totalViews) },
-        { t: "Cliques", v: formatPlatformMetric(stats.totalClicks) },
+        { t: "Profiles created", v: formatPlatformMetric(stats.profileCount) },
+        { t: "Views", v: formatPlatformMetric(stats.totalViews) },
+        { t: "Clicks", v: formatPlatformMetric(stats.totalClicks) },
       ]
     : null;
 
@@ -91,11 +91,11 @@ export function HomeStatsSection() {
         <div className="grid gap-8 lg:grid-cols-[1fr_2.5fr]">
           <div>
             <HomeScrollReveal variant="up">
-              <h2 className="text-3xl font-black">Cresça. Conecte. Inspire.</h2>
+              <h2 className="text-3xl font-black">Grow. Connect. Inspire.</h2>
             </HomeScrollReveal>
             <HomeScrollReveal variant="up" delay={80}>
               <p className="mt-4 text-sm text-white/60">
-                Milhares de criadores já estão transformando seus perfis e alcançando o mundo.
+                Thousands of creators are already transforming their profiles and reaching the world.
               </p>
             </HomeScrollReveal>
           </div>

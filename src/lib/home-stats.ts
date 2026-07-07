@@ -19,7 +19,7 @@ export type FeaturedCreator = {
 };
 
 export function formatPlatformMetric(value: number): string {
-  return new Intl.NumberFormat("pt-BR").format(value);
+  return new Intl.NumberFormat("en-US").format(value);
 }
 
 export function formatCreatorViews(count: number): string {
@@ -52,10 +52,10 @@ export async function fetchCreatorAvatars(limit = 5): Promise<CreatorAvatar[]> {
 }
 
 export function formatHeroCreatorLabel(count: number): string {
-  if (count <= 0) return "Seja o primeiro criador no Biosy";
-  if (count >= 300) return `${count}+ criadores já usam o Biosy`;
-  if (count === 1) return "1 criador já usa o Biosy";
-  return `${count} criadores já usam o Biosy`;
+  if (count <= 0) return "Be the first creator on Biosy";
+  if (count >= 300) return `${count}+ creators already use Biosy`;
+  if (count === 1) return "1 creator already uses Biosy";
+  return `${count} creators already use Biosy`;
 }
 
 export async function fetchPlatformStats(): Promise<PlatformStats> {

@@ -30,7 +30,7 @@ export const TEXT_ANIMATION_IDS: TextAnimationId[] = [
 ];
 
 export const TEXT_ANIMATION_LABELS: Record<TextAnimationId, string> = {
-  none: "Nenhum",
+  none: "None",
   slide_in: "Slide In",
   scale_in: "Scale In",
   bouncy: "Bouncy",

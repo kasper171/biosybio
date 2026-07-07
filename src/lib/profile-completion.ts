@@ -9,10 +9,10 @@ export type ProfileCompletionTask = {
 export function getProfileCompletionTasks(profile: Profile): ProfileCompletionTask[] {
   const hasSocial = Object.values(profile.socials ?? {}).some((v) => Boolean(v?.trim()));
   return [
-    { id: "avatar", label: "Foto de perfil", done: Boolean(profile.avatar_url) },
-    { id: "bio", label: "Bio curta", done: Boolean(profile.bio?.trim()) },
-    { id: "discord", label: "Status no Discord", done: Boolean(profile.discord_user_id) },
-    { id: "social", label: "Pelo menos um link", done: hasSocial },
+    { id: "avatar", label: "Profile photo", done: Boolean(profile.avatar_url) },
+    { id: "bio", label: "Short bio", done: Boolean(profile.bio?.trim()) },
+    { id: "discord", label: "Discord status", done: Boolean(profile.discord_user_id) },
+    { id: "social", label: "At least one link", done: hasSocial },
   ];
 }
 

@@ -29,17 +29,17 @@ export const Route = createFileRoute("/$username")({
     return fetchProfileShareEmbed(params.username);
   },
   head: ({ loaderData, params }) => {
-    if (!loaderData) return { meta: [{ title: "Biosy — Seu mundo. Seu perfil. Seu jeito." }] };
+    if (!loaderData) return { meta: [{ title: "Biosy — Your world. Your profile. Your way." }] };
     return { meta: buildProfileShareMeta(params.username, loaderData) };
   },
   component: PublicProfile,
   notFoundComponent: () => (
     <div className="grid min-h-screen place-items-center text-center">
       <div>
-        <h1 className="text-3xl font-bold">Perfil não encontrado</h1>
-        <p className="mt-2 text-white/60">Este usuário ainda não existe.</p>
+        <h1 className="text-3xl font-bold">Profile not found</h1>
+        <p className="mt-2 text-white/60">This user doesn't exist yet.</p>
         <Link to="/" className="mt-4 inline-block text-pink-500 hover:underline">
-          Voltar
+          Go back
         </Link>
       </div>
     </div>
@@ -124,7 +124,7 @@ function PublicProfile() {
   if (notfound) throw notFound();
 
   if (loading || !profile) {
-    return <div className="grid min-h-screen place-items-center text-white/60">Carregando...</div>;
+    return <div className="grid min-h-screen place-items-center text-white/60">Loading...</div>;
   }
 
   return <PublicProfileView profile={profile} onProfileChange={setProfile} />;

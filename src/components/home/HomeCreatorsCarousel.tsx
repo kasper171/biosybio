@@ -36,7 +36,7 @@ function CreatorCard({ creator }: { creator: FeaturedCreator }) {
           {formatCreatorViews(creator.view_count ?? 0)}
         </span>
       </div>
-      <p className="text-[10px] text-white/50">visualizações</p>
+      <p className="text-[10px] text-white/50">views</p>
     </Link>
   );
 }
@@ -78,7 +78,7 @@ export function HomeCreatorsCarousel() {
         <div>
           <HomeScrollReveal variant="up">
             <h2 className="text-4xl font-black leading-tight">
-              Criadores que
+              Creators who are
               <br />
               <span
                 className="bg-clip-text text-transparent"
@@ -87,15 +87,15 @@ export function HomeCreatorsCarousel() {
                     "linear-gradient(90deg, oklch(0.7 0.28 0), oklch(0.6 0.27 10))",
                 }}
               >
-                estão inspirando
+                inspiring
               </span>
             </h2>
           </HomeScrollReveal>
           <HomeScrollReveal variant="up" delay={80}>
             <p className="mt-4 text-sm text-white/60">
-              Perfis reais da comunidade Biosy.
+              Real profiles from the Biosy community.
               <br />
-              Conecte-se e siga seus favoritos.
+              Connect and follow your favorites.
             </p>
           </HomeScrollReveal>
         </div>
@@ -112,7 +112,7 @@ export function HomeCreatorsCarousel() {
             </div>
           ) : creators.length === 0 ? (
             <div className="card-surface rounded-2xl px-6 py-10 text-center text-sm text-white/55">
-              Em breve criadores com avatar aparecerão aqui.
+              Creators with avatars will appear here soon.
             </div>
           ) : (
             <div

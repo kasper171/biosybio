@@ -439,7 +439,7 @@ export function DiscordPresenceCard({
               "ml-auto flex min-w-0 shrink items-center transition opacity-95 hover:opacity-100",
               isCompactActivity ? "max-w-[36%] gap-0.5" : "gap-3",
             )}
-            title="Ver perfil no Discord"
+            title="View profile on Discord"
           >
             <div className="min-w-0 flex-1 overflow-hidden text-right">
               <p
@@ -495,7 +495,7 @@ export function DiscordPresenceCard({
                 className="grid shrink-0 place-items-center rounded-md border border-white/15 text-white/70"
                 style={{ width: effActivityArtPx, height: effActivityArtPx, fontSize: effActivitySubPx }}
               >
-                Ativo
+                Active
               </div>
             )}
           </a>

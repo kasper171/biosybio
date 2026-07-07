@@ -98,7 +98,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     tap_reveal_blur: Number(p.tap_reveal_blur ?? 20),
     tap_reveal_brightness: Number(p.tap_reveal_brightness ?? 55),
     tap_reveal_mode: (p.tap_reveal_mode as "avatar_text" | "text_only") === "text_only" ? "text_only" : "avatar_text",
-    tap_reveal_text: (p.tap_reveal_text as string) ?? "Toque para revelar",
+    tap_reveal_text: (p.tap_reveal_text as string) ?? "Tap to reveal",
     card_reveal_effect:
       (p.card_reveal_effect as "fade" | "slide_up" | "scale") === "slide_up"
         ? "slide_up"

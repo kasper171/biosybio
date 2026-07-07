@@ -77,7 +77,7 @@ export function FontPickerField({ label, value, onChange, allowInherit = false }
         <label className="text-xs font-medium text-white/55">{label}</label>
         {(selected || isInherit) && (
           <span className="truncate text-[10px] text-pink-300/80">
-            {isInherit ? "Herdar da página" : selected?.label}
+            {isInherit ? "Inherit from page" : selected?.label}
           </span>
         )}
       </div>
@@ -94,7 +94,7 @@ export function FontPickerField({ label, value, onChange, allowInherit = false }
           )}
         >
           <Type className="h-4 w-4 shrink-0 text-pink-400/80" />
-          <span className="font-medium">Herdar da página</span>
+          <span className="font-medium">Inherit from page</span>
           {isInherit && <Check className="ml-auto h-4 w-4 text-pink-400" />}
         </button>
       )}
@@ -105,7 +105,7 @@ export function FontPickerField({ label, value, onChange, allowInherit = false }
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar fonte..."
+          placeholder="Search fonts..."
           className="w-full rounded-xl border border-white/[0.08] bg-black/35 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-pink-500/40 focus:bg-black/45"
         />
       </div>
@@ -123,14 +123,14 @@ export function FontPickerField({ label, value, onChange, allowInherit = false }
                 : "border-white/10 bg-white/[0.03] text-white/45 hover:bg-white/[0.06] hover:text-white/70",
             )}
           >
-            {cat === "all" ? "Todas" : FONT_CATEGORY_LABELS[cat]}
+            {cat === "all" ? "All" : FONT_CATEGORY_LABELS[cat]}
           </button>
         ))}
       </div>
 
       <div className="biosy-scrollbar max-h-52 space-y-1.5 overflow-y-auto rounded-xl border border-white/[0.06] bg-black/25 p-1.5">
         {filtered.length === 0 ? (
-          <p className="px-2 py-6 text-center text-xs text-white/40">Nenhuma fonte encontrada</p>
+          <p className="px-2 py-6 text-center text-xs text-white/40">No fonts found</p>
         ) : (
           filtered.map((font) => (
             <FontRow
