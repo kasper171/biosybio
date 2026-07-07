@@ -100,23 +100,50 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
             <span className="shrink-0 text-[10px] tabular-nums sm:text-xs" style={mutedStyle}>
               {formatTime(current)}
             </span>
-            <input
-              type="range"
-              min={seekMin}
-              max={seekMax}
-              step={0.01}
-              value={Math.min(Math.max(current, seekMin), seekMax)}
-              onChange={(e) => seek(Number(e.target.value))}
-              className="h-1 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
-              aria-label="Progresso da faixa"
-            />
+            <div className="biosy-range-wrap min-w-0 flex-1 py-0">
+              <input
+                type="range"
+                min={seekMin}
+                max={seekMax}
+                step={0.01}
+                value={Math.min(Math.max(current, seekMin), seekMax)}
+                onInput={(e) => seek(Number(e.currentTarget.value))}
+                onChange={(e) => seek(Number(e.currentTarget.value))}
+                className="biosy-range-input w-full"
+                aria-label="Progresso da faixa"
+              />
+            </div>
             <span className="shrink-0 text-[10px] tabular-nums sm:text-xs" style={mutedStyle}>
               {formatTime(seekMax)}
             </span>
           </div>
+
+          <div className="mt-1.5 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
+              title="Mutar / desmutar"
+            >
+              {volume <= 0.001 ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            </button>
+            <div className="biosy-range-wrap min-w-0 flex-1 py-0">
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={volume}
+                onInput={(e) => setVolume(Number(e.currentTarget.value))}
+                onChange={(e) => setVolume(Number(e.currentTarget.value))}
+                className="biosy-range-input w-full"
+                aria-label="Volume"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex shrink-0 flex-col items-center gap-1.5">
+        <div className="flex shrink-0 items-center">
           <button
             type="button"
             onClick={togglePlay}
@@ -125,24 +152,6 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
           >
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </button>
-          <button
-            type="button"
-            onClick={toggleMute}
-            className="grid h-8 w-8 place-items-center rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
-            title="Mutar / desmutar"
-          >
-            {volume <= 0.001 ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={volume}
-            onChange={(e) => setVolume(Number(e.target.value))}
-            className="h-1 w-12 cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
-            aria-label="Volume"
-          />
         </div>
       </div>
     </div>

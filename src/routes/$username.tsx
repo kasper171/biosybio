@@ -11,9 +11,22 @@ import { PublicProfileView } from "@/components/PublicProfileView";
 import { normalizeProfile } from "@/lib/normalize-profile";
 import { attachProfileRoles } from "@/lib/profile-roles";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
+import {
+  fetchProfileShareEmbed,
+  profileShareEmbedHead,
+} from "@/lib/profile/profile-embed.server";
+import { resolveShareEmbedTitle } from "@/lib/share-embed";
 
 export const Route = createFileRoute("/$username")({
-  ssr: false,
+  loader: async ({ params }) => {
+    return fetchProfileShareEmbed(params.username);
+  },
+  head: ({ loaderData, params }) => {
+    if (!loaderData) {
+      return { meta: [{ title: "Perfil não encontrado — Biosy" }] };
+    }
+    return profileShareEmbedHead(params.username, loaderData);
+  },
   component: PublicProfile,
   notFoundComponent: () => (
     <div className="grid min-h-screen place-items-center text-center">
@@ -30,6 +43,7 @@ export const Route = createFileRoute("/$username")({
 
 function PublicProfile() {
   const { username } = Route.useParams();
+  const shareEmbed = Route.useLoaderData();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [notfound, setNotfound] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -89,13 +103,18 @@ function PublicProfile() {
 
       setProfile(finalProfile);
       setLoading(false);
-      document.title = `${finalProfile.display_name || username} — Biosy`;
+      document.title = resolveShareEmbedTitle(finalProfile);
     })();
 
     return () => {
       cancelled = true;
     };
   }, [username]);
+
+  useEffect(() => {
+    if (!shareEmbed) return;
+    document.title = resolveShareEmbedTitle(shareEmbed);
+  }, [shareEmbed]);
 
   if (notfound) throw notFound();
 

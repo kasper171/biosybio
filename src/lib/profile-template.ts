@@ -58,6 +58,7 @@ export type ProfileTheme = {
   social_original_colors: boolean;
   social_icon_color: string;
   social_icon_style: Profile["social_icon_style"];
+  show_social_titles: boolean;
   discord_card_mode: Profile["discord_card_mode"];
   discord_show_badges: boolean;
   discord_inside_scale: number;
@@ -143,6 +144,7 @@ export function extractThemeFromProfile(profile: Profile): ProfileTheme {
     social_original_colors: profile.social_original_colors !== false,
     social_icon_color: profile.social_icon_color ?? "#ffffff",
     social_icon_style: profile.social_icon_style ?? "boxed",
+    show_social_titles: profile.show_social_titles === true,
     discord_card_mode: profile.discord_card_mode ?? "inside",
     discord_show_badges: profile.discord_show_badges !== false,
     discord_inside_scale: profile.discord_inside_scale ?? 100,

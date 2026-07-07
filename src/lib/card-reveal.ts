@@ -11,16 +11,35 @@ export function normalizeCardRevealEffect(raw: string | undefined): CardRevealEf
   return "fade";
 }
 
-/** Atraso do card Discord separado (ms) — só quando discord_card_mode === outside */
-export function getDiscordRevealDelay(effect: CardRevealEffect): number {
+/** Duração estimada da entrada do card principal (ms), antes dos cards secundários. */
+export function getMainCardRevealDurationMs(effect: CardRevealEffect): number {
   switch (effect) {
     case "fade":
-      return 900;
+      return 1000;
     case "slide_up":
-      return 650;
+      return 800;
     case "scale":
-      return 500;
+      return 850;
   }
+}
+
+/** Intervalo entre cada card secundário após o principal (ms). */
+export const SECONDARY_REVEAL_STAGGER_MS = 80;
+
+/**
+ * Atraso de entrada de um card secundário (Discord, hotel, música, blocos…).
+ * `orderAfterMain` = 0 para o primeiro após o principal, 1 para o próximo, etc.
+ */
+export function getSecondaryRevealDelayMs(
+  effect: CardRevealEffect,
+  orderAfterMain: number,
+): number {
+  return getMainCardRevealDurationMs(effect) + orderAfterMain * SECONDARY_REVEAL_STAGGER_MS;
+}
+
+/** @deprecated Use getSecondaryRevealDelayMs — mantido para compatibilidade. */
+export function getDiscordRevealDelay(effect: CardRevealEffect): number {
+  return getMainCardRevealDurationMs(effect);
 }
 
 export function getRevealClass(effect: CardRevealEffect): string {

@@ -59,24 +59,32 @@ export function ProfileMusicPlayerFloating() {
             </div>
 
             <div className="mt-1.5 flex items-center gap-2">
-              <input
-                type="range"
-                min={seekMin}
-                max={seekMax}
-                step={0.01}
-                value={Math.min(Math.max(current, seekMin), seekMax)}
-                onChange={(e) => seek(Number(e.target.value))}
-                className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
-              />
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.01}
-                value={volume}
-                onChange={(e) => setVolume(Number(e.target.value))}
-                className="h-1 w-16 cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
-              />
+              <div className="biosy-range-wrap min-w-0 flex-1 py-0">
+                <input
+                  type="range"
+                  min={seekMin}
+                  max={seekMax}
+                  step={0.01}
+                  value={Math.min(Math.max(current, seekMin), seekMax)}
+                  onInput={(e) => seek(Number(e.currentTarget.value))}
+                  onChange={(e) => seek(Number(e.currentTarget.value))}
+                  className="biosy-range-input w-full"
+                  aria-label="Progresso da faixa"
+                />
+              </div>
+              <div className="biosy-range-wrap w-20 shrink-0 py-0">
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={volume}
+                  onInput={(e) => setVolume(Number(e.currentTarget.value))}
+                  onChange={(e) => setVolume(Number(e.currentTarget.value))}
+                  className="biosy-range-input w-full"
+                  aria-label="Volume"
+                />
+              </div>
             </div>
           </div>
         )}

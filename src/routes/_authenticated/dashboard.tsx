@@ -361,6 +361,7 @@ function Dashboard() {
         social_original_colors: profile.social_original_colors,
         social_icon_color: profile.social_icon_color ?? "#ffffff",
         social_icon_style: profile.social_icon_style ?? "boxed",
+        show_social_titles: profile.show_social_titles === true,
         card_border_style: profile.card_border_style,
         discord_user_id: profile.discord_user_id,
         discord_card_mode: profile.discord_card_mode ?? "inside",
@@ -1550,6 +1551,16 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
               Só logo
             </button>
           </div>
+        </div>
+        <div className="mt-3">
+          <ToggleField
+            label="Mostrar título"
+            checked={profile.show_social_titles === true}
+            onChange={(v) => update("show_social_titles", v)}
+          />
+          <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+            Exibe o nome da rede abaixo do ícone no card (ex.: Imgur, GitHub).
+          </p>
         </div>
       </div>
 

@@ -47,6 +47,7 @@ export type Database = {
           inner_banner_url: string | null
           social_original_colors: boolean
           social_icon_style: string
+          show_social_titles: boolean
           socials: Json
           show_view_count: boolean
           show_username: boolean
@@ -70,6 +71,9 @@ export type Database = {
           music_card_title: string | null
           music_card_subtitle: string | null
           music_card_width_pct: number
+          share_embed_title: string | null
+          share_embed_description: string | null
+          share_embed_image_url: string | null
           updated_at: string
           username: string
           view_count: number
@@ -106,6 +110,7 @@ export type Database = {
           inner_banner_url?: string | null
           social_original_colors?: boolean
           social_icon_style?: string
+          show_social_titles?: boolean
           socials?: Json
           show_view_count?: boolean
           show_username?: boolean
@@ -129,6 +134,9 @@ export type Database = {
           music_card_title?: string | null
           music_card_subtitle?: string | null
           music_card_width_pct?: number
+          share_embed_title?: string | null
+          share_embed_description?: string | null
+          share_embed_image_url?: string | null
           updated_at?: string
           username: string
           view_count?: number
@@ -165,6 +173,7 @@ export type Database = {
           inner_banner_url?: string | null
           social_original_colors?: boolean
           social_icon_style?: string
+          show_social_titles?: boolean
           socials?: Json
           show_view_count?: boolean
           show_username?: boolean
@@ -188,6 +197,9 @@ export type Database = {
           music_card_title?: string | null
           music_card_subtitle?: string | null
           music_card_width_pct?: number
+          share_embed_title?: string | null
+          share_embed_description?: string | null
+          share_embed_image_url?: string | null
           updated_at?: string
           username?: string
           view_count?: number

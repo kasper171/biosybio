@@ -84,7 +84,8 @@ function estimateAlignedSocialHeight(profile: Profile): number {
   const count = countSocials(profile);
   if (!count) return 0;
   const icon = profile.social_icon_style === "logo" ? 32 : 36;
-  return 8 + icon;
+  const titleExtra = profile.show_social_titles === true ? 14 : 0;
+  return 8 + icon + titleExtra;
 }
 
 function estimateSocialRowsHeight(profile: Profile, cardWidth: number): number {
@@ -93,13 +94,14 @@ function estimateSocialRowsHeight(profile: Profile, cardWidth: number): number {
 
   const logo = profile.social_icon_style === "logo";
   const icon = logo ? 36 : 44;
+  const titleExtra = profile.show_social_titles === true ? 14 : 0;
   const gap = 8;
   const rowWidth = cardWidth - 48;
   const rowNeeded = count * icon + (count - 1) * gap;
   if (rowNeeded <= rowWidth) {
-    return 6 + icon;
+    return 6 + icon + titleExtra;
   }
-  return 6 + icon;
+  return 6 + icon + titleExtra;
 }
 
 function roundCardHeight(h: number): number {

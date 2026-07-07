@@ -10,7 +10,7 @@ import { ProfileCommentsSection } from "@/components/ProfileCommentsSection";
 import { ProfileBlocksSection } from "@/components/blocks/ProfileBlocksSection";
 import { MusicPlayerCard } from "@/components/MusicPlayerCard";
 import { splitBlocksByPlacement, type ProfileBlock } from "@/lib/profile-blocks";
-import { getDiscordRevealDelay, normalizeCardRevealEffect } from "@/lib/card-reveal";
+import { getSecondaryRevealDelayMs, normalizeCardRevealEffect } from "@/lib/card-reveal";
 import { getMusicCardWidthPct } from "@/lib/profile-music";
 import {
   getHotelCardLayoutFromProfile,
@@ -45,13 +45,13 @@ export function ProfilePageContent({
 }: Props) {
   const entries = Object.entries(profile.socials || {}).filter(([, v]) => v);
   const useBrand = profile.social_original_colors !== false;
+  const showSocialTitles = profile.show_social_titles === true;
   const discordMode = profile.discord_card_mode ?? "inside";
   const socialIconStyle = profile.social_icon_style ?? "boxed";
   const bgBlur = profile.background_blur ?? 0;
   const bgBrightness = profile.background_brightness ?? 100;
   const revealEffect = normalizeCardRevealEffect(profile.card_reveal_effect);
   const discordOutside = Boolean(profile.discord_user_id && discordMode === "outside");
-  const discordDelay = getDiscordRevealDelay(revealEffect);
   const cardInitial =
     revealEffect === "scale"
       ? { scale: 0.86 }
@@ -80,7 +80,6 @@ export function ProfilePageContent({
 
   const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const { inside: insideBlocks, outside: outsideBlocks } = splitBlocksByPlacement(blocks);
-  const outsideBlockDelay = discordOutside ? discordDelay + 80 : discordDelay;
 
   const hotelLayout = getHotelCardLayoutFromProfile(profile);
   const hotelConnections = listHotelConnections(profile);
@@ -202,6 +201,22 @@ export function ProfilePageContent({
                 ? (def?.brandColor ?? profile.social_icon_color ?? "#ffffff")
                 : (profile.social_icon_color ?? "#ffffff");
               const compact = cardLayout === "aligned";
+              const iconBoxClass =
+                socialIconStyle === "logo"
+                  ? compact
+                    ? "h-8 w-8 rounded-full bg-transparent"
+                    : "h-9 w-9 rounded-full bg-transparent"
+                  : compact
+                    ? "h-9 w-9 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10"
+                    : "h-11 w-11 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10";
+              const iconClass =
+                socialIconStyle === "logo"
+                  ? compact
+                    ? "h-5 w-5"
+                    : "h-6 w-6"
+                  : compact
+                    ? "h-4 w-4"
+                    : "h-5 w-5";
               return (
                 <a
                   key={key}
@@ -215,28 +230,20 @@ export function ProfilePageContent({
                       window.open(url, "_blank", "noopener,noreferrer");
                     });
                   }}
-                  className={`grid shrink-0 place-items-center transition hover:scale-110 ${
-                    socialIconStyle === "logo"
-                      ? compact
-                        ? "h-8 w-8 rounded-full bg-transparent"
-                        : "h-9 w-9 rounded-full bg-transparent"
-                      : compact
-                        ? "h-9 w-9 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10"
-                        : "h-11 w-11 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10"
+                  className={`flex shrink-0 flex-col items-center transition hover:scale-105 ${
+                    showSocialTitles ? "gap-1" : ""
                   }`}
                 >
-                  <Icon
-                    className={
-                      socialIconStyle === "logo"
-                        ? compact
-                          ? "h-5 w-5"
-                          : "h-6 w-6"
-                        : compact
-                          ? "h-4 w-4"
-                          : "h-5 w-5"
-                    }
-                    style={{ color: iconColor }}
-                  />
+                  <span
+                    className={`grid place-items-center transition ${iconBoxClass}`}
+                  >
+                    <Icon className={iconClass} style={{ color: iconColor }} />
+                  </span>
+                  {showSocialTitles && (
+                    <span className="max-w-[4.5rem] truncate text-center text-[10px] leading-tight text-white/65">
+                      {def?.label ?? key}
+                    </span>
+                  )}
                 </a>
               );
             })
@@ -278,9 +285,22 @@ export function ProfilePageContent({
     </div>
   );
 
-  const hotelDelay = discordOutside ? discordDelay + 60 : discordDelay;
   const showMusicCard = Boolean(profile.music_url) && profile.music_card_enabled !== false;
-  const musicCardDelay = hotelDelay + (hotelOutsideBelow ? 80 : 0) + (discordOutside ? 40 : 0);
+
+  /** Ordem: hotel ao lado → música → Discord separado → hotel abaixo → blocos externos */
+  let secondaryRevealOrder = 0;
+  const nextSecondaryRevealDelay = () =>
+    getSecondaryRevealDelayMs(revealEffect, secondaryRevealOrder++);
+
+  const hotelBesideRevealDelays = hotelOutsideBeside
+    ? hotelConnections.map(() => nextSecondaryRevealDelay())
+    : [];
+  const musicCardDelay = showMusicCard ? nextSecondaryRevealDelay() : 0;
+  const discordOutsideRevealDelay = discordOutside ? nextSecondaryRevealDelay() : 0;
+  const hotelBelowRevealDelays = hotelOutsideBelow
+    ? hotelConnections.map(() => nextSecondaryRevealDelay())
+    : [];
+  const outsideBlockDelay = outsideBlocks.length > 0 ? nextSecondaryRevealDelay() : 0;
   const musicCardWidthPct = getMusicCardWidthPct(profile.music_card_width_pct);
 
   const musicCardInner = showMusicCard ? (
@@ -336,7 +356,7 @@ export function ProfilePageContent({
           key={`discord-${animKey}`}
           initial={cardInitial}
           animate={cardAnimate}
-          transition={{ ...cardTransition, delay: discordDelay / 1000 }}
+          transition={{ ...cardTransition, delay: discordOutsideRevealDelay / 1000 }}
           className="relative w-full min-w-0 max-w-full"
           style={{ willChange: "transform" }}
         >
@@ -375,7 +395,10 @@ export function ProfilePageContent({
                 key={`hotel-beside-${animKey}-${index}`}
                 initial={cardInitial}
                 animate={cardAnimate}
-                transition={{ ...cardTransition, delay: (hotelDelay + index * 60) / 1000 }}
+                transition={{
+                  ...cardTransition,
+                  delay: (hotelBesideRevealDelays[index] ?? 0) / 1000,
+                }}
                 className="relative flex min-h-0 w-full flex-1 flex-col"
                 style={{
                   willChange: "transform",
@@ -477,7 +500,10 @@ export function ProfilePageContent({
                       key={`hotel-below-${animKey}-${index}`}
                       initial={cardInitial}
                       animate={cardAnimate}
-                      transition={{ ...cardTransition, delay: (hotelDelay + index * 60) / 1000 }}
+                      transition={{
+                        ...cardTransition,
+                        delay: (hotelBelowRevealDelays[index] ?? 0) / 1000,
+                      }}
                       className="relative min-w-0 flex-1"
                       style={{ willChange: "transform" }}
                     >

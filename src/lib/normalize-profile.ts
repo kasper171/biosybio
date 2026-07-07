@@ -28,6 +28,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
       : DEFAULT_CARD_LAYOUT,
     social_icon_color: p.social_icon_color ?? "#ffffff",
     social_icon_style: (p.social_icon_style as "boxed" | "logo") === "logo" ? "logo" : "boxed",
+    show_social_titles: p.show_social_titles === true,
     avatar_border_color: (p.avatar_border_color as string) ?? p.card_border_color ?? "#ff2d7a",
     avatar_border_width: Number(p.avatar_border_width ?? 4),
     avatar_size: Number(p.avatar_size ?? 96),
@@ -119,6 +120,9 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     })(),
     comments_enabled: p.comments_enabled !== false,
     public_template_enabled: p.public_template_enabled === true,
+    share_embed_title: (p.share_embed_title as string | null) ?? null,
+    share_embed_description: (p.share_embed_description as string | null) ?? null,
+    share_embed_image_url: (p.share_embed_image_url as string | null) ?? null,
 
     page_font_family:
       (p.page_font_family as string) ??

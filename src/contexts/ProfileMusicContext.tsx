@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { extractTrackName, formatMusicTime } from "@/lib/profile-music";
 
+/** Volume inicial da música no perfil (0–1). */
+export const DEFAULT_MUSIC_VOLUME = 0.5;
+
 export type ProfileMusicConfig = {
   musicUrl: string;
   title?: string | null;
@@ -48,11 +51,17 @@ export function ProfileMusicProvider({
 }) {
   const { musicUrl, title, startSec = 0, endSec = null, autoplay = false, enabled = true } = config;
   const audioRef = useRef<HTMLAudioElement>(null);
+  const lastVolumeRef = useRef(DEFAULT_MUSIC_VOLUME);
   const hasAutoPlayedRef = useRef(false);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(startSec);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolumeState] = useState(0.7);
+  const [volume, setVolumeState] = useState(DEFAULT_MUSIC_VOLUME);
+
+  const assignAudioRef = (el: HTMLAudioElement | null) => {
+    audioRef.current = el;
+    if (el) el.volume = volume;
+  };
 
   const trackTitle = useMemo(
     () => (title?.trim() ? title.trim() : extractTrackName(musicUrl)),
@@ -120,10 +129,11 @@ export function ProfileMusicProvider({
 
     if (autoplay && !hasAutoPlayedRef.current) {
       hasAutoPlayedRef.current = true;
+      audio.volume = volume;
       audio.currentTime = loopStart;
       void audio.play().catch(() => {});
     }
-  }, [autoplay, enabled, loopStart]);
+  }, [autoplay, enabled, loopStart, volume]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -145,9 +155,15 @@ export function ProfileMusicProvider({
     setCurrent(t);
   };
 
-  const setVolume = (v: number) => setVolumeState(v);
+  const setVolume = (v: number) => {
+    const clamped = Math.min(1, Math.max(0, v));
+    setVolumeState(clamped);
+    if (clamped > 0.001) lastVolumeRef.current = clamped;
+  };
 
-  const toggleMute = () => setVolumeState((v) => (v <= 0.001 ? 0.7 : 0));
+  const toggleMute = () => {
+    setVolumeState((v) => (v <= 0.001 ? lastVolumeRef.current : 0));
+  };
 
   const value: ProfileMusicState = {
     audioRef,
@@ -168,7 +184,7 @@ export function ProfileMusicProvider({
 
   return (
     <ProfileMusicContext.Provider value={value}>
-      <audio ref={audioRef} src={musicUrl} preload="auto" />
+      <audio ref={assignAudioRef} src={musicUrl} preload="auto" />
       {children}
     </ProfileMusicContext.Provider>
   );

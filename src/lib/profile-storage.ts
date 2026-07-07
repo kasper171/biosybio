@@ -62,6 +62,8 @@ export type Profile = {
   social_original_colors: boolean;
   social_icon_color: string;
   social_icon_style: "boxed" | "logo";
+  /** Exibe o nome da rede abaixo do ícone */
+  show_social_titles: boolean;
   card_border_style: string;
   discord_user_id: string | null;
   discord_card_mode: "inside" | "outside";
@@ -123,6 +125,12 @@ export type Profile = {
   comments_enabled: boolean;
   /** Template público ao vivo — sincroniza estilo automaticamente */
   public_template_enabled: boolean;
+  /** Título do embed ao compartilhar o link (null = padrão Biosy) */
+  share_embed_title: string | null;
+  /** Descrição do embed ao compartilhar o link (null = padrão Biosy) */
+  share_embed_description: string | null;
+  /** Imagem banner do embed (null = padrão Biosy) */
+  share_embed_image_url: string | null;
   /** Fonte da página inteira (stack CSS) */
   page_font_family: string;
   /** Fonte apenas do nome de exibição (stack CSS). Use "inherit" para herdar. */
@@ -219,7 +227,7 @@ const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 100;
 
 export async function uploadProfileAsset(
   userId: string,
-  kind: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art",
+  kind: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art" | "share_embed",
   file: File,
 ): Promise<string> {
   const ext = file.name.split(".").pop() || "png";

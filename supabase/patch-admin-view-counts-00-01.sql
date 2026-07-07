@@ -2,11 +2,11 @@
 -- Execute no Supabase → SQL Editor → Run
 
 UPDATE public.profiles
-SET view_count = 3200
+SET view_count = 5321
 WHERE username = '00';
 
 UPDATE public.profiles
-SET view_count = 4212
+SET view_count = 6921
 WHERE username = '01';
 
 -- Confere o resultado

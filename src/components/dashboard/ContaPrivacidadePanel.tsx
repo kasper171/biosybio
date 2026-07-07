@@ -3,14 +3,15 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   AtSign,
-  Eye,
   Globe,
-  Hash,
+  Image as ImageIcon,
   KeyRound,
   Link2,
   Mail,
+  RotateCcw,
   Save,
   Shield,
+  Upload,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -19,7 +20,18 @@ import {
   usernameLengthError,
 } from "@/lib/username";
 import type { Profile } from "@/lib/profile-storage";
+import { uploadProfileAsset } from "@/lib/profile-storage";
 import { setPublicTemplateEnabled } from "@/lib/profile-template";
+import {
+  DEFAULT_SHARE_EMBED_DESCRIPTION,
+  DEFAULT_SHARE_EMBED_TITLE,
+  SHARE_EMBED_DESCRIPTION_MAX,
+  SHARE_EMBED_TITLE_MAX,
+  resolveShareEmbedDescription,
+  resolveShareEmbedImageUrl,
+  resolveShareEmbedTitle,
+} from "@/lib/share-embed";
+import { profilePublicUrl } from "@/lib/site";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
 import { cn } from "@/lib/utils";
 import { DashboardAccountLayout, DashCard } from "./DashboardAccountLayout";
@@ -71,6 +83,10 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
   const [showViews, setShowViews] = useState(profile.show_view_count !== false);
   const [showUid, setShowUid] = useState(profile.show_public_uid !== false);
   const [publicTemplate, setPublicTemplate] = useState(profile.public_template_enabled === true);
+  const [embedTitle, setEmbedTitle] = useState(profile.share_embed_title ?? "");
+  const [embedDescription, setEmbedDescription] = useState(profile.share_embed_description ?? "");
+  const [embedImageUrl, setEmbedImageUrl] = useState(profile.share_embed_image_url ?? "");
+  const [uploadingEmbedImage, setUploadingEmbedImage] = useState(false);
   const [togglingTemplate, setTogglingTemplate] = useState(false);
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -93,6 +109,9 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     setShowViews(profile.show_view_count !== false);
     setShowUid(profile.show_public_uid !== false);
     setPublicTemplate(profile.public_template_enabled === true);
+    setEmbedTitle(profile.share_embed_title ?? "");
+    setEmbedDescription(profile.share_embed_description ?? "");
+    setEmbedImageUrl(profile.share_embed_image_url ?? "");
   }, [profile]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -128,6 +147,9 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
         show_username: showUsername,
         show_view_count: showViews,
         show_public_uid: showUid,
+        share_embed_title: embedTitle.trim() || null,
+        share_embed_description: embedDescription.trim() || null,
+        share_embed_image_url: embedImageUrl.trim() || null,
       })
       .eq("id", profile.id);
 
@@ -144,10 +166,13 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
       show_username: showUsername,
       show_view_count: showViews,
       show_public_uid: showUid,
+      share_embed_title: embedTitle.trim() || null,
+      share_embed_description: embedDescription.trim() || null,
+      share_embed_image_url: embedImageUrl.trim() || null,
     };
     onProfileChange(updated);
     setUsername(clean);
-    toast.success("Configurações de privacidade salvas!");
+    toast.success("Configurações salvas!");
   };
 
   const handleEmailChange = async (e: React.FormEvent) => {
@@ -207,16 +232,47 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     }
   };
 
+  const handleEmbedImagePick = async (file: File | undefined) => {
+    if (!file) return;
+    setUploadingEmbedImage(true);
+    try {
+      const url = await uploadProfileAsset(profile.id, "share_embed", file);
+      setEmbedImageUrl(url);
+      toast.success("Banner do embed enviado!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar imagem");
+    } finally {
+      setUploadingEmbedImage(false);
+    }
+  };
+
+  const resetShareEmbed = () => {
+    setEmbedTitle("");
+    setEmbedDescription("");
+    setEmbedImageUrl("");
+    toast.message("Campos restaurados para o padrão. Salve para aplicar.");
+  };
+
+  const previewSource = {
+    share_embed_title: embedTitle.trim() || null,
+    share_embed_description: embedDescription.trim() || null,
+    share_embed_image_url: embedImageUrl.trim() || null,
+  };
+  const previewTitle = resolveShareEmbedTitle(previewSource);
+  const previewDescription = resolveShareEmbedDescription(previewSource);
+  const previewImage = resolveShareEmbedImageUrl(previewSource);
+  const previewUrl = profilePublicUrl(username || profile.username);
+
   return (
     <DashboardAccountLayout profile={profile} activeSection="privacidade">
       <div className="mx-auto max-w-3xl space-y-6">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-bold text-white">
             <Shield className="h-5 w-5 text-pink-400" />
-            Privacidade
+            Conta
           </h1>
           <p className="mt-1 text-sm text-white/45">
-            Controle o que aparece no seu perfil e gerencie os dados da sua conta.
+            Link do perfil, embed ao compartilhar, privacidade e dados da conta.
           </p>
         </div>
 
@@ -275,6 +331,128 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             <Globe className="h-3.5 w-3.5" />
             Ver galeria de templates
           </Link>
+        </DashCard>
+
+        <DashCard title="Embed ao compartilhar">
+          <p className="mb-4 text-xs leading-relaxed text-white/45">
+            Personalize como o seu link aparece no Discord, WhatsApp, Twitter e outros apps.
+            As alterações valem só para{" "}
+            <span className="text-white/70">{previewUrl}</span>. Campos vazios usam o padrão da
+            Biosy.
+          </p>
+
+          <div className="mb-5 overflow-hidden rounded-xl border border-[#1e1f22] bg-[#2b2d31]">
+            <div className="border-b border-[#1e1f22] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[#949ba4]">
+              Prévia (Discord)
+            </div>
+            <div className="space-y-2 p-3">
+              <p className="text-xs text-[#00a8fc]">{previewUrl}</p>
+              <div className="overflow-hidden rounded-lg border-l-4 border-[#5865f2] bg-[#1e1f22]">
+                {previewImage ? (
+                  <img src={previewImage} alt="" className="max-h-36 w-full object-cover" />
+                ) : null}
+                <div className="px-3 py-2.5">
+                  <p className="text-sm font-semibold text-[#f2f3f5]">{previewTitle}</p>
+                  <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-[#b5bac1]">
+                    {previewDescription}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-white/55">Título</label>
+              <input
+                value={embedTitle}
+                onChange={(e) => setEmbedTitle(e.target.value.slice(0, SHARE_EMBED_TITLE_MAX))}
+                maxLength={SHARE_EMBED_TITLE_MAX}
+                placeholder={DEFAULT_SHARE_EMBED_TITLE}
+                className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
+              />
+              <p className="mt-1 text-[10px] text-white/35">
+                {embedTitle.length}/{SHARE_EMBED_TITLE_MAX} · Padrão: {DEFAULT_SHARE_EMBED_TITLE}
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-white/55">Descrição</label>
+              <textarea
+                value={embedDescription}
+                onChange={(e) =>
+                  setEmbedDescription(e.target.value.slice(0, SHARE_EMBED_DESCRIPTION_MAX))
+                }
+                maxLength={SHARE_EMBED_DESCRIPTION_MAX}
+                rows={3}
+                placeholder={DEFAULT_SHARE_EMBED_DESCRIPTION}
+                className="w-full resize-none rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
+              />
+              <p className="mt-1 text-[10px] text-white/35">
+                {embedDescription.length}/{SHARE_EMBED_DESCRIPTION_MAX}
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/55">
+                <ImageIcon className="h-3.5 w-3.5" />
+                Banner da mensagem
+              </label>
+              {embedImageUrl ? (
+                <div className="mb-3 overflow-hidden rounded-xl border border-white/[0.08]">
+                  <img src={embedImageUrl} alt="" className="max-h-40 w-full object-cover" />
+                </div>
+              ) : (
+                <p className="mb-3 text-xs text-white/40">Usando banner padrão da Biosy.</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10">
+                  <Upload className="h-4 w-4" />
+                  {uploadingEmbedImage ? "Enviando..." : "Enviar imagem"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={uploadingEmbedImage}
+                    onChange={(e) => void handleEmbedImagePick(e.target.files?.[0])}
+                  />
+                </label>
+                {embedImageUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setEmbedImageUrl("")}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/70 transition hover:bg-white/[0.06]"
+                  >
+                    Remover imagem
+                  </button>
+                ) : null}
+              </div>
+              <p className="mt-2 text-[10px] text-white/35">
+                Recomendado: 1200×630 px (proporção larga). Discord usa essa imagem no topo do
+                embed.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={saveProfileSettings}
+              disabled={savingProfile}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {savingProfile ? "Salvando..." : "Salvar embed"}
+            </button>
+            <button
+              type="button"
+              onClick={resetShareEmbed}
+              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition hover:bg-white/[0.06]"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Restaurar padrão
+            </button>
+          </div>
         </DashCard>
 
         <DashCard title="Visibilidade no card">

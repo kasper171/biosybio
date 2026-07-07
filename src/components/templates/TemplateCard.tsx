@@ -85,6 +85,7 @@ function buildTemplatePreviewProfile(template: ProfileTemplateWithAuthor): Profi
     social_original_colors: t.social_original_colors,
     social_icon_color: t.social_icon_color,
     social_icon_style: t.social_icon_style,
+    show_social_titles: t.show_social_titles === true,
     discord_user_id: null,
     discord_card_mode: t.discord_card_mode,
     discord_show_badges: t.discord_show_badges,
