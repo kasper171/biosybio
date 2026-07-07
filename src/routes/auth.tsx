@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice, isExistingEmailSignup } from "@/lib/auth-errors";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
@@ -95,6 +95,10 @@ function AuthPage() {
       toast.success(notice.title, notice.description ? { description: notice.description } : undefined);
     }
   };
+
+  const handleTurnstileExpire = useCallback(() => {
+    setTurnstileToken(null);
+  }, []);
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,6 +226,15 @@ function AuthPage() {
                 className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-pink-hot/60"
               />
             </div>
+            {mode === "signup" && isTurnstileEnabled() && (
+              <div className="flex justify-center py-1">
+                <TurnstileWidget
+                  action="signup"
+                  onToken={setTurnstileToken}
+                  onExpire={handleTurnstileExpire}
+                />
+              </div>
+            )}
             <div>
               <label className="mb-1 block text-xs text-white/60">Senha</label>
               <input
@@ -265,15 +278,6 @@ function AuthPage() {
                 </div>
               )}
             </div>
-            {mode === "signup" && isTurnstileEnabled() && (
-              <div className="flex justify-center pt-1">
-                <TurnstileWidget
-                  action="signup"
-                  onToken={setTurnstileToken}
-                  onExpire={() => setTurnstileToken(null)}
-                />
-              </div>
-            )}
             <button
               type="submit"
               disabled={loading || (mode === "signup" && isTurnstileEnabled() && !turnstileToken)}
