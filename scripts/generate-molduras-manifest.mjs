@@ -46,8 +46,74 @@ function copyFileSafe(src, dest) {
   }
 }
 
+function listPublicAssets() {
+  if (!fs.existsSync(publicDir)) return [];
+  return fs
+    .readdirSync(publicDir)
+    .filter((name) => EXT.test(name))
+    .sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true, sensitivity: "base" }));
+}
+
+function readCatalogFile() {
+  if (!fs.existsSync(outFile)) return [];
+  try {
+    const parsed = JSON.parse(fs.readFileSync(outFile, "utf8"));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Deploy (Vercel): public/ + catalog já versionados, sem src/assets/molduras no clone */
+function useVersionedMolduras() {
+  const assets = listPublicAssets();
+  const catalog = readCatalogFile();
+  if (assets.length === 0 || catalog.length === 0) return false;
+
+  const missing = catalog.filter((entry) => !fs.existsSync(path.join(publicDir, entry.asset)));
+  if (missing.length > 0) {
+    console.warn(
+      `[molduras] Fonte ausente e ${missing.length} PNG(s) faltando em public/molduras — rode molduras:sync localmente`,
+    );
+    process.exitCode = 1;
+  }
+
+  console.log(
+    `[molduras] Fonte ausente — mantendo ${catalog.length} entradas (public/molduras já versionado)`,
+  );
+  return true;
+}
+
+function rebuildCatalogFromPublic() {
+  const assets = listPublicAssets();
+  if (assets.length === 0) return false;
+
+  const existingByAsset = new Map(readCatalogFile().map((entry) => [entry.asset, entry]));
+  const catalog = assets.map((asset, index) => {
+    const kept = existingByAsset.get(asset);
+    if (kept) return { ...kept, index };
+    const id = fileNameWithoutExt(asset);
+    return {
+      id,
+      name: id,
+      file: asset,
+      asset,
+      url: `/molduras/${asset}`,
+      index,
+    };
+  });
+
+  fs.mkdirSync(path.dirname(outFile), { recursive: true });
+  fs.writeFileSync(outFile, `${JSON.stringify(catalog, null, 2)}\n`);
+  console.log(`[molduras] Catálogo reconstruído a partir de public/molduras (${catalog.length})`);
+  return true;
+}
+
 function main() {
   if (!fs.existsSync(sourceDir)) {
+    if (useVersionedMolduras()) return;
+    if (rebuildCatalogFromPublic()) return;
+
     console.warn("[molduras] Pasta não encontrada:", sourceDir);
     fs.mkdirSync(path.dirname(outFile), { recursive: true });
     fs.writeFileSync(outFile, "[]\n");
