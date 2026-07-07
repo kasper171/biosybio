@@ -101,8 +101,8 @@ export function estimateMinCardHeight(
 
   if (layout === "aligned") {
     const socialCount = countSocials(profile);
-    const socialIcon = profile.social_icon_style === "logo" ? 40 : 44;
-    const socialUnderAvatar = socialCount > 0 ? 10 + socialIcon : 0;
+    const socialIcon = profile.social_icon_style === "logo" ? 32 : 36;
+    const socialUnderAvatar = socialCount > 0 ? 8 + socialIcon : 0;
     const frameOverflow = profile.avatar_frame_id ? Math.ceil(avatarSize * 0.11) : 0;
     const avatarCol = avatarSize + frameOverflow * 2 + socialUnderAvatar;
     const textWidth = Math.max(120, cardWidth - 48 - avatarSize - 16);

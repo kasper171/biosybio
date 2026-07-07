@@ -218,10 +218,10 @@ export function ProfilePageContent({
                   className={`grid shrink-0 place-items-center transition hover:scale-110 ${
                     socialIconStyle === "logo"
                       ? compact
-                        ? "h-10 w-10 rounded-full bg-transparent"
+                        ? "h-8 w-8 rounded-full bg-transparent"
                         : "h-9 w-9 rounded-full bg-transparent"
                       : compact
-                        ? "h-11 w-11 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10"
+                        ? "h-9 w-9 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10"
                         : "h-11 w-11 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10"
                   }`}
                 >
@@ -229,10 +229,10 @@ export function ProfilePageContent({
                     className={
                       socialIconStyle === "logo"
                         ? compact
-                          ? "h-6 w-6"
+                          ? "h-5 w-5"
                           : "h-6 w-6"
                         : compact
-                          ? "h-5 w-5"
+                          ? "h-4 w-4"
                           : "h-5 w-5"
                     }
                     style={{ color: iconColor }}

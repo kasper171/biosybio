@@ -264,7 +264,7 @@ function CardLayoutContent({
                 />
               </div>
               {socialIcons && (
-                <div className="flex w-full max-w-full flex-nowrap items-center justify-center gap-1.5 overflow-x-auto">
+                <div className="flex w-max flex-nowrap items-center justify-center gap-1">
                   {socialIcons}
                 </div>
               )}
@@ -370,7 +370,7 @@ function CardLayoutContent({
               particleColor={bioParticleColor}
             />
             {socialIcons && (
-              <div className="mt-1.5 flex w-full max-w-full shrink-0 flex-nowrap items-center justify-center gap-2 overflow-x-auto">
+              <div className="mt-1.5 flex shrink-0 flex-nowrap items-center justify-center gap-2">
                 {socialIcons}
               </div>
             )}
@@ -444,7 +444,7 @@ function CardLayoutContent({
               particleColor={bioParticleColor}
             />
             {socialIcons && (
-              <div className="mt-1.5 flex shrink-0 flex-nowrap justify-center gap-2 overflow-x-auto">{socialIcons}</div>
+              <div className="mt-1.5 flex shrink-0 flex-nowrap justify-center gap-2">{socialIcons}</div>
             )}
           </div>
           {children && <div className="mt-3 w-full shrink-0">{children}</div>}
