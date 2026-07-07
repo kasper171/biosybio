@@ -248,11 +248,7 @@ export function ProfilePageContent({
     </ProfileCard>
   );
 
-  const mainCardBesideClass = hotelOutsideBeside
-    ? isEditor
-      ? "w-full min-w-0 shrink-0"
-      : "w-full min-w-0 flex-1"
-    : "w-full";
+  const mainCardBesideClass = hotelOutsideBeside ? "w-full min-w-0 shrink-0" : "w-full";
   const mainCardBesideStyle = hotelOutsideBeside
     ? { maxWidth: mainCardDims.width, willChange: "transform" as const }
     : { willChange: "transform" as const };
@@ -306,17 +302,17 @@ export function ProfilePageContent({
   ) : null;
 
   const mainCardWidth = mainCardDims.width;
-  const mainColumnStyle: CSSProperties = hotelOutsideBeside
-    ? {
-        width: mainCardWidth,
-        maxWidth: mainCardWidth,
-        minWidth: 0,
-        flexShrink: 0,
-      }
-    : {
-        width: "100%",
-        maxWidth: mainCardWidth,
-      };
+  const mainSlotStyle: CSSProperties = {
+    width: "100%",
+    maxWidth: mainCardWidth,
+    minWidth: 0,
+  };
+  const mainCardBesideSlotStyle: CSSProperties = {
+    width: mainCardWidth,
+    maxWidth: mainCardWidth,
+    minWidth: 0,
+    flexShrink: 0,
+  };
 
   const outsideDiscordInner =
     profile.discord_user_id && discordMode === "outside" ? (
@@ -349,14 +345,74 @@ export function ProfilePageContent({
     </div>
   ) : null;
 
-  const mainCardColumn = (
-    <div
-      className={`flex flex-col ${hotelOutsideBeside ? "mx-auto shrink-0 self-start lg:mx-0" : "mx-auto w-full"}`}
-      style={mainColumnStyle}
-    >
+  const belowMainSlots =
+    musicCardInner || outsideDiscordWrapped ? (
+      <div
+        className={`min-w-0 ${hotelOutsideBeside ? "shrink-0 self-start" : "mx-auto w-full"}`}
+        style={mainSlotStyle}
+      >
+        {musicCardInner}
+        {outsideDiscordWrapped}
+      </div>
+    ) : null;
+
+  const mainCardSlot = (
+    <div className="shrink-0" style={mainCardBesideSlotStyle}>
       {mainCardWrapped}
-      {musicCardInner}
-      {outsideDiscordWrapped}
+    </div>
+  );
+
+  const hotelBesideColumn =
+    hotelOutsideBeside && hotelCardsOutside ? (
+      <div
+        className={`flex shrink-0 flex-col ${isEditor ? "shrink-0" : "w-full shrink-0"}`}
+        style={{
+          width: besideColumnDims.width,
+          maxWidth: besideColumnDims.width,
+          minWidth: besideColumnDims.width,
+          height: besideColumnDims.height,
+          gap: HOTEL_BESIDE_GAP_PX,
+        }}
+      >
+        {animate
+          ? hotelCardsOutside.map((card, index) => (
+              <motion.div
+                key={`hotel-beside-${animKey}-${index}`}
+                initial={cardInitial}
+                animate={cardAnimate}
+                transition={{ ...cardTransition, delay: (hotelDelay + index * 60) / 1000 }}
+                className="relative min-h-0 w-full flex-1"
+                style={{ willChange: "transform" }}
+              >
+                {card}
+              </motion.div>
+            ))
+          : hotelCardsOutside.map((card, index) => (
+              <div key={`hotel-beside-static-${index}`} className="relative min-h-0 w-full flex-1">
+                {card}
+              </div>
+            ))}
+      </div>
+    ) : null;
+
+  const profileContent = hotelOutsideBeside ? (
+    <div className="flex w-full flex-col gap-4">
+      <div
+        className={
+          isEditor
+            ? "flex w-full flex-row flex-nowrap items-stretch justify-center gap-4"
+            : "flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-stretch lg:justify-center"
+        }
+      >
+        {mainCardSlot}
+        {hotelBesideColumn}
+      </div>
+      {belowMainSlots}
+    </div>
+  ) : (
+    <div className="mx-auto w-full" style={mainSlotStyle}>
+      {mainCardWrapped}
+      {belowMainSlots}
     </div>
   );
 
@@ -386,50 +442,7 @@ export function ProfilePageContent({
             ...(isEditor && hotelOutsideBelow ? { minWidth: mainCardDims.width } : {}),
           }}
         >
-          <div
-            className={
-              hotelOutsideBeside
-                ? isEditor
-                  ? "flex w-full flex-row flex-nowrap items-stretch justify-center gap-4"
-                  : "flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-stretch lg:justify-center"
-                : "w-full"
-            }
-          >
-            {mainCardColumn}
-            {hotelOutsideBeside && hotelCardsOutside && (
-              <div
-                className={`flex shrink-0 flex-col ${isEditor ? "shrink-0" : "w-full shrink-0"}`}
-                style={{
-                  width: besideColumnDims.width,
-                  maxWidth: besideColumnDims.width,
-                  minWidth: besideColumnDims.width,
-                  height: besideColumnDims.height,
-                  gap: HOTEL_BESIDE_GAP_PX,
-                }}
-              >
-                {animate ? (
-                  hotelCardsOutside.map((card, index) => (
-                    <motion.div
-                      key={`hotel-beside-${animKey}-${index}`}
-                      initial={cardInitial}
-                      animate={cardAnimate}
-                      transition={{ ...cardTransition, delay: (hotelDelay + index * 60) / 1000 }}
-                      className="relative min-h-0 w-full flex-1"
-                      style={{ willChange: "transform" }}
-                    >
-                      {card}
-                    </motion.div>
-                  ))
-                ) : (
-                  hotelCardsOutside.map((card, index) => (
-                    <div key={`hotel-beside-static-${index}`} className="relative min-h-0 w-full flex-1">
-                      {card}
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
+          {profileContent}
 
           {hotelOutsideBelow && hotelCardsOutside && (
             <div
