@@ -467,9 +467,9 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(11, 11, 13, 0.35) 28%,
-    rgba(11, 11, 13, 0.88) 68%,
-    var(--biosy-bg-base) 100%
+    color-mix(in srgb, var(--biosy-bg-base) 28%, transparent) 32%,
+    color-mix(in srgb, var(--biosy-bg-base) 72%, transparent) 62%,
+    var(--biosy-bg-base) 88%
   );
 }
 
@@ -505,19 +505,19 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   top: 0;
   cursor: pointer;
   transform-style: preserve-3d;
-  z-index: 1;
+  backface-visibility: hidden;
 }
 
-.home-phone-fan.is-entrancing .home-phone-fan-1 {
-  z-index: 1;
+.home-phone-preview.home-phone-fan-1 {
+  z-index: 11;
 }
 
-.home-phone-fan.is-entrancing .home-phone-fan-2 {
-  z-index: 2;
+.home-phone-preview.home-phone-fan-2 {
+  z-index: 22;
 }
 
-.home-phone-fan.is-entrancing .home-phone-fan-3 {
-  z-index: 3;
+.home-phone-preview.home-phone-fan-3 {
+  z-index: 33;
 }
 
 .home-phone-preview.is-hovered {
@@ -673,23 +673,23 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(11, 11, 13, 0.3) 16%,
-    rgba(11, 11, 13, 0.72) 48%,
-    rgba(11, 11, 13, 0.95) 76%,
+    color-mix(in srgb, var(--biosy-bg-base) 22%, transparent) 18%,
+    color-mix(in srgb, var(--biosy-bg-base) 58%, transparent) 46%,
+    color-mix(in srgb, var(--biosy-bg-base) 86%, transparent) 72%,
     var(--biosy-bg-base) 100%
   );
 }
 
 .home-phone-fan-1 {
-  left: -2%;
+  left: -6%;
 }
 
 .home-phone-fan-2 {
-  left: 24%;
+  left: 28%;
 }
 
 .home-phone-fan-3 {
-  left: 48%;
+  left: 56%;
 }
 
 .home-phone-fan-1 .home-phone-motion,
@@ -700,29 +700,29 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 @media (min-width: 640px) {
   .home-phone-fan-1 {
-    left: 0%;
+    left: -4%;
   }
 
   .home-phone-fan-2 {
-    left: 26%;
+    left: 30%;
   }
 
   .home-phone-fan-3 {
-    left: 50%;
+    left: 58%;
   }
 }
 
 @media (min-width: 1024px) {
   .home-phone-fan-1 {
-    left: 2%;
+    left: -2%;
   }
 
   .home-phone-fan-2 {
-    left: 28%;
+    left: 32%;
   }
 
   .home-phone-fan-3 {
-    left: 52%;
+    left: 60%;
   }
 }
 

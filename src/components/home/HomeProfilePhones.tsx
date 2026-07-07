@@ -45,9 +45,9 @@ type Pose = {
 };
 
 const PHONE_POSE: Record<Layer, Pose> = {
-  "home-phone-fan-1": { y: 0, z: 0, rotateX: 10, rotateY: -12, rotateZ: -4, scale: 0.98 },
-  "home-phone-fan-2": { y: 10, z: 18, rotateX: 12, rotateY: -6, rotateZ: -1, scale: 1.03 },
-  "home-phone-fan-3": { y: 18, z: 36, rotateX: 13, rotateY: 10, rotateZ: 3, scale: 1.06 },
+  "home-phone-fan-1": { y: 2, z: -24, rotateX: 7, rotateY: -20, rotateZ: -4, scale: 0.94 },
+  "home-phone-fan-2": { y: 8, z: 8, rotateX: 8, rotateY: 0, rotateZ: 0, scale: 1 },
+  "home-phone-fan-3": { y: 14, z: 44, rotateX: 8, rotateY: 20, rotateZ: 3, scale: 1.04 },
 };
 
 /** Leque coordenado: esquerda → direita → meio (direita na frente antes do meio abrir) */
@@ -65,9 +65,9 @@ const ENTRANCE_DELAY_MS: Record<Layer, number> = {
 };
 
 const ENTRANCE_START_ANGLES: Record<Layer, { rotateY: number; rotateZ: number }> = {
-  "home-phone-fan-1": { rotateY: -16, rotateZ: -5 },
-  "home-phone-fan-2": { rotateY: -8, rotateZ: -2 },
-  "home-phone-fan-3": { rotateY: 16, rotateZ: 5 },
+  "home-phone-fan-1": { rotateY: -24, rotateZ: -5 },
+  "home-phone-fan-2": { rotateY: 0, rotateZ: 0 },
+  "home-phone-fan-3": { rotateY: 24, rotateZ: 5 },
 };
 
 type Pointer = { x: number; y: number };
