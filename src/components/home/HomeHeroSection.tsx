@@ -84,7 +84,6 @@ export function HomeHeroSection() {
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
     >
-      <div className="home-hero__radial" aria-hidden />
       <div className="home-hero__noise" aria-hidden />
 
       <div className="relative z-[1] grid items-center gap-10 lg:grid-cols-[1.05fr_1.15fr] lg:gap-14">
