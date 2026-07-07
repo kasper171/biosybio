@@ -8,6 +8,10 @@ import {
   markProfileViewCounted,
 } from "@/lib/profile-storage";
 import { PublicProfileView } from "@/components/PublicProfileView";
+import {
+  SiteStatusOutlineLink,
+  SiteStatusPage,
+} from "@/components/errors/SiteStatusPage";
 import { normalizeProfile } from "@/lib/normalize-profile";
 import { attachProfileRoles } from "@/lib/profile-roles";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
@@ -34,15 +38,24 @@ export const Route = createFileRoute("/$username")({
   },
   component: PublicProfile,
   notFoundComponent: () => (
-    <div className="grid min-h-screen place-items-center text-center">
-      <div>
-        <h1 className="text-3xl font-bold">Profile not found</h1>
-        <p className="mt-2 text-white/60">This user doesn't exist yet.</p>
-        <Link to="/" className="mt-4 inline-block text-pink-500 hover:underline">
-          Go back
-        </Link>
-      </div>
-    </div>
+    <SiteStatusPage
+      title="Profile not found"
+      description="This user doesn't exist yet."
+      actions={
+        <>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))",
+            }}
+          >
+            Go home
+          </Link>
+          <SiteStatusOutlineLink href="/auth">Create your profile</SiteStatusOutlineLink>
+        </>
+      }
+    />
   ),
 });
 

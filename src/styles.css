@@ -1107,3 +1107,156 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
     transform: translateX(3px);
   }
 }
+
+/* 404 — animated face illustration (from public/404-error-face) */
+.error-face-404 {
+  display: block;
+  width: min(12em, 52vw);
+  height: auto;
+  color: oklch(0.88 0.02 260 / 0.92);
+}
+
+.error-face-404 .face__eyes,
+.error-face-404 .face__eye-lid,
+.error-face-404 .face__mouth-left,
+.error-face-404 .face__mouth-right,
+.error-face-404 .face__nose,
+.error-face-404 .face__pupil {
+  animation: error-face-eyes 1s 0.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.error-face-404 .face__eye-lid,
+.error-face-404 .face__pupil {
+  animation-duration: 4s;
+  animation-delay: 1.3s;
+  animation-iteration-count: infinite;
+}
+
+.error-face-404 .face__eye-lid {
+  animation-name: error-face-eye-lid;
+}
+
+.error-face-404 .face__mouth-left,
+.error-face-404 .face__mouth-right {
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.error-face-404 .face__mouth-left {
+  animation-name: error-face-mouth-left;
+}
+
+.error-face-404 .face__mouth-right {
+  animation-name: error-face-mouth-right;
+}
+
+.error-face-404 .face__nose {
+  animation-name: error-face-nose;
+}
+
+.error-face-404 .face__pupil {
+  animation-name: error-face-pupil;
+}
+
+@keyframes error-face-eye-lid {
+  from,
+  40%,
+  45%,
+  to {
+    transform: translateY(0);
+  }
+
+  42.5% {
+    transform: translateY(17.5px);
+  }
+}
+
+@keyframes error-face-eyes {
+  from {
+    transform: translateY(112.5px);
+  }
+
+  to {
+    transform: translateY(15px);
+  }
+}
+
+@keyframes error-face-pupil {
+  from,
+  37.5%,
+  40%,
+  45%,
+  87.5%,
+  to {
+    stroke-dashoffset: 0;
+    transform: translate(0, 0);
+  }
+
+  12.5%,
+  25%,
+  62.5%,
+  75% {
+    stroke-dashoffset: 0;
+    transform: translate(-35px, 0);
+  }
+
+  42.5% {
+    stroke-dashoffset: 35;
+    transform: translate(0, 17.5px);
+  }
+}
+
+@keyframes error-face-mouth-left {
+  from,
+  50% {
+    stroke-dashoffset: -102;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes error-face-mouth-right {
+  from,
+  50% {
+    stroke-dashoffset: 102;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes error-face-nose {
+  from {
+    transform: translate(0, 0);
+  }
+
+  to {
+    transform: translate(0, 22.5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-face-404 .face__eyes,
+  .error-face-404 .face__eye-lid,
+  .error-face-404 .face__mouth-left,
+  .error-face-404 .face__mouth-right,
+  .error-face-404 .face__nose,
+  .error-face-404 .face__pupil {
+    animation: none;
+  }
+
+  .error-face-404 .face__eyes {
+    transform: translateY(15px);
+  }
+
+  .error-face-404 .face__nose {
+    transform: translateY(22.5px);
+  }
+
+  .error-face-404 .face__mouth-left,
+  .error-face-404 .face__mouth-right {
+    stroke-dashoffset: 0;
+  }
+}
