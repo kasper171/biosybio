@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice, isExistingEmailSignup } from "@/lib/auth-errors";
 import { signUpWithTurnstileFn } from "@/lib/auth/auth.functions";
@@ -36,6 +36,14 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+async function trySignIn(email: string, password: string): Promise<boolean> {
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
+  return !error;
+}
+
 function AuthPage() {
   const { mode: initialMode, username: initialUsername } = Route.useSearch();
   const navigate = useNavigate();
@@ -47,6 +55,7 @@ function AuthPage() {
   );
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const submittingRef = useRef(false);
   const [formNotice, setFormNotice] = useState<{
     type: "error" | "success";
     title: string;
@@ -111,6 +120,8 @@ function AuthPage() {
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setFormNotice(null);
     setLoading(true);
     try {
@@ -128,9 +139,17 @@ function AuthPage() {
 
         const { taken } = await isUsernameTaken(cleanUser);
         if (taken) {
+          if (await trySignIn(email, password)) {
+            notify(
+              { title: "Conta encontrada!", description: "Entrando com este email e senha..." },
+              "success",
+            );
+            navigate({ to: "/dashboard" });
+            return;
+          }
           notify({
             title: "Usuário já existente",
-            description: `${profileDisplayPath(cleanUser)} já está em uso. Escolha outro.`,
+            description: `${profileDisplayPath(cleanUser)} já está em uso. Se você tentou criar agora, use Entrar.`,
           });
           return;
         }
@@ -153,63 +172,43 @@ function AuthPage() {
             },
           });
 
-          if (!result.ok && result.code === "missing_secret") {
-            const { data, error } = await supabase.auth.signUp({
-              email,
-              password,
-              options: {
-                emailRedirectTo: `${window.location.origin}/dashboard`,
-                data: { username: cleanUser, display_name: cleanUser },
-                captchaToken: turnstileToken,
-              },
-            });
-            if (error) throw error;
-
-            if (isExistingEmailSignup(data.user)) {
-              notify({
-                title: "Este email já está cadastrado",
-                description: "Tente entrar com sua senha ou use outro email.",
-              });
-              setMode("signin");
-              return;
-            }
-
-            if (!data.session) {
+          if (!result.ok) {
+            if ("tryLogin" in result && result.tryLogin && (await trySignIn(email, password))) {
               notify(
-                {
-                  title: "Conta criada!",
-                  description: `Enviamos um link de confirmação para ${email}. Confira sua caixa de entrada.`,
-                },
+                { title: "Conta encontrada!", description: "Entrando com este email e senha..." },
                 "success",
               );
+              navigate({ to: "/dashboard" });
               return;
             }
 
+            notify({ title: "Não foi possível criar a conta", description: result.error });
+            if (
+              result.code === "timeout_or_duplicate" ||
+              result.code === "invalid_token" ||
+              result.code === "captcha_required"
+            ) {
+              setTurnstileToken(null);
+              resetTurnstileWidget();
+            }
+            return;
+          }
+
+          const signedIn = await trySignIn(email, password);
+          if (signedIn) {
             notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
             navigate({ to: "/dashboard" });
             return;
           }
 
-          if (!result.ok) {
-            notify({ title: "Não foi possível criar a conta", description: result.error });
-            return;
-          }
-
-          if (result.needsEmailConfirmation) {
-            notify(
-              {
-                title: "Conta criada!",
-                description: `Enviamos um link de confirmação para ${email}. Confira sua caixa de entrada.`,
-              },
-              "success",
-            );
-            return;
-          }
-
-          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-          if (signInError) throw signInError;
-          notify({ title: "Conta criada!", description: "Redirecionando para o painel..." }, "success");
-          navigate({ to: "/dashboard" });
+          notify(
+            {
+              title: "Conta criada",
+              description: "Use Entrar com este email e senha para acessar o painel.",
+            },
+            "success",
+          );
+          setMode("signin");
           return;
         }
 
@@ -224,9 +223,17 @@ function AuthPage() {
         if (error) throw error;
 
         if (isExistingEmailSignup(data.user)) {
+          if (await trySignIn(email, password)) {
+            notify(
+              { title: "Conta encontrada!", description: "Entrando com este email e senha..." },
+              "success",
+            );
+            navigate({ to: "/dashboard" });
+            return;
+          }
           notify({
             title: "Este email já está cadastrado",
-            description: "Tente entrar com sua senha ou use outro email.",
+            description: "Se você tentou criar agora, use Entrar com este email e senha.",
           });
           setMode("signin");
           return;
@@ -257,6 +264,7 @@ function AuthPage() {
       const notice = getAuthNotice(err);
       notify(notice);
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };

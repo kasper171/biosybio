@@ -31,13 +31,13 @@ export function mapCloudflareTurnstileError(
 export function getTurnstileUserMessage(code: TurnstileVerifyErrorCode): string {
   switch (code) {
     case "missing_secret":
-      return "Chave TURNSTILE_SECRET_KEY ausente no servidor. O cadastro tentará via Supabase; se falhar, configure a variável na Vercel.";
+      return "Verificação de segurança indisponível no servidor. Tente novamente em instantes ou avise o suporte.";
     case "hostname_mismatch":
       return "Este domínio não está autorizado no Cloudflare Turnstile. Avise o suporte do site.";
     case "timeout_or_duplicate":
-      return "A verificação expirou ou já foi usada. Marque o check de segurança novamente.";
+      return "A verificação expirou ou já foi usada. Marque o check novamente. Se a conta foi criada, use Entrar.";
     case "invalid_token":
-      return "Verificação inválida (comum no Brave). Desative os Shields do site ou use o Chrome.";
+      return "Verificação inválida. Marque o check novamente. Se a conta foi criada, use Entrar.";
     case "network":
       return "Não foi possível contactar o Cloudflare. Verifique sua internet e tente de novo.";
     default:

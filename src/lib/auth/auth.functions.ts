@@ -21,27 +21,11 @@ function isTurnstileRequiredOnServer(): boolean {
 export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
   .inputValidator(signUpInput)
   .handler(async ({ data }) => {
+    const email = data.email.trim().toLowerCase();
     const cleanUser = cleanUsername(data.username);
     const lengthError = usernameLengthError(cleanUser);
     if (lengthError) {
       return { ok: false as const, error: lengthError, code: "invalid_username" as const };
-    }
-
-    if (data.turnstileToken?.trim()) {
-      const verified = await verifyTurnstileToken(data.turnstileToken.trim());
-      if (!verified.ok) {
-        return {
-          ok: false as const,
-          error: getTurnstileUserMessage(verified.code),
-          code: verified.code,
-        };
-      }
-    } else if (isTurnstileRequiredOnServer()) {
-      return {
-        ok: false as const,
-        error: "Marque o check de segurança antes de criar a conta.",
-        code: "captcha_required" as const,
-      };
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -55,15 +39,34 @@ export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
     if (existingProfile) {
       return {
         ok: false as const,
-        error: "Este nome de usuário já está em uso.",
+        error:
+          "Este nome de usuário já está em uso. Se você tentou criar agora, use Entrar com seu email.",
         code: "username_taken" as const,
+        tryLogin: true as const,
+      };
+    }
+
+    if (data.turnstileToken?.trim()) {
+      const verified = await verifyTurnstileToken(data.turnstileToken.trim());
+      if (!verified.ok) {
+        return {
+          ok: false as const,
+          error: getTurnstileUserMessage(verified.code),
+          code: verified.code,
+          tryLogin: verified.code === "timeout_or_duplicate",
+        };
+      }
+    } else if (isTurnstileRequiredOnServer()) {
+      return {
+        ok: false as const,
+        error: "Marque o check de segurança antes de criar a conta.",
+        code: "captcha_required" as const,
       };
     }
 
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email.trim(),
+      email,
       password: data.password,
-      // Com confirmação de email desligada no Supabase, o usuário deve entrar direto.
       email_confirm: true,
       user_metadata: {
         username: cleanUser,
@@ -76,8 +79,10 @@ export const signUpWithTurnstileFn = createServerFn({ method: "POST" })
       if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
         return {
           ok: false as const,
-          error: "Este email já está cadastrado.",
+          error:
+            "Este email já está cadastrado. Se você tentou criar agora, use Entrar com este email e senha.",
           code: "email_exists" as const,
+          tryLogin: true as const,
         };
       }
       if (msg.includes("weak") || msg.includes("pwned")) {
