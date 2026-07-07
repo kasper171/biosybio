@@ -152,7 +152,7 @@ export function DashboardAccountLayout({
 
   return (
     <div
-      className={`biosy-dash ${overlay ? "contents" : "min-h-screen bg-[#0b0b0f] text-white"}`}
+      className={`biosy-dash ${overlay ? "contents" : "min-h-screen bg-background text-white"}`}
       data-text-scale={textScale}
     >
       <aside

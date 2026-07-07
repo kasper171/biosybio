@@ -56,7 +56,7 @@ export function HomeDashboardPreview({ variant = "standalone" }: HomeDashboardPr
                 <div className="absolute left-1/2 top-[11px] z-10 h-[3px] w-[3px] -translate-x-1/2 rounded-full bg-[#1a1a1f] ring-1 ring-white/10" />
 
                 <div className="relative overflow-hidden rounded-[1rem] border border-black/60 bg-[#050508] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
-                  <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[#0e0e12]/95 px-2.5 py-1.5 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[#0e0e11]/95 px-2.5 py-1.5 backdrop-blur-sm">
                     <div className="flex gap-1">
                       <span className="h-2 w-2 rounded-full bg-[#ff5f57] shadow-[0_0_6px_rgba(255,95,87,0.5)]" />
                       <span className="h-2 w-2 rounded-full bg-[#febc2e] shadow-[0_0_6px_rgba(254,188,46,0.4)]" />
@@ -68,7 +68,7 @@ export function HomeDashboardPreview({ variant = "standalone" }: HomeDashboardPr
                     </div>
                   </div>
 
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0b0b0f]">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0b0b0d]">
                     <img
                       src={dashboardPreview}
                       alt="Biosy dashboard preview"

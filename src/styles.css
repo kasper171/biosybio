@@ -37,30 +37,33 @@
 
 :root {
   --radius: 0.875rem;
-  --background: oklch(0.08 0.02 350);
+  --biosy-bg-base: #0b0b0d;
+  --biosy-bg-raised: #0e0e11;
+  --biosy-bg-surface: #101014;
+  --background: var(--biosy-bg-base);
   --foreground: oklch(0.98 0.005 0);
-  --card: oklch(0.11 0.025 350);
+  --card: var(--biosy-bg-surface);
   --card-foreground: oklch(0.98 0.005 0);
-  --popover: oklch(0.11 0.025 350);
+  --popover: var(--biosy-bg-surface);
   --popover-foreground: oklch(0.98 0.005 0);
   --primary: oklch(0.65 0.28 0);
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.16 0.03 350);
+  --secondary: var(--biosy-bg-raised);
   --secondary-foreground: oklch(0.98 0.005 0);
-  --muted: oklch(0.15 0.025 350);
-  --muted-foreground: oklch(0.65 0.02 340);
-  --accent: oklch(0.18 0.05 350);
+  --muted: var(--biosy-bg-raised);
+  --muted-foreground: oklch(0.65 0.01 0);
+  --accent: var(--biosy-bg-surface);
   --accent-foreground: oklch(0.98 0.005 0);
   --destructive: oklch(0.6 0.25 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.22 0.04 350 / 0.6);
-  --input: oklch(0.18 0.03 350);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: var(--biosy-bg-raised);
   --ring: oklch(0.65 0.28 0);
   --pink-hot: oklch(0.65 0.28 0);
   --pink-deep: oklch(0.5 0.25 5);
   --rose: oklch(0.55 0.27 10);
-  --biosy-shell: #0e0e13;
-  --biosy-shell-muted: #0e0e13;
+  --biosy-shell: var(--biosy-bg-raised);
+  --biosy-shell-muted: var(--biosy-bg-base);
 }
 
 .dark { color-scheme: dark; }
@@ -560,7 +563,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 /* Shell unificado do dashboard (navbar + ferramentas) */
 .biosy-dashboard-shell {
-  background-color: #0a0a0d;
+  background-color: var(--biosy-bg-base);
   border-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -616,17 +619,16 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   text-shadow: 0 0 30px oklch(0.65 0.28 0 / 0.4);
 }
 @utility card-surface {
-  background: linear-gradient(180deg, oklch(0.13 0.03 350 / 0.7), oklch(0.09 0.02 350 / 0.7));
-  border: 1px solid oklch(0.25 0.05 350 / 0.5);
+  background: linear-gradient(180deg, var(--biosy-bg-surface), var(--biosy-bg-raised));
+  border: 1px solid rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(10px);
 }
 @utility phone-frame {
-  background: linear-gradient(180deg, oklch(0.18 0.04 350), oklch(0.08 0.02 350));
-  border: 1px solid oklch(0.3 0.06 350 / 0.6);
+  background: linear-gradient(180deg, var(--biosy-bg-surface), var(--biosy-bg-base));
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
-    0 30px 80px -20px oklch(0.5 0.3 5 / 0.5),
-    0 0 60px -10px oklch(0.6 0.28 0 / 0.3),
-    inset 0 1px 0 oklch(0.4 0.1 350 / 0.4);
+    0 30px 80px -20px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 @keyframes rotating-border-spin {
@@ -658,7 +660,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   inset: 2px;
   z-index: -1;
   border-radius: inherit;
-  background: oklch(0.09 0.02 350);
+  background: var(--biosy-bg-base);
 }
 
 /* 3D tilt: perspective no pai + camada de borda suave (evita serrilhado) */
@@ -838,7 +840,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 /* Dashboard panels — Biosy identity */
 .biosy-dash-hero {
-  background: linear-gradient(145deg, #12121a 0%, #0e0e14 100%);
+  background: linear-gradient(145deg, var(--biosy-bg-surface) 0%, var(--biosy-bg-raised) 100%);
 }
 
 .biosy-dash-panel {
@@ -1010,7 +1012,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   cursor: pointer;
   border: none;
   border-radius: 0 14px 14px 0;
-  background: linear-gradient(105deg, #101014 0%, #14141c 100%);
+  background: linear-gradient(105deg, var(--biosy-bg-surface) 0%, var(--biosy-bg-raised) 100%);
   box-shadow:
     4px 0 20px rgba(0, 0, 0, 0.45),
     inset -1px 0 0 rgba(255, 255, 255, 0.06);
@@ -1020,7 +1022,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 .biosy-tools-reveal-tab:hover {
   width: 34px;
-  background: linear-gradient(105deg, #14141c 0%, #1a1a24 100%);
+  background: linear-gradient(105deg, #141418 0%, #18181c 100%);
   box-shadow:
     6px 0 28px rgba(0, 0, 0, 0.5),
     inset -1px 0 0 rgba(255, 255, 255, 0.1);
