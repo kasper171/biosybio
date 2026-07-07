@@ -274,20 +274,21 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   transform-style: preserve-3d;
 }
 
-/* Máscara na base — fora do contexto 3D para ficar por cima dos celulares */
+/* Máscara na base — alinhada ao fim real dos celulares (abaixo do margin negativo) */
 .home-phone-stage-fade {
   position: absolute;
-  right: -8%;
-  bottom: 0;
-  left: -8%;
+  right: -10%;
+  bottom: calc(var(--phone-h) * -0.28);
+  left: -10%;
   z-index: 60;
-  height: calc(var(--phone-h) * 0.38);
+  height: calc(var(--phone-h) * 0.62);
   pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(11, 11, 13, 0.45) 30%,
-    rgba(11, 11, 13, 0.9) 72%,
+    rgba(11, 11, 13, 0.25) 12%,
+    rgba(11, 11, 13, 0.72) 32%,
+    var(--biosy-bg-base) 50%,
     var(--biosy-bg-base) 100%
   );
 }
@@ -454,16 +455,18 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-phone-bottom-fade {
   pointer-events: none;
   position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  right: -1px;
+  bottom: -2px;
+  left: -1px;
   z-index: 5;
-  height: 32%;
+  height: 44%;
   border-radius: 0 0 1.9rem 1.9rem;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(11, 11, 13, 0.55) 55%,
+    rgba(11, 11, 13, 0.5) 28%,
+    rgba(11, 11, 13, 0.92) 58%,
+    var(--biosy-bg-base) 78%,
     var(--biosy-bg-base) 100%
   );
 }
