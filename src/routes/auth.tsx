@@ -7,6 +7,9 @@ import { cleanUsername, isUsernameTaken } from "@/lib/username";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Check, X } from "lucide-react";
+import { TurnstileWidget } from "@/components/TurnstileWidget";
+import { isTurnstileEnabled } from "@/lib/turnstile/config";
+import { verifyTurnstileFn } from "@/lib/turnstile/turnstile.functions";
 
 type Rule = { label: string; test: (p: string) => boolean };
 const PASSWORD_RULES: Rule[] = [
@@ -43,6 +46,7 @@ function AuthPage() {
     initialUsername ? cleanUsername(initialUsername) : "",
   );
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [formNotice, setFormNotice] = useState<{
     type: "error" | "success";
     title: string;
@@ -61,7 +65,12 @@ function AuthPage() {
       const clean = cleanUsername(initialUsername);
       if (clean) setUsername(clean);
     }
+    setTurnstileToken(null);
   }, [initialMode, initialUsername]);
+
+  useEffect(() => {
+    setTurnstileToken(null);
+  }, [mode]);
 
   const passwordChecks = useMemo(
     () => PASSWORD_RULES.map((r) => ({ ...r, ok: r.test(password) })),
@@ -112,6 +121,17 @@ function AuthPage() {
           return;
         }
 
+        if (isTurnstileEnabled()) {
+          if (!turnstileToken) {
+            notify({
+              title: "Verificação necessária",
+              description: "Marque o check de segurança antes de criar a conta.",
+            });
+            return;
+          }
+          await verifyTurnstileFn({ data: { token: turnstileToken } });
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -151,6 +171,7 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
+      setTurnstileToken(null);
       const notice = getAuthNotice(err);
       notify(notice);
     } finally {
@@ -244,9 +265,18 @@ function AuthPage() {
                 </div>
               )}
             </div>
+            {mode === "signup" && isTurnstileEnabled() && (
+              <div className="flex justify-center pt-1">
+                <TurnstileWidget
+                  action="signup"
+                  onToken={setTurnstileToken}
+                  onExpire={() => setTurnstileToken(null)}
+                />
+              </div>
+            )}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (mode === "signup" && isTurnstileEnabled() && !turnstileToken)}
               className="glow-pink w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))" }}
             >
