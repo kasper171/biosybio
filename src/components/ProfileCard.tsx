@@ -424,6 +424,8 @@ type Props = {
   animateNameText?: boolean;
   animateBioText?: boolean;
   animationSeed?: number;
+  /** Altura exata do card (ex.: hotel ao lado) — evita crescer além de card_height */
+  enforceCardHeight?: boolean;
 };
 
 export function ProfileCard({
@@ -435,6 +437,7 @@ export function ProfileCard({
   animateNameText = false,
   animateBioText = false,
   animationSeed = 0,
+  enforceCardHeight = false,
 }: Props) {
   const [hovering, setHovering] = useState(false);
   const fullName = profile.display_name || profile.username;
@@ -543,6 +546,7 @@ export function ProfileCard({
   const frameStyle: CSSProperties = {
     position: "relative",
     width: "100%",
+    ...(enforceCardHeight ? { height: cardH } : {}),
     ...borderChrome.style,
   };
 
@@ -552,6 +556,9 @@ export function ProfileCard({
     overflow: "hidden",
     borderRadius: radius,
     minHeight: cardH + "px",
+    ...(enforceCardHeight
+      ? { height: cardH + "px", maxHeight: cardH + "px" }
+      : {}),
     display: "flex",
     flexDirection: "column",
     textAlign: cardLayout === "aligned" ? "left" : "center",
@@ -585,7 +592,7 @@ export function ProfileCard({
         reset={true}
         onEnter={() => setHovering(true)}
         onLeave={() => setHovering(false)}
-        style={{ width: "100%" }}
+        style={{ width: "100%", ...(enforceCardHeight ? { height: cardH } : {}) }}
       >
         {/* Frame: border-radius + box-shadow (borda sólida + glow externo) */}
         <div style={frameStyle} className={borderChrome.className}>

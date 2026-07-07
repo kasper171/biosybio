@@ -11,6 +11,7 @@ export {
   getHotelBesideColumnDimensions,
   getHotelBesideColumnWidth,
   getMainCardDimensions,
+  getHotelBesideSlotHeight,
   HOTEL_BESIDE_GAP_PX,
   HOTEL_BELOW_GAP_PX,
   type HotelBesideColumnDimensions,
