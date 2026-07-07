@@ -240,15 +240,15 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-phone-fan-1 .home-phone-motion {
-    transform: translate3d(0, 22px, -70px) rotateX(5deg) rotateY(-14deg) rotateZ(-3deg) scale(1.05);
+    transform: translate3d(0, 4px, -70px) rotateX(5deg) rotateY(-14deg) rotateZ(-3deg) scale(1.05);
   }
 
   .home-phone-fan-2 .home-phone-motion {
-    transform: translate3d(0, 14px, 65px) rotateX(4deg) rotateY(0deg) rotateZ(0deg) scale(1);
+    transform: translate3d(0, 0, 65px) rotateX(4deg) rotateY(0deg) rotateZ(0deg) scale(1);
   }
 
   .home-phone-fan-3 .home-phone-motion {
-    transform: translate3d(0, 26px, -15px) rotateX(5deg) rotateY(14deg) rotateZ(3deg) scale(1.07);
+    transform: translate3d(0, 6px, -15px) rotateX(5deg) rotateY(14deg) rotateZ(3deg) scale(1.07);
   }
 
   .home-phone-motion {
@@ -455,13 +455,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-phone-stage {
   position: relative;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: flex-start;
   height: var(--phone-h);
-  margin-bottom: calc(var(--phone-h) * -0.3);
-  padding-top: 20px;
+  margin-bottom: calc(var(--phone-h) * -0.22);
+  padding-top: 0;
   overflow: visible;
   perspective: 1280px;
-  perspective-origin: 52% 48%;
+  perspective-origin: 50% 38%;
   transform-style: preserve-3d;
 }
 
@@ -506,19 +507,19 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   height: var(--phone-h);
   flex-shrink: 0;
   overflow: visible;
-  transform: translate(6%, 10%);
+  transform: translate(4%, -5%);
   transform-style: preserve-3d;
 }
 
 @media (min-width: 640px) {
   .home-phone-fan {
-    transform: translate(7%, 11%);
+    transform: translate(5%, -6%);
   }
 }
 
 @media (min-width: 1024px) {
   .home-phone-fan {
-    transform: translate(8%, 12%);
+    transform: translate(6%, -7%);
   }
 }
 
@@ -568,7 +569,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-phone-card-3d {
-  --phone-fade: 38%;
+  --phone-cut: 26%;
   position: relative;
   overflow: hidden;
   border-radius: 1.9rem;
@@ -577,6 +578,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 
 .home-phone-card-clip {
   position: relative;
+  clip-path: inset(-2% -4% var(--phone-cut) -4%);
 }
 
 .home-phone-shot-wrap {
@@ -589,40 +591,36 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.45);
 }
 
-/* Fade na base — acima do corte, mesma cor do fundo (sem linha seca) */
-.home-phone-cut-mask {
+/* Feather — gradiente do fundo subindo a partir da linha do corte */
+.home-phone-cut-feather {
   pointer-events: none;
   position: absolute;
   right: 0;
-  bottom: 0;
+  bottom: var(--phone-cut);
   left: 0;
-  z-index: 8;
-  height: calc(var(--phone-fade) + 10%);
+  z-index: 6;
+  height: 22%;
   background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    color-mix(in srgb, var(--biosy-bg-base) 5%, transparent) 10%,
-    color-mix(in srgb, var(--biosy-bg-base) 18%, transparent) 24%,
-    color-mix(in srgb, var(--biosy-bg-base) 38%, transparent) 40%,
-    color-mix(in srgb, var(--biosy-bg-base) 58%, transparent) 54%,
-    color-mix(in srgb, var(--biosy-bg-base) 76%, transparent) 68%,
-    color-mix(in srgb, var(--biosy-bg-base) 90%, transparent) 82%,
-    color-mix(in srgb, var(--biosy-bg-base) 97%, transparent) 92%,
-    var(--biosy-bg-base) 100%
+    to top,
+    var(--biosy-bg-base) 0%,
+    color-mix(in srgb, var(--biosy-bg-base) 78%, transparent) 32%,
+    color-mix(in srgb, var(--biosy-bg-base) 38%, transparent) 62%,
+    transparent 100%
   );
 }
 
-/* Extensão sólida abaixo do fade — funde com o hero */
-.home-phone-card-3d::after {
-  content: "";
+/* Retângulo na linha do corte — desfoque sobe e suaviza o corte seco */
+.home-phone-cut-blur {
   pointer-events: none;
   position: absolute;
   right: 0;
-  bottom: 0;
+  bottom: calc(var(--phone-cut) - 2px);
   left: 0;
-  z-index: 9;
-  height: 14%;
+  z-index: 7;
+  height: 1.25rem;
   background: var(--biosy-bg-base);
+  transform: translateY(45%);
+  filter: blur(16px);
 }
 
 .home-phone-neon-ring {
