@@ -325,7 +325,7 @@ export function ProfilePageContent({
     ) : null;
 
   const outsideDiscordWrapped = outsideDiscordInner ? (
-    <div className="mt-4 w-full min-w-0 max-w-full overflow-hidden">
+    <div className="mt-4 w-full min-w-0 max-w-full">
       {animate && discordOutside ? (
         <motion.div
           key={`discord-${animKey}`}

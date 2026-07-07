@@ -254,27 +254,38 @@ export function DiscordPresenceCard({
   const outsideBr = profileTheme?.card_border_radius ?? 16;
   const outsideBc = profileTheme?.card_border_color ?? "#ffffff";
 
-  const outsideStyle: CSSProperties | undefined = variant === "outside" && profileTheme
-    ? {
-        background: hexToRgba(profileTheme.card_color, profileTheme.card_opacity),
-        backdropFilter: `blur(${profileTheme.card_blur}px)`,
-        WebkitBackdropFilter: `blur(${profileTheme.card_blur}px)`,
-        borderRadius: outsideBr,
-        boxSizing: "border-box",
-        boxShadow: combineBoxShadows(
-          buildCardSolidBorderShadow(outsideBw, outsideBc),
-          buildCardGlowShadow(
-            Boolean(profileTheme.effect_glow),
-            profileTheme.effect_glow_color ?? profileTheme.card_border_color,
-            profileTheme.effect_glow_size ?? 24,
+  const outsideShellStyle: CSSProperties | undefined =
+    variant === "outside" && profileTheme
+      ? {
+          borderRadius: outsideBr,
+          boxShadow: combineBoxShadows(
+            buildCardSolidBorderShadow(outsideBw, outsideBc),
+            buildCardGlowShadow(
+              Boolean(profileTheme.effect_glow),
+              profileTheme.effect_glow_color ?? profileTheme.card_border_color,
+              profileTheme.effect_glow_size ?? 24,
+            ),
           ),
-        ),
-      }
-    : undefined;
+        }
+      : undefined;
 
-  const rootClass = variant === "outside"
-    ? "relative isolate box-border w-full max-w-full min-w-0 overflow-hidden px-4 py-3"
-    : "w-full";
+  const outsideSurfaceStyle: CSSProperties | undefined =
+    variant === "outside" && profileTheme
+      ? {
+          background: hexToRgba(profileTheme.card_color, profileTheme.card_opacity),
+          backdropFilter: `blur(${profileTheme.card_blur}px)`,
+          WebkitBackdropFilter: `blur(${profileTheme.card_blur}px)`,
+          borderRadius: outsideBr,
+        }
+      : undefined;
+
+  const rootClass =
+    variant === "outside"
+      ? "relative isolate box-border w-full max-w-full min-w-0"
+      : "w-full";
+
+  const contentClass =
+    variant === "outside" ? "relative z-[1] overflow-hidden px-4 py-3" : "relative z-[1]";
 
   const scaleFactor = Math.min(140, Math.max(80, scale)) / 100;
   const avatarPx = Math.round(52 * scaleFactor);
@@ -302,8 +313,8 @@ export function DiscordPresenceCard({
   const bodyFallback = bodyBase ?? { color: "rgba(255,255,255,0.80)" };
   const iconFallback = iconStyle ?? { color: "rgba(255,255,255,0.40)" };
 
-  return (
-    <div className={rootClass} style={outsideStyle}>
+  const cardBody = (
+    <>
       <div className="relative z-[1] mb-1.5 flex items-center gap-1" style={{ fontSize: headerPx }}>
         <FaDiscord className="shrink-0" style={{ ...iconFallback, width: iconPx, height: iconPx }} aria-hidden />
         <span className="font-medium uppercase tracking-wider" style={headerMuted}>
@@ -398,6 +409,18 @@ export function DiscordPresenceCard({
           </a>
         )}
       </div>
-    </div>
+    </>
   );
+
+  if (variant === "outside") {
+    return (
+      <div className={rootClass} style={outsideShellStyle}>
+        <div className={contentClass} style={outsideSurfaceStyle}>
+          {cardBody}
+        </div>
+      </div>
+    );
+  }
+
+  return <div className={rootClass}>{cardBody}</div>;
 }
