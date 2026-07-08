@@ -43,9 +43,6 @@ export function HomeHeroSection() {
   const textParallax = {
     transform: `translate3d(${offset.x * -10}px, ${offset.y * -6}px, 0)`,
   };
-  const phoneParallax = {
-    transform: `translate3d(${offset.x * 16}px, ${offset.y * 10}px, 0)`,
-  };
 
   const handleReserve = async () => {
     setReserveError(null);
@@ -170,8 +167,8 @@ export function HomeHeroSection() {
         </div>
 
         <HomeHeroEntrance delay={180} className="home-hero__visual-wrap" duration={1000}>
-          <div className="home-hero__visual" style={phoneParallax}>
-            <HomeHeroVisual />
+          <div className="home-hero__visual">
+            <HomeHeroVisual parallax={offset} />
           </div>
         </HomeHeroEntrance>
       </div>

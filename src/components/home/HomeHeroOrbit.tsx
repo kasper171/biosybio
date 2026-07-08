@@ -15,8 +15,6 @@ import {
 } from "@/components/home/HomeHeroOrbitWidgets";
 
 type OrbitTier = "mobile" | "tablet" | "desktop";
-type FloatVariant = "a" | "b" | "c" | "d" | "e" | "f";
-type DriftVariant = "a" | "b" | "c" | "d";
 
 type OrbitSlot = {
   id: string;
@@ -31,10 +29,13 @@ type OrbitSlot = {
   scale?: number;
   opacity?: number;
   blur?: number;
-  float: FloatVariant;
-  drift: DriftVariant;
+  parallax: number;
   content: ReactNode;
 };
+
+/** Intensidade do parallax por card (0–1) — perfil usa 1.0 (~8px) */
+const PHONE_PARALLAX = 1;
+const PARALLAX_PX = 8;
 
 const ORBIT_SLOTS: OrbitSlot[] = [
   {
@@ -47,8 +48,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltX: 8,
     tiltY: -14,
     rotate: -2,
-    float: "b",
-    drift: "b",
+    parallax: 0.58,
     content: <OrbitMusicWidget />,
   },
   {
@@ -61,8 +61,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltX: 10,
     tiltY: -10,
     rotate: 1,
-    float: "a",
-    drift: "a",
+    parallax: 0.48,
     content: <OrbitDiscordWidget />,
   },
   {
@@ -75,8 +74,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltX: -6,
     tiltY: 12,
     rotate: -3,
-    float: "c",
-    drift: "c",
+    parallax: 0.44,
     content: <OrbitBadgesWidget />,
   },
   {
@@ -88,8 +86,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     zDepth: 28,
     tiltX: 12,
     tiltY: -8,
-    float: "d",
-    drift: "d",
+    parallax: 0.36,
     content: <OrbitSocialWidget />,
   },
   {
@@ -103,8 +100,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltY: -16,
     rotate: 4,
     opacity: 0.92,
-    float: "e",
-    drift: "a",
+    parallax: 0.42,
     content: <OrbitBadgesGemsWidget />,
   },
   {
@@ -117,8 +113,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltX: -10,
     tiltY: -18,
     rotate: 2,
-    float: "f",
-    drift: "b",
+    parallax: 0.5,
     content: <OrbitThemeWidget />,
   },
   {
@@ -131,8 +126,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltX: -12,
     tiltY: -12,
     rotate: -2,
-    float: "a",
-    drift: "c",
+    parallax: 0.4,
     content: <OrbitLayoutWidget />,
   },
   {
@@ -146,8 +140,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltY: 10,
     opacity: 0.88,
     blur: 0.5,
-    float: "b",
-    drift: "d",
+    parallax: 0.32,
     content: <OrbitViewsWidget />,
   },
   {
@@ -161,8 +154,7 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltY: 8,
     opacity: 0.72,
     blur: 1.5,
-    float: "c",
-    drift: "a",
+    parallax: 0.26,
     content: <OrbitEffectsWidget />,
   },
   {
@@ -175,13 +167,20 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tiltX: 6,
     tiltY: -6,
     scale: 1.04,
-    float: "d",
-    drift: "b",
+    parallax: 0.62,
     content: <OrbitPremiumWidget />,
   },
 ];
 
-function OrbitWidgetSlot({ slot }: { slot: OrbitSlot }) {
+type ParallaxOffset = { x: number; y: number };
+
+function OrbitWidgetSlot({
+  slot,
+  parallax,
+}: {
+  slot: OrbitSlot;
+  parallax: ParallaxOffset;
+}) {
   return (
     <div
       className={cn(
@@ -202,15 +201,15 @@ function OrbitWidgetSlot({ slot }: { slot: OrbitSlot }) {
           "--orbit-opacity": slot.opacity ?? 1,
           "--orbit-blur": slot.blur ? `${slot.blur}px` : "0px",
           "--orbit-rotate": `${slot.rotate ?? 0}deg`,
+          "--orbit-parallax-x": `${parallax.x * slot.parallax * PARALLAX_PX}px`,
+          "--orbit-parallax-y": `${parallax.y * slot.parallax * PARALLAX_PX}px`,
         } as CSSProperties
       }
     >
       <div className="home-orbit-widget__pose">
-        <div className={cn("home-orbit-widget__path", `home-orbit-widget__path--${slot.float}`)}>
-          <div className={cn("home-orbit-widget__bob", `home-orbit-widget__bob--${slot.float}`)}>
-            <div className={cn("home-orbit-widget__drift", `home-orbit-widget__drift--${slot.drift}`)}>
-              {slot.content}
-            </div>
+        <div className={cn("home-orbit-widget__live", `home-orbit-widget__live--${slot.id}`)}>
+          <div className={cn("home-orbit-widget__depth", `home-orbit-widget__depth--${slot.id}`)}>
+            {slot.content}
           </div>
         </div>
       </div>
@@ -218,7 +217,14 @@ function OrbitWidgetSlot({ slot }: { slot: OrbitSlot }) {
   );
 }
 
-export function HomeHeroOrbit() {
+type HomeHeroOrbitProps = {
+  parallax?: ParallaxOffset;
+};
+
+export function HomeHeroOrbit({ parallax = { x: 0, y: 0 } }: HomeHeroOrbitProps) {
+  const phonePx = parallax.x * PHONE_PARALLAX * PARALLAX_PX;
+  const phonePy = parallax.y * PHONE_PARALLAX * PARALLAX_PX;
+
   return (
     <div className="home-orbit">
       <div className="home-orbit__scene">
@@ -244,10 +250,18 @@ export function HomeHeroOrbit() {
 
         <div className="home-orbit__field">
           {ORBIT_SLOTS.map((slot) => (
-            <OrbitWidgetSlot key={slot.id} slot={slot} />
+            <OrbitWidgetSlot key={slot.id} slot={slot} parallax={parallax} />
           ))}
 
-          <div className="home-orbit__phone-wrap">
+          <div
+            className="home-orbit__phone-wrap"
+            style={
+              {
+                "--orbit-phone-px": `${phonePx}px`,
+                "--orbit-phone-py": `${phonePy}px`,
+              } as CSSProperties
+            }
+          >
             <div className="home-orbit__phone-glow" aria-hidden />
             <div className="home-orbit__phone-orbit">
               <div className="home-orbit__phone-float">
