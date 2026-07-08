@@ -20,6 +20,14 @@ const SIZE_CLASSES: Record<LocaleFlagSize, string> = {
   lg: "h-14 w-14",
 };
 
+const FLAG_ZOOM: Record<Locale, number> = {
+  // Algumas imagens (principalmente com padding/transparência) precisam de um zoom maior
+  // para preencher 100% do círculo.
+  en: 1.34,
+  pt: 1.34,
+  es: 1.22,
+};
+
 function FlagSvgFallback({ locale, className, size = "md" }: FlagProps) {
   const dim = SIZE_CLASSES[size];
   if (locale === "pt") {
@@ -94,7 +102,8 @@ export function LocaleFlag({ locale, className, size = "md" }: FlagProps) {
           loading="eager"
           decoding="sync"
           fetchPriority="high"
-          className="h-full w-full object-cover object-center scale-[1.22]"
+          className="h-full w-full object-cover object-center"
+          style={{ transform: `scale(${FLAG_ZOOM[locale] ?? 1.3})` }}
         />
       )}
     </span>

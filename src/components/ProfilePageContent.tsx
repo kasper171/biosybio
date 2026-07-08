@@ -310,9 +310,12 @@ export function ProfilePageContent({
   })();
 
   // Ordem: Discord separado -> Hotel (Habbo/Habblet) -> Música -> Blocos externos
-  const discordOutsideRevealDelay = discordOutside ? nextSecondaryGroupDelay() : 0;
+  // Para cards externos com blur (Discord/Música), um delay na animação faz o blur “aparecer atrasado”.
+  // Mantemos o reveal gradual para outros grupos, mas deixamos esses dois instantâneos no modo fade.
+  const discordOutsideRevealDelay =
+    discordOutside ? (revealEffect === "fade" ? 0 : nextSecondaryGroupDelay()) : 0;
   const hotelGroupDelay = hasHotelOutsideGroup ? nextSecondaryGroupDelay() : 0;
-  const musicCardDelay = showMusicCard ? nextSecondaryGroupDelay() : 0;
+  const musicCardDelay = showMusicCard ? (revealEffect === "fade" ? 0 : nextSecondaryGroupDelay()) : 0;
   const outsideBlockDelay = outsideBlocks.length > 0 ? nextSecondaryGroupDelay() : 0;
 
   const hotelBesideRevealDelays = hotelOutsideBeside
