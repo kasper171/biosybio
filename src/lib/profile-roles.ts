@@ -26,10 +26,24 @@ export const FULL_ACCESS_ROLE_IDS: ReadonlySet<ProfileRoleId> = new Set([
 
 const ROLE_ICON_BASE = "/badges";
 
-/** Área quadrada uniforme na UI */
-export const ROLE_BADGE_DISPLAY_PX = 32;
+/** Área quadrada uniforme na UI (badges de cargo no perfil — não afeta Discord) */
+export const ROLE_BADGE_DISPLAY_PX = 48;
 export const ROLE_BADGE_SIZE_MIN = 20;
-export const ROLE_BADGE_SIZE_MAX = 44;
+export const ROLE_BADGE_SIZE_MAX = 66;
+export const ROLE_BADGE_GAP_MIN = 0;
+export const ROLE_BADGE_GAP_MAX = 20;
+export const ROLE_BADGE_GAP_DEFAULT = 5;
+
+export function getRoleBadgeGapPx(
+  profile: Pick<Profile, "role_badges_gap">,
+): number {
+  const raw = Number(profile.role_badges_gap ?? ROLE_BADGE_GAP_DEFAULT);
+  if (!Number.isFinite(raw)) return ROLE_BADGE_GAP_DEFAULT;
+  return Math.min(
+    ROLE_BADGE_GAP_MAX,
+    Math.max(ROLE_BADGE_GAP_MIN, Math.round(raw)),
+  );
+}
 
 export function getRoleBadgeSizePx(
   profile: Pick<Profile, "role_badges_size_px">,

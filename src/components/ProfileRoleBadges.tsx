@@ -3,6 +3,7 @@ import type { Profile } from "@/lib/profile-storage";
 import {
   badgeMonochromeCssFilter,
   buildRoleBadgeImageFilter,
+  getRoleBadgeGapPx,
   getRoleBadgeSizePx,
   getRoleIconFallbackUrl,
   getRoleIconUrl,
@@ -127,6 +128,7 @@ export function ProfileRoleBadges({
   if (roles.length === 0) return null;
 
   const badgeSize = size ?? getRoleBadgeSizePx(profile);
+  const badgeGap = getRoleBadgeGapPx(profile);
   const monochrome = profile.role_badges_monochrome === true;
   const monoColor = profile.role_badges_mono_color ?? "#ffffff";
   const bloom = profile.role_badges_bloom === true;
@@ -135,10 +137,11 @@ export function ProfileRoleBadges({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-0.5",
+        "flex flex-wrap items-center",
         align === "center" ? "justify-center" : "justify-start",
         className,
       )}
+      style={{ gap: `${badgeGap}px` }}
       aria-label="Profile roles"
     >
       {roles.map((role) => (

@@ -21,11 +21,6 @@ import type {
 } from "@/lib/discord/discord-payload";
 import { getDiscordDcdnProfileFn } from "@/lib/discord/discord.functions";
 import { useDiscordPresenceRelay } from "@/lib/discord/use-discord-presence-relay";
-import {
-  buildRoleBadgeImageFilter,
-  getRoleBadgeSizePx,
-  resolveRoleBadgeBloomColor,
-} from "@/lib/profile-roles";
 
 /** Abaixo desta largura, a atividade (Spotify etc.) encolhe para não sobrepor o perfil */
 const ACTIVITY_COMPACT_WIDTH_PX = 400;
@@ -278,13 +273,7 @@ export function DiscordPresenceCard({
   const effAvatarPx = Math.max(40, Math.round(avatarPx * profileCompactRatio));
   const effNamePx = Math.max(12, Math.round(namePx * profileCompactRatio));
   const effUserPx = Math.max(11, Math.round(userPx * profileCompactRatio));
-  const effBadgePx = Math.max(11, Math.round(badgePx * profileCompactRatio));
-  const profileBadgeSize = profileTheme ? getRoleBadgeSizePx(profileTheme) : effBadgePx;
-  const discordBadgeSize = profileTheme ? profileBadgeSize : effBadgePx;
-  const discordBadgeBloom = profileTheme?.role_badges_bloom === true;
-  const discordBadgeBloomColor = profileTheme
-    ? resolveRoleBadgeBloomColor(profileTheme)
-    : "#ffffff";
+  const discordBadgeSize = Math.max(11, Math.round(badgePx * profileCompactRatio));
   const effActivityTitlePx = Math.max(8, Math.round(activityTitlePx * activityCompactRatio));
   const effActivitySubPx = Math.max(7, Math.round(activitySubPx * activityCompactRatio));
   const effActivityArtPx = Math.max(22, Math.round(activityArtPx * activityCompactRatio));
@@ -362,11 +351,6 @@ export function DiscordPresenceCard({
                         height: discordBadgeSize,
                         minWidth: discordBadgeSize,
                         minHeight: discordBadgeSize,
-                        overflow: "visible",
-                        filter: buildRoleBadgeImageFilter(discordBadgeSize, {
-                          bloom: discordBadgeBloom,
-                          bloomColor: discordBadgeBloomColor,
-                        }),
                       }}
                     />
                   ))}
