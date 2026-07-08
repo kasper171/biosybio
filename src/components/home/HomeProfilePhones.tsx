@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { SITE_NAME } from "@/lib/site";
 import profilePreview1 from "@/assets/home-profile-preview-1.png?asset=20260706-1";
 import profilePreview2 from "@/assets/home-profile-preview-2.png?asset=20260706-2";
 import profilePreview3 from "@/assets/home-profile-preview-3.png?asset=20260706-3";
@@ -8,21 +9,21 @@ const PHONES = [
   {
     id: "phone-1",
     src: profilePreview1,
-    alt: "Biosy profile preview",
+    alt: `${SITE_NAME} profile preview`,
     layer: "home-phone-fan-1",
     neon: "home-phone-neon-soft",
   },
   {
     id: "phone-3",
     src: profilePreview3,
-    alt: "Biosy profile preview",
+    alt: `${SITE_NAME} profile preview`,
     layer: "home-phone-fan-2",
     neon: "home-phone-neon-bright",
   },
   {
     id: "phone-2",
     src: profilePreview2,
-    alt: "Biosy profile preview",
+    alt: `${SITE_NAME} profile preview`,
     layer: "home-phone-fan-3",
     neon: "home-phone-neon-soft",
   },

@@ -24,7 +24,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/profile-storage";
-import { profilePublicUrl } from "@/lib/site";
+import { profilePublicUrl, SITE_NAME } from "@/lib/site";
 import {
   DASHBOARD_TEXT_SCALE_DEFAULT,
   getDashboardTextScale,
@@ -162,7 +162,7 @@ export function DashboardAccountLayout({
       >
         <div className="border-b border-white/[0.06] px-5 py-5">
           <Link to="/" className="dash-t-heading font-bold tracking-tight text-white">
-            Biosy
+            {SITE_NAME}
           </Link>
         </div>
 

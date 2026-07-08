@@ -199,7 +199,7 @@ export function OrbitViewsWidget() {
   return (
     <GlassCard className="home-orbit-widget__views">
       <Eye className="home-orbit-widget__views-icon" aria-hidden />
-      <span className="home-orbit-widget__views-count">2.2K</span>
+      <span className="home-orbit-widget__views-count">23K</span>
       <span className="home-orbit-widget__views-label">views</span>
     </GlassCard>
   );

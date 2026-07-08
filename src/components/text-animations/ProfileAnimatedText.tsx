@@ -28,19 +28,9 @@ type Props = {
   compact?: boolean;
 };
 
-const VERTICAL_ROOM_EFFECTS: TextAnimationId[] = [
-  "slide_in",
-  "scale_in",
-  "bouncy",
-  "wavy",
-  "staggered_pop_in",
-  "particle",
-];
-
 function AnimatedTextShell({
   children,
   compact,
-  effect,
   className,
 }: {
   children: ReactNode;
@@ -48,14 +38,11 @@ function AnimatedTextShell({
   effect: TextAnimationId;
   className?: string;
 }) {
-  const needsVerticalRoom = VERTICAL_ROOM_EFFECTS.includes(effect);
-
   return (
     <span
       className={cn(
-        "relative inline-block max-w-full",
+        "relative inline-block max-w-full overflow-visible",
         compact ? "z-[1]" : "z-[4]",
-        needsVerticalRoom && !compact && "py-2",
         className,
       )}
     >

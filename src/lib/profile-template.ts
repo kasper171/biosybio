@@ -59,6 +59,7 @@ export type ProfileTheme = {
   social_icon_color: string;
   social_icon_style: Profile["social_icon_style"];
   social_icon_size: number;
+  social_icon_gap: number;
   social_icon_bloom: boolean;
   social_icon_bloom_color: string | null;
   show_social_titles: boolean;
@@ -147,6 +148,7 @@ export function extractThemeFromProfile(profile: Profile): ProfileTheme {
     social_icon_color: profile.social_icon_color ?? "#ffffff",
     social_icon_style: profile.social_icon_style ?? "boxed",
     social_icon_size: profile.social_icon_size ?? 100,
+    social_icon_gap: profile.social_icon_gap ?? 5,
     social_icon_bloom: profile.social_icon_bloom === true,
     social_icon_bloom_color: profile.social_icon_bloom_color ?? null,
     show_social_titles: profile.show_social_titles === true,

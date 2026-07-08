@@ -1,25 +1,55 @@
 import type { CSSProperties } from "react";
 import type { Profile } from "@/lib/profile-storage";
-import { hexToRgba } from "@/lib/profile-colors";
 
-/** Espaço horizontal entre ícones sociais no card (~30% menor que gap-1 / 4px) */
-export const SOCIAL_ICON_GAP_PX = 3;
+export const SOCIAL_ICON_SIZE_MIN = 60;
+export const SOCIAL_ICON_SIZE_MAX = 200;
+export const SOCIAL_ICON_GAP_MIN = 0;
+export const SOCIAL_ICON_GAP_MAX = 20;
+export const SOCIAL_ICON_GAP_DEFAULT = 5;
+
+/** Tamanho visivel da logo a 100% (px) */
+export const SOCIAL_ICON_BASE_PX = 28;
+export const SOCIAL_ICON_BASE_PX_COMPACT = 24;
+/** Padding interno do modo boxed a 100% (px, cada lado) */
+export const SOCIAL_BOXED_PAD_PX = 4;
 
 export function getSocialIconScale(profile: Profile): number {
   const raw = Number(profile.social_icon_size ?? 100);
   if (!Number.isFinite(raw)) return 1;
-  return Math.min(140, Math.max(60, raw)) / 100;
+  return Math.min(SOCIAL_ICON_SIZE_MAX, Math.max(SOCIAL_ICON_SIZE_MIN, raw)) / 100;
+}
+
+export function getSocialIconGapPx(profile: Profile): number {
+  const raw = Number(profile.social_icon_gap ?? SOCIAL_ICON_GAP_DEFAULT);
+  if (!Number.isFinite(raw)) return SOCIAL_ICON_GAP_DEFAULT;
+  return Math.min(SOCIAL_ICON_GAP_MAX, Math.max(SOCIAL_ICON_GAP_MIN, Math.round(raw)));
+}
+
+export function getSocialIconsRowStyle(profile: Profile): CSSProperties {
+  return { gap: `${getSocialIconGapPx(profile)}px` };
+}
+
+export function getSocialIconsRowClassName(
+  layout: Profile["card_layout"] | undefined,
+): string {
+  const base = "biosy-social-icons-row flex min-w-0 max-w-full flex-wrap items-center overflow-visible";
+  if (layout === "aligned") return `${base} w-full justify-start`;
+  return `${base} shrink-0 justify-center`;
 }
 
 export function getSocialIconDimensions(profile: Profile, compact: boolean) {
   const scale = getSocialIconScale(profile);
   const logo = profile.social_icon_style === "logo";
-  const baseBox = logo ? (compact ? 32 : 36) : compact ? 36 : 44;
-  const baseIcon = logo ? (compact ? 20 : 24) : compact ? 16 : 20;
+  const base = compact ? SOCIAL_ICON_BASE_PX_COMPACT : SOCIAL_ICON_BASE_PX;
+  const iconPx = Math.max(12, Math.round(base * scale));
+  const padPx = logo ? 0 : Math.max(2, Math.round(SOCIAL_BOXED_PAD_PX * scale));
+  const boxPx = logo ? iconPx : iconPx + padPx * 2;
 
   return {
-    boxPx: Math.round(baseBox * scale),
-    iconPx: Math.round(baseIcon * scale),
+    iconPx,
+    boxPx,
+    padPx,
+    logo,
     scale,
   };
 }
@@ -33,17 +63,8 @@ export function resolveSocialIconBloomColor(
   return iconColor;
 }
 
-/** Glow suave aplicado no ícone (SVG), não no container retangular */
-export function getSocialIconBloomStyle(
-  glowColor: string,
-  enabled: boolean,
-): CSSProperties | undefined {
-  if (!enabled) return undefined;
-
-  return {
-    filter: [
-      `drop-shadow(0 0 1px ${hexToRgba(glowColor, 0.55)})`,
-      `drop-shadow(0 0 4px ${hexToRgba(glowColor, 0.28)})`,
-    ].join(" "),
-  };
+export function formatSocialIconSizeLabel(profile: Profile, compact = false): string {
+  const { iconPx } = getSocialIconDimensions(profile, compact);
+  const pct = Math.round(getSocialIconScale(profile) * 100);
+  return `${iconPx}px (${pct}%)`;
 }

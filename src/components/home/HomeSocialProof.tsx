@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
-import {
+import { SITE_NAME } from "@/lib/site";import {
   fetchCreatorAvatars,
   fetchPlatformStats,
   formatHeroCreatorLabel,
@@ -9,7 +9,7 @@ import {
 
 export function HomeSocialProof() {
   const [avatars, setAvatars] = useState<CreatorAvatar[]>([]);
-  const [creatorLabel, setCreatorLabel] = useState("Creators already use Biosy");
+  const [creatorLabel, setCreatorLabel] = useState(`Creators already use ${SITE_NAME}`);
 
   useEffect(() => {
     let cancelled = false;

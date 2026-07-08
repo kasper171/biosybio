@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { SITE_NAME } from "@/lib/site";
 
 /** Base exibida na home — somada às visualizações reais de todos os perfis */
 export const PLATFORM_VIEWS_BASE = 7_234;
@@ -52,10 +53,10 @@ export async function fetchCreatorAvatars(limit = 5): Promise<CreatorAvatar[]> {
 }
 
 export function formatHeroCreatorLabel(count: number): string {
-  if (count <= 0) return "Be the first creator on Biosy";
-  if (count >= 300) return `${count}+ creators already use Biosy`;
-  if (count === 1) return "1 creator already uses Biosy";
-  return `${count} creators already use Biosy`;
+  if (count <= 0) return `Be the first creator on ${SITE_NAME}`;
+  if (count >= 300) return `${count}+ creators already use ${SITE_NAME}`;
+  if (count === 1) return `1 creator already uses ${SITE_NAME}`;
+  return `${count} creators already use ${SITE_NAME}`;
 }
 
 export async function fetchPlatformStats(): Promise<PlatformStats> {

@@ -1,16 +1,20 @@
 # Biosy - redeploy completo a partir do PC (Windows PowerShell)
-# Uso:
-#   cd "C:\Users\MAE DO SS\Desktop\Byosy"
-#   powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-full.ps1
+#
+# DESENVOLVIMENTO (use no dia a dia):
+#   powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1
+#   ou: npm run dev
+#
+# PUBLICAR (somente quando estiver pronto, 1 vez):
+#   powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1 -Message "feat: descricao"
+#   ou: powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-full.ps1 -Deploy -Message "feat: descricao" -SkipLocalBuild
 #
 # Se der EPERM no npm (arquivo em uso), feche o "npm run dev" e rode de novo.
-# Ou pule o build local (a Vercel faz o build na nuvem):
-#   powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-full.ps1 -SkipLocalBuild
 
 param(
+  [switch]$Deploy,
+  [string]$Message = "",
   [switch]$SkipLocalBuild,
   [switch]$ForceReinstall,
-  # Deploy via Git push ja dispara build na Vercel. CLI manual consome quota (100/dia no plano Free).
   [switch]$VercelCli,
   [string]$VercelProjectName = "biosybio"
 )
@@ -87,6 +91,24 @@ if (-not (Test-Path "package.json")) {
   Fail "package.json nao encontrado. Rode este script dentro da pasta Byosy."
 }
 
+if (-not $Deploy) {
+  Write-Host ""
+  Write-Host "Modo deploy NAO ativado. Nada sera commitado nem enviado." -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "Desenvolvimento local:" -ForegroundColor Green
+  Write-Host '  powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1' -ForegroundColor Cyan
+  Write-Host "  ou: npm run dev" -ForegroundColor Cyan
+  Write-Host ""
+  Write-Host "Publicar quando estiver pronto (1 vez):" -ForegroundColor Green
+  Write-Host '  powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1 -Message "feat: descricao"' -ForegroundColor Cyan
+  Write-Host ""
+  exit 0
+}
+
+if (-not $Message.Trim()) {
+  Fail 'Informe -Message "feat: descricao". Exemplo: .\scripts\deploy.ps1 -Message "feat: bloom nos icones"'
+}
+
 Write-Step -Number "2" -Message "Verificando Node.js e npm"
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
   Fail "Node.js nao instalado. Instale Node 22 LTS: https://nodejs.org"
@@ -156,8 +178,7 @@ if ($SkipLocalBuild) {
       Write-Host "npm falhou (arquivo em uso / EPERM). Faca isto:" -ForegroundColor Red
       Write-Host "  1. Feche TODOS os terminais com npm run dev / vite" -ForegroundColor Red
       Write-Host "  2. Feche e reabra o Cursor se precisar" -ForegroundColor Red
-      Write-Host "  3. Rode de novo COM build na Vercel:" -ForegroundColor Red
-      Write-Host '     powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-full.ps1 -SkipLocalBuild' -ForegroundColor Red
+      Write-Host "  3. Desenvolva com npm run dev; publique depois com deploy.ps1" -ForegroundColor Red
       Fail "Dependencias nao instaladas."
     }
   }
@@ -166,8 +187,9 @@ if ($SkipLocalBuild) {
   $buildCode = Invoke-Npm -Args @("run", "build")
   if ($buildCode -ne 0) {
     Write-Host ""
-    Write-Host "Build local falhou. Voce ainda pode fazer deploy so com push (Vercel compila):" -ForegroundColor Yellow
-    Write-Host '  powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-full.ps1 -SkipLocalBuild' -ForegroundColor Yellow
+    Write-Host "Build local falhou. Corrija antes de publicar." -ForegroundColor Yellow
+    Write-Host '  Desenvolva com: npm run dev' -ForegroundColor Yellow
+    Write-Host '  Depois: .\scripts\deploy.ps1 -Message "feat: ..." -SkipLocalBuild' -ForegroundColor Yellow
     Fail "npm run build falhou."
   }
   Write-Host "Build local OK." -ForegroundColor Green
@@ -178,12 +200,11 @@ git add -A
 Reset-StagedEnvSecrets
 $stillDirty = git status --porcelain
 if ($stillDirty) {
-  $msg = "deploy: redeploy completo $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-  git commit -m $msg
+  git commit -m $Message.Trim()
   if ($LASTEXITCODE -ne 0) {
     Write-Host "Nada novo para commitar ou commit cancelado." -ForegroundColor Yellow
   } else {
-    Write-Host "Commit criado: $msg" -ForegroundColor Green
+    Write-Host "Commit criado: $($Message.Trim())" -ForegroundColor Green
   }
 } else {
   Write-Host "Nada para commitar." -ForegroundColor Green
@@ -250,8 +271,8 @@ if ($vercelRateLimited) {
 PUSH OK, MAS DEPLOY BLOQUEADO PELA VERCEL (quota diaria).
 
 O codigo esta no GitHub, mas www.byosy.bio ainda mostra o deploy anterior.
-Amanha (apos reset da quota), rode de novo:
-  powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-full.ps1 -SkipLocalBuild
+Amanha (apos reset da quota), publique UMA vez:
+  powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1 -Message "feat: descricao" -SkipLocalBuild
 
 Ou no painel Vercel: Deployments -> Redeploy no ultimo commit (quando a quota liberar).
 

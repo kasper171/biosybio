@@ -16,6 +16,7 @@ import { normalizeProfile } from "@/lib/normalize-profile";
 import { attachProfileRoles } from "@/lib/profile-roles";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
 import { buildProfileShareMeta, resolveShareEmbedTitle } from "@/lib/share-embed";
+import { SITE_TITLE } from "@/lib/site";
 
 type ProfileShareEmbedRow = {
   username: string;
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/$username")({
     return fetchProfileShareEmbed(params.username);
   },
   head: ({ loaderData, params }) => {
-    if (!loaderData) return { meta: [{ title: "Biosy — Your world. Your profile. Your way." }] };
+    if (!loaderData) return { meta: [{ title: SITE_TITLE }] };
     return { meta: buildProfileShareMeta(params.username, loaderData) };
   },
   component: PublicProfile,

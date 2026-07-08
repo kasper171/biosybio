@@ -48,6 +48,7 @@ export type Database = {
           social_original_colors: boolean
           social_icon_style: string
           social_icon_size: number
+          social_icon_gap: number
           social_icon_bloom: boolean
           social_icon_bloom_color: string | null
           show_social_titles: boolean
@@ -114,6 +115,7 @@ export type Database = {
           social_original_colors?: boolean
           social_icon_style?: string
           social_icon_size?: number
+          social_icon_gap?: number
           social_icon_bloom?: boolean
           social_icon_bloom_color?: string | null
           show_social_titles?: boolean
@@ -180,6 +182,7 @@ export type Database = {
           social_original_colors?: boolean
           social_icon_style?: string
           social_icon_size?: number
+          social_icon_gap?: number
           social_icon_bloom?: boolean
           social_icon_bloom_color?: string | null
           show_social_titles?: boolean

@@ -70,53 +70,36 @@
 
 .dark { color-scheme: dark; }
 
-html, body { background-color: var(--color-background); color: var(--color-foreground); }
+html, body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  max-width: 100%;
+}
 
 @layer base {
   * { border-color: var(--color-border); }
+
+  /* Só o html rola — body com overflow-x:hidden gerava 2ª barra (overflow-y:auto) */
+  html {
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
   body {
     background: var(--color-background);
     background-attachment: fixed;
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
-  }
-
-  html {
-    scrollbar-width: thin;
-    scrollbar-color: oklch(0.65 0.28 0 / 0.35) transparent;
-  }
-
-  html::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  html::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  html::-webkit-scrollbar-thumb {
-    background: linear-gradient(
-      180deg,
-      oklch(0.65 0.28 0 / 0.5),
-      oklch(0.55 0.27 10 / 0.4)
-    );
-    border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-  }
-
-  html::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      180deg,
-      oklch(0.72 0.28 0 / 0.7),
-      oklch(0.62 0.27 10 / 0.55)
-    );
-    background-clip: padding-box;
-  }
-
-  html::-webkit-scrollbar-corner {
-    background: transparent;
+    overflow: hidden;
+    min-height: 100%;
   }
 }
 
@@ -284,20 +267,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-hero-entrance {
-  opacity: 0;
-  transform: translate3d(0, 28px, 0);
-  filter: blur(10px);
-  transition:
-    opacity var(--entrance-duration, 920ms) cubic-bezier(0.22, 1, 0.36, 1),
-    transform var(--entrance-duration, 920ms) cubic-bezier(0.22, 1, 0.36, 1),
-    filter var(--entrance-duration, 920ms) cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: var(--entrance-delay, 0ms);
-}
-
-.home-hero-entrance.is-ready {
-  opacity: 1;
-  transform: none;
-  filter: blur(0);
+  display: block;
 }
 
 .home-hero-cta {
@@ -425,13 +395,6 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-hero-entrance {
-    opacity: 1;
-    transform: none;
-    filter: none;
-    transition: none;
-  }
-
   .home-hero__copy,
   .home-hero__visual {
     transition: none;
@@ -450,6 +413,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 .home-orbit {
   position: relative;
   width: 100%;
+  max-width: 100%;
   overflow: visible;
 }
 
@@ -464,6 +428,8 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   inset: -10% -8%;
   z-index: 0;
   overflow: hidden;
+  will-change: transform;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-orbit__glow {
@@ -473,31 +439,30 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-orbit__glow--main {
-  top: 32%;
-  left: 50%;
-  width: min(80%, 480px);
-  height: min(58%, 420px);
+  top: 58%;
+  left: 46%;
+  width: min(62%, 380px);
+  height: min(48%, 300px);
   transform: translate(-50%, -50%);
   background: radial-gradient(
     ellipse at center,
-    oklch(0.62 0.32 320 / 0.32) 0%,
-    oklch(0.65 0.28 0 / 0.18) 38%,
+    oklch(0.62 0.32 320 / 0.08) 0%,
+    oklch(0.65 0.28 0 / 0.04) 38%,
     transparent 72%
   );
-  animation: home-orbit-glow-breathe 16s ease-in-out infinite;
 }
 
 .home-orbit__glow--secondary {
-  top: 44%;
-  left: 54%;
-  width: min(52%, 320px);
-  height: min(42%, 260px);
+  top: 64%;
+  left: 58%;
+  width: min(48%, 280px);
+  height: min(38%, 220px);
+  opacity: 0.55;
   background: radial-gradient(
     ellipse at center,
-    oklch(0.58 0.28 310 / 0.2) 0%,
+    oklch(0.58 0.28 310 / 0.12) 0%,
     transparent 70%
   );
-  animation: home-orbit-glow-breathe-alt 18s ease-in-out infinite reverse;
 }
 
 .home-orbit__particle {
@@ -552,33 +517,9 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   animation: home-orbit-particle 22s ease-in-out infinite 3s;
 }
 
-/* Nuvem 3D orbital */
+/* Nuvem orbital — desativada (bandas rosas giravam sobre a tela do celular) */
 .home-orbit__cloud-scene {
-  pointer-events: none;
-  position: absolute;
-  inset: -5% -8%;
-  z-index: 1;
-  transform-style: preserve-3d;
-  perspective: 900px;
-  overflow: visible;
-}
-
-.home-orbit__cloud-core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: min(68%, 360px);
-  height: min(50%, 320px);
-  transform: translate(-50%, -50%) translateZ(-40px);
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    oklch(0.62 0.34 320 / 0.38) 0%,
-    oklch(0.65 0.28 0 / 0.22) 35%,
-    transparent 68%
-  );
-  filter: blur(36px);
-  animation: home-orbit-cloud-core 9s ease-in-out infinite;
+  display: none;
 }
 
 .home-orbit__cloud-band {
@@ -596,8 +537,8 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   height: 52%;
   background: radial-gradient(
     ellipse 70% 45% at 50% 50%,
-    oklch(0.58 0.32 320 / 0.42) 0%,
-    oklch(0.65 0.26 0 / 0.18) 45%,
+    oklch(0.58 0.32 320 / 0.2) 0%,
+    oklch(0.65 0.26 0 / 0.08) 45%,
     transparent 72%
   );
   animation: home-orbit-cloud-spin-a 36s linear infinite;
@@ -629,7 +570,8 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   position: absolute;
   border-radius: 50%;
   filter: blur(24px);
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
+  opacity: 0.55;
 }
 
 .home-orbit__cloud-wisp--1 {
@@ -665,75 +607,201 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   width: 100%;
   min-height: 500px;
   margin-inline: auto;
-  perspective: 1400px;
-  perspective-origin: 50% 44%;
+  transform-style: flat;
+}
+
+/* Camadas 2D — cards nunca compartilham espaço 3D com o celular */
+.home-orbit__widgets-layer {
+  position: absolute;
+  inset: 0;
+  transform-style: flat;
+  pointer-events: none;
+}
+
+.home-orbit__widgets-layer--back {
+  z-index: 10;
+}
+
+.home-orbit__widgets-layer--front {
+  z-index: 30;
+}
+
+.home-orbit__widgets-layer--above-phone {
+  z-index: 60;
+}
+
+/* 3D isolado só no celular */
+.home-orbit__phone-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  perspective: 1600px;
+  perspective-origin: 50% 38%;
   transform-style: preserve-3d;
+}
+
+.home-orbit__phone-yaw,
+.home-orbit__phone-pitch {
+  transform-style: preserve-3d;
+  transform-origin: center 40%;
 }
 
 .home-orbit__phone-wrap {
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 40;
   transform: translate(-50%, -50%) translate3d(var(--orbit-phone-px, 0px), var(--orbit-phone-py, 0px), 0);
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
 
-.home-orbit__phone-orbit {
+.home-orbit__phone-wrap--motion {
+  transform: none;
+  transition: none;
+}
+
+.home-orbit__phone-parallax {
   transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-orbit__phone-float {
+  position: relative;
   transform-style: preserve-3d;
-  animation: home-orbit-phone-suspend 10s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transform-origin: center center;
   will-change: transform;
 }
 
-.home-orbit__phone-glow {
+.home-orbit__phone-shadow {
+  pointer-events: none;
   position: absolute;
-  inset: -22% -18%;
-  z-index: -1;
+  left: 50%;
+  bottom: -4%;
+  z-index: 0;
+  width: calc(var(--phone-w, 220px) * 0.72);
+  height: calc(var(--phone-w, 220px) * 0.14);
+  transform: translateX(-50%) translateZ(-12px) rotateX(84deg);
+  transform-origin: center center;
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    oklch(0.65 0.32 320 / 0.38) 0%,
-    oklch(0.65 0.28 0 / 0.2) 40%,
-    transparent 68%
+    rgba(0, 0, 0, 0.48) 0%,
+    rgba(0, 0, 0, 0.2) 42%,
+    transparent 72%
   );
-  filter: blur(32px);
-  animation: home-orbit-glow-breathe 14s ease-in-out infinite;
-  will-change: transform, opacity;
+  filter: blur(8px);
 }
 
 .home-orbit__phone {
-  --phone-w: 220px;
-  transform: rotateX(18deg) rotateY(22deg) rotateZ(-3deg) translate3d(0, 0, 24px);
+  --phone-w: 238px;
+  position: relative;
+  z-index: 1;
+  transform: rotateX(17deg) rotateY(21deg) rotateZ(-2.5deg) translateZ(40px);
   transform-style: preserve-3d;
+  transform-origin: center 38%;
+  will-change: transform;
 }
 
 .home-orbit__phone-glass {
-  padding: 7px;
-  border-radius: 1.35rem;
+  position: relative;
+  padding: 4px;
+  border-radius: 1.15rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(
-    155deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.03) 45%,
-    rgba(20, 10, 30, 0.4) 100%
-  );
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow:
-    0 40px 90px rgba(0, 0, 0, 0.62),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 80px oklch(0.65 0.28 0 / 0.18);
+  background: #08080a;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.62);
   transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.home-orbit__phone-specular {
+  display: none;
 }
 
 .home-orbit__phone-card {
-  filter: drop-shadow(0 28px 56px rgba(0, 0, 0, 0.55));
+  --phone-cut: 0;
+  border-radius: 0.95rem;
+  filter: none;
+}
+
+/*
+ * Bloom rosa na tela: vinha do filter: drop-shadow no ::before da borda.
+ * Com o celular em 3D, o drop-shadow varre a tela inteira (parece bloom girando).
+ * Orbit: só traço rosa no topo, zero filter/box-shadow rosa.
+ */
+.home-orbit__phone .home-orbit__phone-border::before,
+.home-orbit__phone .home-phone-top-border::before,
+.home-orbit__phone .home-phone-neon-bright::before {
+  filter: none !important;
+  -webkit-filter: none !important;
+  box-shadow: none !important;
+  border-width: 1.5px;
+  border-color: oklch(0.7 0.28 0);
+}
+
+.home-orbit__phone .home-orbit__phone-border::before {
+  mask-image: linear-gradient(to bottom, #000 0%, #000 32%, transparent 56%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 32%, transparent 56%);
+}
+
+/* Sem blur/corte legado — evita manchas na tela */
+.home-orbit__phone .home-phone-cut-seal,
+.home-orbit__phone .home-phone-cut-feather,
+.home-orbit__phone .home-phone-cut-blur {
+  display: none !important;
+}
+
+/* Ambiente orbital sem glow/partículas rosas */
+.home-orbit__ambient:empty {
+  display: block;
+}
+
+.home-orbit .home-orbit__glow,
+.home-orbit .home-orbit__particle,
+.home-orbit .home-orbit__cloud-scene,
+.home-orbit .home-orbit__cloud-band,
+.home-orbit .home-orbit__cloud-wisp,
+.home-orbit .home-orbit__cloud-core {
+  display: none !important;
+}
+
+/* Preview @byosy — imagem inteira, sem crop nem fade na base */
+.home-orbit__phone .home-phone-card-clip {
+  clip-path: none;
+}
+
+.home-orbit__phone .home-orbit__phone-shot-wrap::after {
+  display: none;
+}
+
+.home-orbit__phone .home-phone-cut-seal,
+.home-orbit__phone .home-phone-cut-feather,
+.home-orbit__phone .home-phone-cut-blur {
+  display: none;
+}
+
+.home-orbit__phone .home-orbit__phone-shot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 393 / 858;
+  object-fit: contain;
+  object-position: center top;
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 0.78rem;
+}
+
+.home-orbit__phone .home-orbit__phone-shot-wrap {
+  position: relative;
+  z-index: 3;
+  width: var(--phone-w);
+  overflow: hidden;
+  background: #0a0a0c;
+  border-radius: 0.78rem;
+  transform: translateZ(1px);
+  backface-visibility: hidden;
 }
 
 /* Widgets orbitais */
@@ -744,44 +812,65 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   z-index: var(--orbit-z);
   opacity: var(--orbit-opacity);
   transform: translate(-50%, -50%) translate3d(var(--orbit-parallax-x, 0px), var(--orbit-parallax-y, 0px), 0);
-  transform-style: preserve-3d;
+  transform-style: flat;
   pointer-events: none;
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
+}
+
+.home-orbit-widget--motion-pos {
+  top: auto;
+  left: auto;
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 .home-orbit-widget--back {
   filter: blur(var(--orbit-blur));
 }
 
+.home-orbit-widget--behind-phone {
+  z-index: 12 !important;
+}
+
+.home-orbit-widget__pose {
+  transform: rotateZ(var(--orbit-rotate, 0deg));
+  pointer-events: auto;
+}
+
 .home-orbit-widget--front {
   filter: blur(var(--orbit-blur));
 }
 
-.home-orbit-widget__pose {
-  transform: translate3d(0, 0, var(--orbit-z-depth))
-    rotateX(var(--orbit-tilt-x))
-    rotateY(var(--orbit-tilt-y))
-    rotateZ(var(--orbit-rotate))
-    scale(var(--orbit-scale));
-  transform-style: preserve-3d;
-  pointer-events: auto;
-}
-
-.home-orbit-widget__live,
-.home-orbit-widget__depth {
-  transform-style: preserve-3d;
-  will-change: transform, opacity;
-}
-
 .home-orbit-widget__live {
-  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
-  animation-iteration-count: infinite;
+  transform-origin: center center;
+  will-change: transform;
 }
 
-.home-orbit-widget__depth {
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
+/* Desliga animações CSS legadas — só Motion no eixo 2D */
+.home-orbit-widget__depth,
+.home-orbit-widget__live--spotify,
+.home-orbit-widget__live--discord,
+.home-orbit-widget__live--badges,
+.home-orbit-widget__live--social,
+.home-orbit-widget__live--badges-gems,
+.home-orbit-widget__live--theme,
+.home-orbit-widget__live--layout,
+.home-orbit-widget__live--views,
+.home-orbit-widget__live--effects,
+.home-orbit-widget__live--premium,
+.home-orbit-widget__depth--spotify,
+.home-orbit-widget__depth--discord,
+.home-orbit-widget__depth--badges,
+.home-orbit-widget__depth--social,
+.home-orbit-widget__depth--badges-gems,
+.home-orbit-widget__depth--theme,
+.home-orbit-widget__depth--layout,
+.home-orbit-widget__depth--views,
+.home-orbit-widget__depth--effects,
+.home-orbit-widget__depth--premium {
+  animation: none !important;
 }
 
 .home-orbit-widget__live--spotify {
@@ -901,28 +990,17 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   animation-delay: -3.5s;
 }
 
-.home-orbit-widget:hover .home-orbit-widget__live,
-.home-orbit-widget:hover .home-orbit-widget__depth {
-  animation-play-state: paused;
-}
-
 .home-orbit-widget__glass {
   position: relative;
   overflow: hidden;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.11);
-  background: linear-gradient(
-    160deg,
-    rgba(38, 24, 48, 0.82) 0%,
-    rgba(14, 10, 22, 0.9) 55%,
-    rgba(8, 6, 14, 0.92) 100%
-  );
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  background: rgba(14, 10, 22, 0.94);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow:
     0 18px 48px rgba(0, 0, 0, 0.48),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 36px oklch(0.65 0.28 0 / 0.1);
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   transition:
     transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.35s ease,
@@ -946,8 +1024,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   border-color: rgba(255, 255, 255, 0.16);
   box-shadow:
     0 22px 52px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(255, 255, 255, 0.07) inset,
-    0 0 48px oklch(0.65 0.28 0 / 0.18);
+    0 0 0 1px rgba(255, 255, 255, 0.07) inset;
 }
 
 .home-orbit-widget__row {
@@ -1352,7 +1429,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-orbit__phone {
-    --phone-w: 252px;
+    --phone-w: 272px;
   }
 
   .home-orbit-widget[data-tier="tablet"] {
@@ -1366,7 +1443,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   }
 
   .home-orbit__phone {
-    --phone-w: 280px;
+    --phone-w: 302px;
   }
 
   .home-orbit-widget[data-tier="desktop"] {
@@ -1379,20 +1456,38 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(-1deg);
   }
+  35% {
+    transform: translate3d(0, -8px, 0) rotateZ(-0.4deg);
+  }
   50% {
-    transform: translate3d(0, -10px, 0) rotateZ(1deg);
+    transform: translate3d(0, -11px, 0) rotateZ(1deg);
+  }
+  72% {
+    transform: translate3d(0, -5px, 0) rotateZ(0.5deg);
+  }
+}
+
+@keyframes home-orbit-phone-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.14);
   }
 }
 
 @keyframes home-orbit-glow-breathe {
   0%,
   100% {
-    opacity: 0.72;
-    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0.68;
+    transform: translate(-50%, -50%) scale(0.94);
   }
   50% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
+    transform: translate(-50%, -50%) scale(1.12);
   }
 }
 
@@ -1401,11 +1496,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  35% {
-    transform: translate3d(8px, -14px, 0) rotateZ(1deg);
+  22% {
+    transform: translate3d(5px, -9px, 0) rotateZ(0.8deg);
   }
-  70% {
-    transform: translate3d(5px, -6px, 0) rotateZ(-0.5deg);
+  48% {
+    transform: translate3d(8px, -14px, 0) rotateZ(2deg);
+  }
+  74% {
+    transform: translate3d(3px, -5px, 0) rotateZ(-0.5deg);
   }
 }
 
@@ -1414,11 +1512,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  45% {
-    transform: translate3d(-6px, 10px, 0) rotateZ(-0.6deg);
+  30% {
+    transform: translate3d(-4px, 6px, 0) rotateZ(-0.4deg);
   }
-  75% {
-    transform: translate3d(-3px, 5px, 0) rotateZ(0.4deg);
+  55% {
+    transform: translate3d(-6px, 10px, 0) rotateZ(-0.8deg);
+  }
+  82% {
+    transform: translate3d(-2px, 4px, 0) rotateZ(0.5deg);
   }
 }
 
@@ -1427,14 +1528,17 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  25% {
-    transform: translate3d(-7px, -5px, 0) rotateZ(0.8deg);
+  20% {
+    transform: translate3d(-5px, -4px, 0) rotateZ(0.6deg);
   }
-  50% {
-    transform: translate3d(-4px, 6px, 0) rotateZ(-0.5deg);
+  42% {
+    transform: translate3d(-7px, 5px, 0) rotateZ(-0.5deg);
   }
-  75% {
-    transform: translate3d(6px, -3px, 0) rotateZ(0.5deg);
+  68% {
+    transform: translate3d(5px, -6px, 0) rotateZ(0.7deg);
+  }
+  88% {
+    transform: translate3d(3px, 3px, 0) rotateZ(-0.3deg);
   }
 }
 
@@ -1443,8 +1547,11 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  50% {
-    transform: translate3d(5px, -8px, 0) rotateZ(-0.5deg);
+  33% {
+    transform: translate3d(-4px, -5px, 0) rotateZ(0.5deg);
+  }
+  66% {
+    transform: translate3d(5px, -8px, 0) rotateZ(-0.6deg);
   }
 }
 
@@ -1453,11 +1560,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  33% {
-    transform: translate3d(-5px, -7px, 0) rotateZ(0.6deg);
+  28% {
+    transform: translate3d(-6px, -5px, 0) rotateZ(0.7deg);
   }
-  66% {
-    transform: translate3d(4px, 5px, 0) rotateZ(-0.4deg);
+  58% {
+    transform: translate3d(4px, 6px, 0) rotateZ(-0.5deg);
+  }
+  84% {
+    transform: translate3d(-3px, 3px, 0) rotateZ(0.4deg);
   }
 }
 
@@ -1466,8 +1576,11 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(-0.5deg);
   }
-  50% {
-    transform: translate3d(3px, -6px, 0) rotateZ(1deg);
+  40% {
+    transform: translate3d(2px, -4px, 0) rotateZ(0.6deg);
+  }
+  70% {
+    transform: translate3d(-2px, -6px, 0) rotateZ(1deg);
   }
 }
 
@@ -1476,11 +1589,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  40% {
-    transform: translate3d(-4px, 4px, 0) rotateZ(-0.8deg);
+  35% {
+    transform: translate3d(-3px, 3px, 0) rotateZ(-0.8deg);
   }
-  80% {
-    transform: translate3d(3px, -3px, 0) rotateZ(0.6deg);
+  65% {
+    transform: translate3d(4px, -4px, 0) rotateZ(0.7deg);
+  }
+  88% {
+    transform: translate3d(-2px, -2px, 0) rotateZ(-0.4deg);
   }
 }
 
@@ -1489,8 +1605,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
+  25% {
+    transform: translate3d(6px, -1px, 0) rotateZ(0.2deg);
+  }
   50% {
-    transform: translate3d(11px, -2px, 0) rotateZ(0.3deg);
+    transform: translate3d(11px, -2px, 0) rotateZ(0.4deg);
+  }
+  75% {
+    transform: translate3d(-5px, 1px, 0) rotateZ(-0.3deg);
   }
 }
 
@@ -1499,11 +1621,14 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  30% {
-    transform: translate3d(-6px, 4px, 0) rotateZ(-0.4deg);
+  28% {
+    transform: translate3d(-5px, 4px, 0) rotateZ(-0.4deg);
   }
-  65% {
-    transform: translate3d(4px, -5px, 0) rotateZ(0.5deg);
+  55% {
+    transform: translate3d(4px, -6px, 0) rotateZ(0.5deg);
+  }
+  80% {
+    transform: translate3d(-3px, -3px, 0) rotateZ(-0.3deg);
   }
 }
 
@@ -1512,68 +1637,86 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: translate3d(0, 0, 0) rotateZ(0deg);
   }
-  50% {
-    transform: translate3d(9px, -9px, 0) rotateZ(0.7deg);
+  35% {
+    transform: translate3d(6px, -5px, 0) rotateZ(0.5deg);
+  }
+  65% {
+    transform: translate3d(9px, -9px, 0) rotateZ(0.9deg);
   }
 }
 
 @keyframes home-orbit-depth-spotify {
   0%,
   100% {
-    transform: scale(1);
-    opacity: 1;
+    transform: scale(0.99);
+    opacity: 0.94;
+    filter: blur(0px);
   }
   50% {
-    transform: scale(1.02);
-    opacity: 0.94;
+    transform: scale(1.03);
+    opacity: 1;
+    filter: blur(0px);
   }
 }
 
 @keyframes home-orbit-depth-discord {
   0%,
   100% {
-    transform: scale(0.99);
-    opacity: 0.96;
+    transform: scale(0.98);
+    opacity: 0.92;
+    filter: blur(0.15px);
   }
   50% {
-    transform: scale(1.01);
-    opacity: 1;
+    transform: scale(1.02);
+    opacity: 0.99;
+    filter: blur(0px);
   }
 }
 
 @keyframes home-orbit-depth-badges {
   0%,
   100% {
-    transform: scale(1.01);
-    opacity: 0.97;
+    transform: scale(1);
+    opacity: 0.96;
+    filter: blur(0px);
   }
-  50% {
+  33% {
     transform: scale(0.98);
+    opacity: 0.9;
+    filter: blur(0.2px);
+  }
+  66% {
+    transform: scale(1.02);
     opacity: 1;
+    filter: blur(0px);
   }
 }
 
 @keyframes home-orbit-depth-social {
   0%,
   100% {
-    transform: scale(1);
-    opacity: 0.95;
+    transform: scale(0.99);
+    opacity: 0.93;
+    filter: blur(0px);
   }
   50% {
-    transform: scale(1.03);
+    transform: scale(1.025);
     opacity: 1;
+    filter: blur(0.1px);
   }
 }
 
 @keyframes home-orbit-depth-badges-gems {
   0%,
   100% {
-    transform: scale(0.98);
-    opacity: 0.92;
+    transform: scale(0.97);
+    opacity: 0.9;
+    filter: blur(0.25px);
   }
   50% {
     transform: scale(1.02);
     opacity: 0.98;
+    filter: blur(0px);
   }
 }
 
@@ -1581,11 +1724,13 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   0%,
   100% {
     transform: scale(1);
-    opacity: 0.94;
+    opacity: 0.93;
+    filter: blur(0px);
   }
   50% {
-    transform: scale(1.025);
+    transform: scale(1.03);
     opacity: 1;
+    filter: blur(0.1px);
   }
 }
 
@@ -1593,11 +1738,13 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   0%,
   100% {
     transform: scale(0.985);
-    opacity: 0.96;
+    opacity: 0.94;
+    filter: blur(0px);
   }
   50% {
     transform: scale(1.015);
     opacity: 1;
+    filter: blur(0.15px);
   }
 }
 
@@ -1606,10 +1753,12 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: scale(0.97);
     opacity: 0.9;
+    filter: blur(0.35px);
   }
   50% {
     transform: scale(1.01);
     opacity: 0.97;
+    filter: blur(0.1px);
   }
 }
 
@@ -1618,22 +1767,26 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
   100% {
     transform: scale(0.97);
     opacity: 0.88;
+    filter: blur(0.5px);
   }
   50% {
     transform: scale(1);
     opacity: 0.94;
+    filter: blur(0.25px);
   }
 }
 
 @keyframes home-orbit-depth-premium {
   0%,
   100% {
-    transform: scale(1.02);
-    opacity: 0.98;
+    transform: scale(1.01);
+    opacity: 0.96;
+    filter: blur(0px);
   }
   50% {
     transform: scale(1.03);
     opacity: 1;
+    filter: blur(0px);
   }
 }
 
@@ -1737,20 +1890,9 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-orbit__phone-float,
-  .home-orbit__phone-glow,
-  .home-orbit__glow,
-  .home-orbit__particle,
-  .home-orbit__cloud-band,
-  .home-orbit__cloud-core,
-  .home-orbit__cloud-wisp,
-  .home-orbit-widget__live,
-  .home-orbit-widget__depth {
-    animation: none !important;
-  }
-
   .home-orbit__phone-wrap,
-  .home-orbit-widget {
+  .home-orbit-widget,
+  .home-orbit__ambient {
     transition: none;
   }
 }
@@ -2044,45 +2186,7 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
 }
 
 .home-scroll-reveal {
-  opacity: 0;
-  transform: translate3d(0, 24px, 0);
-  transition:
-    opacity var(--reveal-duration, 680ms) cubic-bezier(0.22, 1, 0.36, 1),
-    transform var(--reveal-duration, 680ms) cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: var(--reveal-delay, 0ms);
-}
-
-.home-scroll-reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-.home-scroll-reveal--down {
-  transform: translate3d(0, -28px, 0);
-}
-
-.home-scroll-reveal--left {
-  transform: translate3d(-32px, 0, 0);
-}
-
-.home-scroll-reveal--right {
-  transform: translate3d(32px, 0, 0);
-}
-
-.home-scroll-reveal--fade {
-  transform: none;
-}
-
-.home-scroll-reveal--scale {
-  transform: scale(0.96);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-scroll-reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+  display: block;
 }
 
 /* Navbar lateral — sem barra de rolagem visível */
@@ -2692,6 +2796,13 @@ html, body { background-color: var(--color-background); color: var(--color-foreg
     width: min(720px, calc(100% - 2rem));
     padding: 0.625rem 1.25rem;
   }
+}
+
+.site-navbar__inner {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .site-navbar__logo {

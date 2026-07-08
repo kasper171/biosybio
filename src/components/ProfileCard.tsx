@@ -21,12 +21,13 @@ import {
   type Profile,
 } from "@/lib/profile-storage";
 import type { TextAnimationId } from "@/lib/text-animations";
-import { normalizeTextAnimationId, hasActiveTextAnimation } from "@/lib/text-animations";
+import { normalizeTextAnimationId } from "@/lib/text-animations";
 import { ProfileAnimatedText } from "@/components/text-animations/ProfileAnimatedText";
 import { AvatarWithFrame } from "@/components/AvatarWithFrame";
 import { AVATAR_FRAME_SCALE } from "@/lib/avatar-frames";
 import { ProfileRoleBadges } from "@/components/ProfileRoleBadges";
 import { cn } from "@/lib/utils";
+import { getSocialIconsRowStyle, getSocialIconsRowClassName } from "@/lib/social-icons";
 
 /** Altura visível do banner (% do card) — não depende do tamanho do anel */
 const BANNER_VISIBLE_RATIO = 0.34;
@@ -44,6 +45,42 @@ function CardFooter({ dividerStyle, children }: {
     >
       {children}
     </div>
+  );
+}
+
+function InnerCardBanner({
+  url,
+  bannerTotalH,
+  bannerPosX,
+  bannerPosY,
+}: {
+  url: string;
+  bannerTotalH: number;
+  bannerPosX: number;
+  bannerPosY: number;
+}) {
+  return (
+    <div
+      className="pointer-events-none absolute inset-x-0 top-0 z-[1] overflow-hidden"
+      style={{ height: bannerTotalH }}
+    >
+      <img
+        src={url}
+        alt=""
+        className="h-full w-full object-cover"
+        style={{ objectPosition: `${bannerPosX}% ${bannerPosY}%` }}
+      />
+    </div>
+  );
+}
+
+function InnerCardBannerStrip({ bannerStripH }: { bannerStripH: number }) {
+  return (
+    <div
+      className="relative z-[2] shrink-0"
+      style={{ height: bannerStripH }}
+      aria-hidden
+    />
   );
 }
 
@@ -152,20 +189,17 @@ function BioBlock({
   if (textEffect && textEffect !== "none") {
     const usesOwnColors = textEffect === "glitch";
     return (
-      <div
-        className={cn(className, "py-2")}
-        style={usesOwnColors ? undefined : bodyStyle}
-      >
+      <p className={className} style={usesOwnColors ? undefined : bodyStyle}>
         <ProfileAnimatedText
           text={fullBio}
           effect={textEffect}
-          className="inline-block whitespace-pre-wrap"
+          className="inline-block max-w-full whitespace-pre-wrap"
           style={usesOwnColors ? undefined : bodyStyle}
           charStyle={usesOwnColors ? undefined : bodyStyle}
           accentColor={accentColor}
           particleColor={particleColor}
         />
-      </div>
+      </p>
     );
   }
   if (!animate) return <p className={className} style={bodyStyle}>{fullBio}</p>;
@@ -199,8 +233,6 @@ function CardLayoutContent({
   const dividerStyle = getDividerStyle(profile);
   const nameTextEffect = normalizeTextAnimationId(profile.name_text_animation);
   const bioTextEffect = normalizeTextAnimationId(profile.bio_text_animation);
-  const hasNameFx = hasActiveTextAnimation(nameTextEffect);
-  const hasBioFx = hasActiveTextAnimation(bioTextEffect);
   const titleAccent = profile.text_glow_color ?? profile.effect_glow_color ?? "#ff2d7a";
   const bodyAccent = profile.text_glow_color ?? profile.effect_glow_color ?? "#ff2d7a";
   const nameParticleColor = profile.name_particle_color ?? "#ff2d7a";
@@ -245,9 +277,9 @@ function CardLayoutContent({
     const avatarVisualH = avatarSize + frameOverflow * 2;
 
     return (
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden text-left">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-visible text-left">
         {overlayBadges}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col overflow-visible">
           <div
             className="grid shrink-0 gap-x-4 gap-y-2 overflow-visible px-6 pt-4 pb-2"
             style={{ gridTemplateColumns: `${avatarSize}px minmax(0, 1fr)` }}
@@ -268,10 +300,7 @@ function CardLayoutContent({
               style={{ minHeight: avatarVisualH }}
             >
               <h3
-                className={cn(
-                  "w-full shrink-0 text-left text-xl font-bold leading-tight",
-                  hasNameFx ? "py-2" : "truncate",
-                )}
+                className="w-full shrink-0 truncate text-left text-xl font-bold leading-tight"
                 style={titleBase}
               >
                 <NameBlock
@@ -295,17 +324,17 @@ function CardLayoutContent({
                 typedBio={typedBio}
                 fullBio={fullBio}
                 textEffect={bioTextEffect}
-                className={cn(
-                  "mt-2 min-h-0 w-full overflow-hidden text-left text-xs",
-                  hasBioFx ? "py-2" : "line-clamp-3",
-                )}
+                className="mt-2 line-clamp-3 min-h-0 w-full overflow-hidden text-left text-xs"
                 bodyStyle={{ ...bodyBase, ...bodyGlow }}
                 accentColor={bodyAccent}
                 particleColor={bioParticleColor}
               />
             </div>
             {socialIcons && (
-              <div className="col-start-1 flex w-max max-w-full flex-nowrap items-center justify-center gap-[3px] justify-self-center">
+              <div
+                className={cn("col-span-2", getSocialIconsRowClassName("aligned"))}
+                style={getSocialIconsRowStyle(profile)}
+              >
                 {socialIcons}
               </div>
             )}
@@ -330,23 +359,47 @@ function CardLayoutContent({
     return (
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {overlayBadges}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6">
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden py-4">
+        {hasBanner && (
+          <InnerCardBanner
+            url={profile.inner_banner_url!}
+            bannerTotalH={bannerTotalH}
+            bannerPosX={bannerPosX}
+            bannerPosY={bannerPosY}
+          />
+        )}
+        {hasBanner && <InnerCardBannerStrip bannerStripH={bannerStripH} />}
+        <div
+          className="relative z-[3] flex min-h-0 flex-1 flex-col overflow-visible px-6 pb-4"
+          style={{
+            marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0,
+            paddingTop: hasBanner ? 16 : 0,
+          }}
+        >
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 flex-col items-center overflow-visible py-4",
+              hasBanner ? "justify-start" : "justify-center",
+            )}
+          >
             <div
-              className="flex w-full max-w-full shrink-0 flex-col items-center overflow-hidden text-center"
+              className="flex w-full max-w-full shrink-0 flex-col items-center overflow-visible text-center"
               style={{ paddingTop: centeredFrameOverflow }}
             >
-              <AvatarBlock
-                profile={profile}
-                size={centeredAvatarSize}
-                ringWidth={avatarRingWidth}
-                ringColor={avatarRingColor}
-              />
-              <h3
+              <div
                 className={cn(
-                  "mt-3 w-full max-w-full shrink-0 text-xl font-bold",
-                  hasNameFx ? "py-2" : "truncate",
+                  "relative mx-auto flex shrink-0 justify-center",
+                  hasBanner && "z-[5]",
                 )}
+              >
+                <AvatarBlock
+                  profile={profile}
+                  size={centeredAvatarSize}
+                  ringWidth={avatarRingWidth}
+                  ringColor={avatarRingColor}
+                />
+              </div>
+              <h3
+                className="mt-3 w-full max-w-full shrink-0 truncate text-xl font-bold leading-tight"
                 style={titleBase}
               >
                 <NameBlock
@@ -370,16 +423,16 @@ function CardLayoutContent({
                 typedBio={typedBio}
                 fullBio={fullBio}
                 textEffect={bioTextEffect}
-                className={cn(
-                  "mt-2 min-h-0 w-full max-w-full overflow-hidden text-center text-sm",
-                  hasBioFx ? "py-2" : "line-clamp-3",
-                )}
+                className="mt-2 line-clamp-3 min-h-0 w-full max-w-full overflow-hidden text-center text-sm"
                 bodyStyle={{ ...bodyBase, ...bodyGlow }}
                 accentColor={bodyAccent}
                 particleColor={bioParticleColor}
               />
               {socialIcons && (
-                <div className="mt-1.5 flex shrink-0 flex-nowrap items-center justify-center gap-[3px]">
+                <div
+                  className={cn("mt-1.5", getSocialIconsRowClassName("centered"))}
+                  style={getSocialIconsRowStyle(profile)}
+                >
                   {socialIcons}
                 </div>
               )}
@@ -395,7 +448,6 @@ function CardLayoutContent({
       </div>
     );
   }
-
   // ── LAYOUT PADRÃO (default) ────────────────────────────────────────────────
   const defaultFrameOverflow = profile.avatar_frame_id
     ? Math.ceil(avatarSize * (AVATAR_FRAME_SCALE - 1) / 2)
@@ -404,17 +456,20 @@ function CardLayoutContent({
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
       {overlayBadges}
       {hasBanner && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] overflow-hidden" style={{ height: bannerTotalH }}>
-          <img src={profile.inner_banner_url!} alt="" className="h-full w-full object-cover" style={{ objectPosition: `${bannerPosX}% ${bannerPosY}%` }} />
-        </div>
+        <InnerCardBanner
+          url={profile.inner_banner_url!}
+          bannerTotalH={bannerTotalH}
+          bannerPosX={bannerPosX}
+          bannerPosY={bannerPosY}
+        />
       )}
-      {hasBanner && <div className="relative z-[2] shrink-0" style={{ height: bannerStripH }} aria-hidden />}
+      {hasBanner && <InnerCardBannerStrip bannerStripH={bannerStripH} />}
       <div
         className="relative z-[3] flex min-h-0 flex-1 flex-col overflow-hidden px-6 pb-4"
         style={{ marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0, paddingTop: hasBanner ? 16 : 20 }}
       >
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex shrink-0 flex-col items-center overflow-hidden text-center">
+        <div className="flex min-h-0 flex-1 flex-col overflow-visible">
+          <div className="flex shrink-0 flex-col items-center overflow-visible text-center">
             <div
               className="relative z-[5] mx-auto mb-2 flex shrink-0 justify-center"
               style={{ paddingTop: defaultFrameOverflow }}
@@ -427,7 +482,7 @@ function CardLayoutContent({
               />
             </div>
             <h3
-              className={cn("w-full shrink-0 text-center text-lg font-bold", hasNameFx ? "py-2" : "truncate")}
+              className="w-full shrink-0 truncate text-center text-lg font-bold leading-tight"
               style={titleBase}
             >
               <NameBlock
@@ -451,16 +506,18 @@ function CardLayoutContent({
               typedBio={typedBio}
               fullBio={fullBio}
               textEffect={bioTextEffect}
-              className={cn(
-                "mt-2 min-h-0 w-full overflow-hidden text-center text-sm",
-                hasBioFx ? "py-2" : "line-clamp-3",
-              )}
+              className="mt-2 line-clamp-3 min-h-0 w-full overflow-hidden text-center text-sm"
               bodyStyle={{ ...bodyBase, ...bodyGlow }}
               accentColor={bodyAccent}
               particleColor={bioParticleColor}
             />
             {socialIcons && (
-              <div className="mt-1.5 flex shrink-0 flex-nowrap justify-center gap-[3px]">{socialIcons}</div>
+              <div
+                className={cn("mt-1.5", getSocialIconsRowClassName("default"))}
+                style={getSocialIconsRowStyle(profile)}
+              >
+                {socialIcons}
+              </div>
             )}
           </div>
           {children && <div className="mt-3 w-full shrink-0">{children}</div>}

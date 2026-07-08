@@ -1,6 +1,23 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { motion, MotionConfig } from "motion/react";
 import { cn } from "@/lib/utils";
-import profilePreview from "@/assets/home-profile-preview-2.png?asset=20260706-2";
+import { SITE_NAME } from "@/lib/site";
+import profilePreview from "@/assets/home-profile-preview-orbit-byosy.png";
+import {
+  ORBIT_EXPLODE_ORIGIN,
+  ORBIT_EXPLODE_STAGGER_MS,
+  ORBIT_PHONE_ENTRANCE_DURATION_S,
+  ORBIT_WIDGET_EXPLODE_DELAY_MS,
+  ORBIT_WIDGET_EXPLODE_DURATION_S,
+} from "@/components/home/home-orbit-entrance";
+import {
+  ORBIT_PHONE_FLOAT,
+  ORBIT_PHONE_PITCH,
+  ORBIT_PHONE_ROLL_DEPTH,
+  ORBIT_PHONE_YAW,
+  ORBIT_WIDGET_DRIFT,
+} from "@/components/home/home-orbit-motion";
 import {
   OrbitBadgesGemsWidget,
   OrbitBadgesWidget,
@@ -30,12 +47,16 @@ type OrbitSlot = {
   opacity?: number;
   blur?: number;
   parallax: number;
+  behindPhone?: boolean;
   content: ReactNode;
 };
 
 /** Intensidade do parallax por card (0–1) — perfil usa 1.0 (~8px) */
 const PHONE_PARALLAX = 1;
 const PARALLAX_PX = 8;
+
+const BACK_SLOT_IDS = new Set(["effects"]);
+const ABOVE_PHONE_SLOT_IDS = new Set(["views"]);
 
 const ORBIT_SLOTS: OrbitSlot[] = [
   {
@@ -134,12 +155,11 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tier: "desktop",
     x: 72,
     y: 6,
-    z: 14,
-    zDepth: 12,
-    tiltX: -4,
-    tiltY: 10,
-    opacity: 0.88,
-    blur: 0.5,
+    z: 42,
+    zDepth: 0,
+    tiltX: 0,
+    tiltY: 0,
+    opacity: 1,
     parallax: 0.32,
     content: <OrbitViewsWidget />,
   },
@@ -149,12 +169,12 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     x: 2,
     y: 28,
     z: 8,
-    zDepth: -20,
-    tiltX: 14,
-    tiltY: 8,
-    opacity: 0.72,
-    blur: 1.5,
+    zDepth: 0,
+    tiltX: 0,
+    tiltY: 0,
+    opacity: 1,
     parallax: 0.26,
+    behindPhone: true,
     content: <OrbitEffectsWidget />,
   },
   {
@@ -162,11 +182,12 @@ const ORBIT_SLOTS: OrbitSlot[] = [
     tier: "desktop",
     x: 58,
     y: 90,
-    z: 30,
-    zDepth: 52,
-    tiltX: 6,
-    tiltY: -6,
+    z: 38,
+    zDepth: 0,
+    tiltX: 0,
+    tiltY: 0,
     scale: 1.04,
+    opacity: 1,
     parallax: 0.62,
     content: <OrbitPremiumWidget />,
   },
@@ -177,43 +198,109 @@ type ParallaxOffset = { x: number; y: number };
 function OrbitWidgetSlot({
   slot,
   parallax,
+  orbitRevealed,
 }: {
   slot: OrbitSlot;
   parallax: ParallaxOffset;
+  orbitRevealed: boolean;
 }) {
+  const parallaxX = parallax.x * slot.parallax * PARALLAX_PX;
+  const parallaxY = parallax.y * slot.parallax * PARALLAX_PX;
+  const stagger = (ORBIT_EXPLODE_STAGGER_MS[slot.id] ?? 0) / 1000;
+  const drift = ORBIT_WIDGET_DRIFT[slot.id];
+
   return (
-    <div
+    <motion.div
       className={cn(
-        "home-orbit-widget",
+        "home-orbit-widget home-orbit-widget--motion-pos",
         slot.z <= 10 && "home-orbit-widget--back",
         slot.z >= 24 && "home-orbit-widget--front",
+        slot.behindPhone && "home-orbit-widget--behind-phone",
       )}
       data-tier={slot.tier}
+      initial={{
+        left: ORBIT_EXPLODE_ORIGIN.left,
+        top: ORBIT_EXPLODE_ORIGIN.top,
+        x: "-50%",
+        y: "-50%",
+        scale: 0.26,
+        opacity: 0,
+      }}
+      animate={
+        orbitRevealed
+          ? {
+              left: `${slot.x}%`,
+              top: `${slot.y}%`,
+              x: `calc(-50% + ${parallaxX}px)`,
+              y: `calc(-50% + ${parallaxY}px)`,
+              scale: slot.scale ?? 1,
+              opacity: slot.opacity ?? 1,
+            }
+          : {
+              left: ORBIT_EXPLODE_ORIGIN.left,
+              top: ORBIT_EXPLODE_ORIGIN.top,
+              x: "-50%",
+              y: "-50%",
+              scale: 0.26,
+              opacity: 0,
+            }
+      }
+      transition={{
+        left: {
+          duration: ORBIT_WIDGET_EXPLODE_DURATION_S,
+          delay: orbitRevealed ? stagger : 0,
+          ease: [0.22, 1.28, 0.36, 1],
+        },
+        top: {
+          duration: ORBIT_WIDGET_EXPLODE_DURATION_S,
+          delay: orbitRevealed ? stagger : 0,
+          ease: [0.22, 1.28, 0.36, 1],
+        },
+        scale: {
+          duration: ORBIT_WIDGET_EXPLODE_DURATION_S,
+          delay: orbitRevealed ? stagger : 0,
+          ease: [0.22, 1.28, 0.36, 1],
+        },
+        opacity: {
+          duration: ORBIT_WIDGET_EXPLODE_DURATION_S * 0.65,
+          delay: orbitRevealed ? stagger : 0,
+          ease: "easeOut",
+        },
+        x: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+        y: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+      }}
       style={
         {
-          "--orbit-x": `${slot.x}%`,
-          "--orbit-y": `${slot.y}%`,
-          "--orbit-z": slot.z,
-          "--orbit-z-depth": `${slot.zDepth}px`,
-          "--orbit-tilt-x": `${slot.tiltX}deg`,
-          "--orbit-tilt-y": `${slot.tiltY}deg`,
-          "--orbit-scale": slot.scale ?? 1,
-          "--orbit-opacity": slot.opacity ?? 1,
-          "--orbit-blur": slot.blur ? `${slot.blur}px` : "0px",
+          zIndex: slot.z,
           "--orbit-rotate": `${slot.rotate ?? 0}deg`,
-          "--orbit-parallax-x": `${parallax.x * slot.parallax * PARALLAX_PX}px`,
-          "--orbit-parallax-y": `${parallax.y * slot.parallax * PARALLAX_PX}px`,
+          filter: slot.blur ? `blur(${slot.blur}px)` : undefined,
         } as CSSProperties
       }
     >
       <div className="home-orbit-widget__pose">
-        <div className={cn("home-orbit-widget__live", `home-orbit-widget__live--${slot.id}`)}>
-          <div className={cn("home-orbit-widget__depth", `home-orbit-widget__depth--${slot.id}`)}>
+        {orbitRevealed ? (
+          <motion.div
+            className="home-orbit-widget__live"
+            initial={{ x: 0, y: 0, rotate: 0 }}
+            animate={{
+              x: drift?.x ?? [0],
+              y: drift?.y ?? [0],
+              rotate: drift?.rotate ?? [0],
+            }}
+            transition={{
+              duration: drift?.duration ?? 12,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: (drift?.delay ?? 0) + ORBIT_WIDGET_EXPLODE_DURATION_S + stagger,
+            }}
+          >
             {slot.content}
-          </div>
-        </div>
+          </motion.div>
+        ) : (
+          <div className="home-orbit-widget__live">{slot.content}</div>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -222,74 +309,190 @@ type HomeHeroOrbitProps = {
 };
 
 export function HomeHeroOrbit({ parallax = { x: 0, y: 0 } }: HomeHeroOrbitProps) {
+  const [phoneEntered, setPhoneEntered] = useState(false);
+  const [orbitRevealed, setOrbitRevealed] = useState(false);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setPhoneEntered(true);
+      setOrbitRevealed(true);
+      return;
+    }
+
+    const phoneFrame = window.requestAnimationFrame(() => setPhoneEntered(true));
+    const revealTimer = window.setTimeout(
+      () => setOrbitRevealed(true),
+      ORBIT_WIDGET_EXPLODE_DELAY_MS,
+    );
+
+    return () => {
+      window.cancelAnimationFrame(phoneFrame);
+      window.clearTimeout(revealTimer);
+    };
+  }, []);
+
   const phonePx = parallax.x * PHONE_PARALLAX * PARALLAX_PX;
   const phonePy = parallax.y * PHONE_PARALLAX * PARALLAX_PX;
+  const phoneTiltX = parallax.y * -4;
+  const phoneTiltY = parallax.x * 6;
+  const ambientPx = parallax.x * 4;
+  const ambientPy = parallax.y * 3;
+  const floatDelay = ORBIT_PHONE_ENTRANCE_DURATION_S * 0.82;
 
   return (
+    <MotionConfig reducedMotion="never">
     <div className="home-orbit">
       <div className="home-orbit__scene">
-        <div className="home-orbit__ambient" aria-hidden>
-          <div className="home-orbit__glow home-orbit__glow--main" />
-          <div className="home-orbit__glow home-orbit__glow--secondary" />
-          <div className="home-orbit__particle home-orbit__particle--1" />
-          <div className="home-orbit__particle home-orbit__particle--2" />
-          <div className="home-orbit__particle home-orbit__particle--3" />
-          <div className="home-orbit__particle home-orbit__particle--4" />
-          <div className="home-orbit__particle home-orbit__particle--5" />
-        </div>
-
-        <div className="home-orbit__cloud-scene" aria-hidden>
-          <div className="home-orbit__cloud-core" />
-          <div className="home-orbit__cloud-band home-orbit__cloud-band--1" />
-          <div className="home-orbit__cloud-band home-orbit__cloud-band--2" />
-          <div className="home-orbit__cloud-band home-orbit__cloud-band--3" />
-          <div className="home-orbit__cloud-wisp home-orbit__cloud-wisp--1" />
-          <div className="home-orbit__cloud-wisp home-orbit__cloud-wisp--2" />
-          <div className="home-orbit__cloud-wisp home-orbit__cloud-wisp--3" />
-        </div>
+        <div
+          className="home-orbit__ambient"
+          aria-hidden
+          style={{
+            transform: `translate3d(${ambientPx}px, ${ambientPy}px, 0)`,
+          }}
+        />
 
         <div className="home-orbit__field">
-          {ORBIT_SLOTS.map((slot) => (
-            <OrbitWidgetSlot key={slot.id} slot={slot} parallax={parallax} />
-          ))}
+          <div className="home-orbit__widgets-layer home-orbit__widgets-layer--back">
+            {ORBIT_SLOTS.filter((s) => BACK_SLOT_IDS.has(s.id)).map((slot) => (
+              <OrbitWidgetSlot
+                key={slot.id}
+                slot={slot}
+                parallax={parallax}
+                orbitRevealed={orbitRevealed}
+              />
+            ))}
+          </div>
 
-          <div
-            className="home-orbit__phone-wrap"
-            style={
-              {
-                "--orbit-phone-px": `${phonePx}px`,
-                "--orbit-phone-py": `${phonePy}px`,
-              } as CSSProperties
-            }
-          >
-            <div className="home-orbit__phone-glow" aria-hidden />
-            <div className="home-orbit__phone-orbit">
-              <div className="home-orbit__phone-float">
-                <div className="home-orbit__phone">
-                  <div className="home-orbit__phone-glass">
-                    <div className="home-phone-card-3d home-orbit__phone-card">
-                      <div className="home-phone-card-clip">
-                        <div className="home-phone-top-border home-phone-neon-bright" />
-                        <div className="home-phone-shot-wrap">
-                          <img
-                            src={profilePreview}
-                            alt="Biosy profile preview"
-                            className="home-phone-shot"
-                            draggable={false}
-                          />
+          <div className="home-orbit__phone-stage">
+            <motion.div
+              className="home-orbit__phone-wrap home-orbit__phone-wrap--motion"
+              initial={{
+                x: "-50%",
+                y: "calc(-50% - 88px)",
+                scale: 0.74,
+                opacity: 0,
+              }}
+              animate={
+                phoneEntered
+                  ? {
+                      x: `calc(-50% + ${phonePx}px)`,
+                      y: `calc(-50% + ${phonePy}px)`,
+                      scale: 1,
+                      opacity: 1,
+                    }
+                  : {
+                      x: "-50%",
+                      y: "calc(-50% - 88px)",
+                      scale: 0.74,
+                      opacity: 0,
+                    }
+              }
+              transition={{
+                duration: ORBIT_PHONE_ENTRANCE_DURATION_S,
+                ease: [0.22, 1, 0.36, 1],
+                x: { duration: phoneEntered ? 0.55 : ORBIT_PHONE_ENTRANCE_DURATION_S },
+                y: { duration: phoneEntered ? 0.55 : ORBIT_PHONE_ENTRANCE_DURATION_S },
+              }}
+            >
+              <div
+                className="home-orbit__phone-parallax"
+                style={{
+                  transform: `rotateX(${phoneTiltX}deg) rotateY(${phoneTiltY}deg)`,
+                }}
+              >
+                <motion.div
+                  className="home-orbit__phone-float"
+                  animate={
+                    phoneEntered
+                      ? { y: ORBIT_PHONE_FLOAT.y, x: ORBIT_PHONE_FLOAT.x }
+                      : { y: 0, x: 0 }
+                  }
+                  transition={{
+                    ...ORBIT_PHONE_FLOAT.transition,
+                    delay: floatDelay,
+                  }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  <div className="home-orbit__phone-shadow" aria-hidden />
+                  <motion.div
+                    className="home-orbit__phone-yaw"
+                    animate={phoneEntered ? ORBIT_PHONE_YAW : { rotateY: 0 }}
+                    transition={{
+                      ...ORBIT_PHONE_YAW.transition,
+                      delay: floatDelay + 0.15,
+                    }}
+                    style={{ transformStyle: "preserve-3d" }}
+                  >
+                    <motion.div
+                      className="home-orbit__phone-pitch"
+                      animate={phoneEntered ? ORBIT_PHONE_PITCH : { rotateX: 0 }}
+                      transition={{
+                        ...ORBIT_PHONE_PITCH.transition,
+                        delay: floatDelay + 0.15,
+                      }}
+                      style={{ transformStyle: "preserve-3d" }}
+                    >
+                      <motion.div
+                        className="home-orbit__phone"
+                        animate={phoneEntered ? ORBIT_PHONE_ROLL_DEPTH : { rotateZ: 0, z: 0 }}
+                        transition={{
+                          ...ORBIT_PHONE_ROLL_DEPTH.transition,
+                          delay: floatDelay + 0.15,
+                        }}
+                        style={{ transformStyle: "preserve-3d" }}
+                      >
+                        <div className="home-orbit__phone-glass">
+                          <div className="home-phone-card-3d home-orbit__phone-card">
+                            <div className="home-phone-card-clip">
+                              <div className="home-phone-top-border home-phone-neon-bright home-orbit__phone-border" />
+                              <div className="home-phone-shot-wrap home-orbit__phone-shot-wrap">
+                                <img
+                                  src={profilePreview}
+                                  alt={`${SITE_NAME} profile preview — @byosy`}
+                                  className="home-phone-shot home-orbit__phone-shot"
+                                  width={393}
+                                  height={858}
+                                  draggable={false}
+                                />
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div aria-hidden className="home-phone-cut-seal" />
-                      <div aria-hidden className="home-phone-cut-feather" />
-                      <div aria-hidden className="home-phone-cut-blur" />
-                    </div>
-                  </div>
-                </div>
+                      </motion.div>
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
+          </div>
+
+          <div className="home-orbit__widgets-layer home-orbit__widgets-layer--front">
+            {ORBIT_SLOTS.filter(
+              (s) => !BACK_SLOT_IDS.has(s.id) && !ABOVE_PHONE_SLOT_IDS.has(s.id),
+            ).map((slot) => (
+              <OrbitWidgetSlot
+                key={slot.id}
+                slot={slot}
+                parallax={parallax}
+                orbitRevealed={orbitRevealed}
+              />
+            ))}
+          </div>
+
+          <div className="home-orbit__widgets-layer home-orbit__widgets-layer--above-phone">
+            {ORBIT_SLOTS.filter((s) => ABOVE_PHONE_SLOT_IDS.has(s.id)).map((slot) => (
+              <OrbitWidgetSlot
+                key={slot.id}
+                slot={slot}
+                parallax={parallax}
+                orbitRevealed={orbitRevealed}
+              />
+            ))}
           </div>
         </div>
       </div>
     </div>
+    </MotionConfig>
   );
 }

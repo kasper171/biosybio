@@ -22,13 +22,8 @@ import {
   listHotelConnections,
 } from "@/lib/hotel";
 import { SOCIAL_MAP, resolveSocialUrl } from "@/lib/socials";
-import {
-  getSocialIconBloomStyle,
-  getSocialIconDimensions,
-  resolveSocialIconBloomColor,
-} from "@/lib/social-icons";
+import { ProfileSocialIconLink } from "@/components/ProfileSocialIconLink";
 import { FaGlobe } from "react-icons/fa";
-import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 
@@ -54,7 +49,6 @@ export function ProfilePageContent({
   const showSocialTitles = profile.show_social_titles === true;
   const socialBloom = profile.social_icon_bloom === true;
   const discordMode = profile.discord_card_mode ?? "inside";
-  const socialIconStyle = profile.social_icon_style ?? "boxed";
   const bgBlur = profile.background_blur ?? 0;
   const bgBrightness = profile.background_brightness ?? 100;
   const revealEffect = normalizeCardRevealEffect(profile.card_reveal_effect);
@@ -225,54 +219,24 @@ export function ProfilePageContent({
                 ? (def?.brandColor ?? profile.social_icon_color ?? "#ffffff")
                 : (profile.social_icon_color ?? "#ffffff");
               const compact = cardLayout === "aligned";
-              const { boxPx, iconPx } = getSocialIconDimensions(profile, compact);
-              const bloomColor = resolveSocialIconBloomColor(profile, iconColor);
-              const bloomStyle = getSocialIconBloomStyle(bloomColor, socialBloom);
               return (
-                <a
+                <ProfileSocialIconLink
                   key={key}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
+                  profile={profile}
+                  icon={Icon}
+                  iconColor={iconColor}
+                  compact={compact}
+                  bloom={socialBloom}
+                  showTitle={showSocialTitles}
                   title={def?.label ?? key}
-                  onClick={(e) => {
+                  href={url}
+                  onNavigate={(e) => {
                     e.preventDefault();
                     void logProfileLinkClick(profile.id, key).finally(() => {
                       window.open(url, "_blank", "noopener,noreferrer");
                     });
                   }}
-                  className={cn(
-                    "flex shrink-0 flex-col items-center transition hover:scale-105",
-                    showSocialTitles ? "gap-0.5" : "",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "grid place-items-center transition",
-                      socialIconStyle === "logo"
-                        ? "rounded-full bg-transparent"
-                        : "rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10",
-                    )}
-                    style={{
-                      width: boxPx,
-                      height: boxPx,
-                    }}
-                  >
-                    <Icon
-                      style={{
-                        color: iconColor,
-                        width: iconPx,
-                        height: iconPx,
-                        ...bloomStyle,
-                      }}
-                    />
-                  </span>
-                  {showSocialTitles && (
-                    <span className="max-w-[4.5rem] truncate text-center text-[10px] leading-tight text-white/65">
-                      {def?.label ?? key}
-                    </span>
-                  )}
-                </a>
+                />
               );
             })
           : undefined

@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Profile } from "@/lib/profile-storage";
-import { profilePublicUrl } from "@/lib/site";
+import { profilePublicUrl, SITE_NAME } from "@/lib/site";
 import { profileHasFullAccess } from "@/lib/profile-roles";
 import {
   getProfileCompletionPercent,
@@ -146,7 +146,7 @@ export function ContaOverviewPanel({ profile }: Props) {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="dash-t-caption font-medium uppercase tracking-widest text-pink-300/80">
-                    Your Biosy space
+                    Your {SITE_NAME} space
                   </p>
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 dash-t-caption font-semibold ${

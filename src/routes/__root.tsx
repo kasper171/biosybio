@@ -13,7 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ErrorFace404 } from "@/components/errors/ErrorFace404";
 import { SiteStatusPage } from "@/components/errors/SiteStatusPage";
 import { reportClientError } from "../lib/report-client-error";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_NAME, SITE_ORIGIN, SITE_TITLE } from "@/lib/site";
 
 function NotFoundComponent() {
   return (
@@ -53,15 +53,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Biosy — Your world. Your profile. Your way." },
+      { title: SITE_TITLE },
       { name: "description", content: "Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place." },
-      { name: "author", content: "Biosy" },
-      { property: "og:title", content: "Biosy — Your world. Your profile. Your way." },
+      { name: "author", content: SITE_NAME },
+      { property: "og:title", content: SITE_TITLE },
       { property: "og:description", content: "Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_ORIGIN },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Biosy — Your world. Your profile. Your way." },
+      { name: "twitter:title", content: SITE_TITLE },
       { name: "twitter:description", content: "Create a unique profile with links, music, albums, cards, social media, and more. Everything in one place." },
     ],
     links: [

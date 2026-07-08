@@ -86,6 +86,7 @@ function buildTemplatePreviewProfile(template: ProfileTemplateWithAuthor): Profi
     social_icon_color: t.social_icon_color,
     social_icon_style: t.social_icon_style,
     social_icon_size: t.social_icon_size ?? 100,
+    social_icon_gap: t.social_icon_gap ?? 5,
     social_icon_bloom: t.social_icon_bloom === true,
     social_icon_bloom_color: t.social_icon_bloom_color ?? null,
     show_social_titles: t.show_social_titles === true,

@@ -62,8 +62,10 @@ export type Profile = {
   social_original_colors: boolean;
   social_icon_color: string;
   social_icon_style: "boxed" | "logo";
-  /** Escala dos ícones sociais (60–140, padrão 100) */
+  /** Escala dos ícones sociais (60–200, padrão 100) — escala a logo visível */
   social_icon_size: number;
+  /** Espaço entre ícones em px (0 = encostados, máx. 20) */
+  social_icon_gap: number;
   /** Bloom / glow ao redor dos ícones sociais */
   social_icon_bloom: boolean;
   /** Cor do glow (independente da cor do ícone) */
@@ -135,11 +137,11 @@ export type Profile = {
   comments_enabled: boolean;
   /** Template público ao vivo — sincroniza estilo automaticamente */
   public_template_enabled: boolean;
-  /** Título do embed ao compartilhar o link (null = padrão Biosy) */
+  /** Título do embed ao compartilhar o link (null = padrão Byosy) */
   share_embed_title: string | null;
-  /** Descrição do embed ao compartilhar o link (null = padrão Biosy) */
+  /** Descrição do embed ao compartilhar o link (null = padrão Byosy) */
   share_embed_description: string | null;
-  /** Imagem banner do embed (null = padrão Biosy) */
+  /** Imagem banner do embed (null = padrão Byosy) */
   share_embed_image_url: string | null;
   /** Fonte da página inteira (stack CSS) */
   page_font_family: string;

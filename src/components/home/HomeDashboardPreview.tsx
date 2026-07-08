@@ -1,3 +1,4 @@
+import { SITE_NAME } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import dashboardPreview from "@/assets/home-dashboard-preview.png";
 
@@ -71,7 +72,7 @@ export function HomeDashboardPreview({ variant = "standalone" }: HomeDashboardPr
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-[var(--biosy-bg-base)]">
                     <img
                       src={dashboardPreview}
-                      alt="Biosy dashboard preview"
+                      alt={`${SITE_NAME} dashboard preview`}
                       className="h-full w-full object-cover object-left-top"
                       draggable={false}
                     />

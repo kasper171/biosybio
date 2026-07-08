@@ -1,7 +1,7 @@
 import defaultShareImage from "@/assets/cta-banner.png";
-import { SITE_ORIGIN } from "@/lib/site";
+import { SITE_ORIGIN, SITE_TITLE } from "@/lib/site";
 
-export const DEFAULT_SHARE_EMBED_TITLE = "Biosy — Your world. Your profile. Your way.";
+export const DEFAULT_SHARE_EMBED_TITLE = SITE_TITLE;
 export const DEFAULT_SHARE_EMBED_DESCRIPTION =
   "Create a unique profile with links, music, photo albums, cards, social networks, and more. All in one place.";
 

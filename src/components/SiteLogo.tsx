@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import logoUrl from "@/assets/logo.png";
+import { SITE_NAME } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 type SiteLogoProps = {
@@ -13,7 +14,7 @@ export function SiteLogo({ size = 36, className, linked = true }: SiteLogoProps)
     <>
       <img
         src={logoUrl}
-        alt="Biosy"
+        alt={SITE_NAME}
         width={size}
         height={size}
         style={{ filter: "drop-shadow(0 0 12px oklch(0.65 0.28 0 / 0.55))" }}
@@ -24,7 +25,7 @@ export function SiteLogo({ size = 36, className, linked = true }: SiteLogoProps)
           size <= 28 ? "text-base sm:text-lg" : size <= 32 ? "text-lg" : "text-xl",
         )}
       >
-        Biosy
+        {SITE_NAME}
       </span>
     </>
   );

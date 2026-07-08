@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Eye } from "lucide-react";
+import { SITE_NAME } from "@/lib/site";
 import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import {
   fetchFeaturedCreators,
@@ -93,38 +94,39 @@ export function HomeCreatorsCarousel() {
           </HomeScrollReveal>
           <HomeScrollReveal variant="up" delay={80}>
             <p className="mt-4 text-sm text-white/60">
-              Real profiles from the Biosy community.
+              Real profiles from the {SITE_NAME} community.
               <br />
               Connect and follow your favorites.
             </p>
           </HomeScrollReveal>
         </div>
 
-        <div className="relative min-w-0 overflow-hidden">
-          {loading ? (
-            <div className="flex gap-4 overflow-hidden">
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="card-surface h-52 w-40 shrink-0 animate-pulse rounded-2xl bg-white/[0.03]"
-                />
-              ))}
-            </div>
-          ) : creators.length === 0 ? (
-            <div className="card-surface rounded-2xl px-6 py-10 text-center text-sm text-white/55">
-              Creators with avatars will appear here soon.
-            </div>
-          ) : (
-            <div
-              className="home-creators-marquee-track flex gap-4"
-              style={{ ["--marquee-duration" as string]: `${marqueeDuration}s` }}
-            >
-              {marqueeTrack.map((creator, index) => (
-                <CreatorCard key={`${creator.username}-${index}`} creator={creator} />
-              ))}
-            </div>
-          )}
-        </div>
+        <HomeScrollReveal variant="left" delay={80}>
+          <div className="relative min-w-0 overflow-hidden">
+            {loading ? (
+              <div className="flex gap-4 overflow-hidden">
+                {[0, 1, 2, 3].map((i) => (
+                  <HomeScrollReveal key={i} variant="up" delay={i * 70}>
+                    <div className="card-surface h-52 w-40 shrink-0 animate-pulse rounded-2xl bg-white/[0.03]" />
+                  </HomeScrollReveal>
+                ))}
+              </div>
+            ) : creators.length === 0 ? (
+              <div className="card-surface rounded-2xl px-6 py-10 text-center text-sm text-white/55">
+                Creators with avatars will appear here soon.
+              </div>
+            ) : (
+              <div
+                className="home-creators-marquee-track flex gap-4"
+                style={{ ["--marquee-duration" as string]: `${marqueeDuration}s` }}
+              >
+                {marqueeTrack.map((creator, index) => (
+                  <CreatorCard key={`${creator.username}-${index}`} creator={creator} />
+                ))}
+              </div>
+            )}
+          </div>
+        </HomeScrollReveal>
       </div>
     </section>
   );

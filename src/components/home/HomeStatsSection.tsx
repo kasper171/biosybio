@@ -104,30 +104,36 @@ export function HomeStatsSection() {
               ? items.map((s, i) => {
                   const { line, area } = smoothSparklinePaths(i + 1);
                   return (
-                    <div key={s.t}>
-                      <div className="text-xs text-white/60">{s.t}</div>
-                      <div className="mt-1 text-3xl font-black tabular-nums">{s.v}</div>
-                      <svg viewBox="0 0 200 60" className="mt-3 h-16 w-full" aria-hidden>
-                        <defs>
-                          <linearGradient id={`g${i}`} x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0.35" />
-                            <stop offset="100%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0" />
-                          </linearGradient>
-                        </defs>
-                        <path d={area} fill={`url(#g${i})`} />
-                        <path
-                          d={line}
-                          stroke="oklch(0.65 0.28 0)"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          fill="none"
-                        />
-                      </svg>
-                    </div>
+                    <HomeScrollReveal key={s.t} variant="up" delay={i * 90}>
+                      <div>
+                        <div className="text-xs text-white/60">{s.t}</div>
+                        <div className="mt-1 text-3xl font-black tabular-nums">{s.v}</div>
+                        <svg viewBox="0 0 200 60" className="mt-3 h-16 w-full" aria-hidden>
+                          <defs>
+                            <linearGradient id={`g${i}`} x1="0" x2="0" y1="0" y2="1">
+                              <stop offset="0%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0.35" />
+                              <stop offset="100%" stopColor="oklch(0.65 0.28 0)" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                          <path d={area} fill={`url(#g${i})`} />
+                          <path
+                            d={line}
+                            stroke="oklch(0.65 0.28 0)"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            fill="none"
+                          />
+                        </svg>
+                      </div>
+                    </HomeScrollReveal>
                   );
                 })
-              : [0, 1, 2].map((i) => <StatSkeleton key={i} />)}
+              : [0, 1, 2].map((i) => (
+                  <HomeScrollReveal key={i} variant="up" delay={i * 90}>
+                    <StatSkeleton />
+                  </HomeScrollReveal>
+                ))}
           </div>
         </div>
       </div>

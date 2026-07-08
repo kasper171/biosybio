@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice } from "@/lib/auth-errors";
 import { signUpFn } from "@/lib/auth/auth.functions";
 import { PASSWORD_RULES } from "@/lib/auth/password-policy";
-import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
+import { profileDisplayPath, SITE_NAME, SITE_PROFILE_PREFIX } from "@/lib/site";
 import {
   cleanUsername,
   isUsernameTaken,
@@ -25,8 +25,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [
-      { title: "Sign in — Biosy" },
-      { name: "description", content: "Sign in or create your Biosy account." },
+      { title: `Sign in — ${SITE_NAME}` },
+      { name: "description", content: `Sign in or create your ${SITE_NAME} account.` },
     ],
   }),
   component: AuthPage,
@@ -190,7 +190,7 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link to="/" className="text-2xl font-bold">
-            Biosy
+            {SITE_NAME}
           </Link>
           <h1 className="mt-6 text-2xl font-bold">
             {mode === "signin" ? "Welcome back" : "Create your account"}

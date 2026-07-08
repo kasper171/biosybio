@@ -31,7 +31,7 @@ import {
   resolveShareEmbedImageUrl,
   resolveShareEmbedTitle,
 } from "@/lib/share-embed";
-import { profilePublicUrl } from "@/lib/site";
+import { profilePublicUrl, SITE_NAME } from "@/lib/site";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
 import { cn } from "@/lib/utils";
 import { DashboardAccountLayout, DashCard } from "./DashboardAccountLayout";
@@ -337,7 +337,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
           <p className="mb-4 text-xs leading-relaxed text-white/45">
             Customize how your link appears on Discord, WhatsApp, Twitter, and other apps.
             Changes apply only to{" "}
-            <span className="text-white/70">{previewUrl}</span>. Empty fields use Biosy
+            <span className="text-white/70">{previewUrl}</span>. Empty fields use {SITE_NAME}
             defaults.
           </p>
 
@@ -403,7 +403,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
                   <img src={embedImageUrl} alt="" className="max-h-40 w-full object-cover" />
                 </div>
               ) : (
-                <p className="mb-3 text-xs text-white/40">Using default Biosy banner.</p>
+                <p className="mb-3 text-xs text-white/40">Using default {SITE_NAME} banner.</p>
               )}
               <div className="flex flex-wrap gap-2">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10">

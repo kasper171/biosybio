@@ -58,6 +58,7 @@ import { SOCIALS, SOCIAL_MAP, normalizeHandle } from "@/lib/socials";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
 import { cn } from "@/lib/utils";
+import { SITE_NAME } from "@/lib/site";
 import { canUseAvatarFrame } from "@/lib/avatar-frames";
 import { attachProfileRoles } from "@/lib/profile-roles";
 import {
@@ -69,6 +70,7 @@ import {
 } from "@/lib/discord-verify";
 import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
 import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions";
+import { formatSocialIconSizeLabel } from "@/lib/social-icons";
 
 type PanelKey = PersonalizePanelKey;
 
@@ -79,7 +81,7 @@ type DashboardSearch = {
 };
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Biosy" }] }),
+  head: () => ({ meta: [{ title: `Dashboard — ${SITE_NAME}` }] }),
   validateSearch: (search: Record<string, unknown>): DashboardSearch => ({
     view: search.view === "personalizar" ? "personalizar" : undefined,
     panel: isPanelKey(search.panel) ? search.panel : undefined,
@@ -362,6 +364,7 @@ function Dashboard() {
         social_icon_color: profile.social_icon_color ?? "#ffffff",
         social_icon_style: profile.social_icon_style ?? "boxed",
         social_icon_size: profile.social_icon_size ?? 100,
+        social_icon_gap: profile.social_icon_gap ?? 5,
         social_icon_bloom: profile.social_icon_bloom === true,
         social_icon_bloom_color: profile.social_icon_bloom_color ?? null,
         show_social_titles: profile.show_social_titles === true,
@@ -1564,12 +1567,33 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
           <SliderField
             label="Icon size"
             min={60}
-            max={140}
+            max={200}
             step={5}
             value={profile.social_icon_size ?? 100}
             onChange={(v) => update("social_icon_size", v)}
-            display={`${profile.social_icon_size ?? 100}%`}
+            display={formatSocialIconSizeLabel(profile)}
           />
+          <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+            Scales the visible logo. Boxed mode adds a small border around the icon only.
+          </p>
+        </div>
+        <div className="mt-3">
+          <SliderField
+            label="Icon spacing"
+            min={0}
+            max={20}
+            step={1}
+            value={profile.social_icon_gap ?? 5}
+            onChange={(v) => update("social_icon_gap", v)}
+            display={
+              (profile.social_icon_gap ?? 5) === 0
+                ? "0px (touching)"
+                : `${profile.social_icon_gap ?? 5}px`
+            }
+          />
+          <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+            0 = icons touching. Increase to add space between them.
+          </p>
         </div>
         <div className="mt-3">
           <ToggleField

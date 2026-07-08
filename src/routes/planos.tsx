@@ -4,17 +4,18 @@ import { HomeScrollReveal } from "@/components/home/HomeScrollReveal";
 import { SiteNavbar } from "@/components/SiteNavbar";
 import { SiteLogo } from "@/components/SiteLogo";
 import { BADGE_PRODUCTS, PLANS } from "@/lib/plans";
+import { SITE_NAME } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/planos")({
   head: () => ({
     meta: [
-      { title: "Plans — Biosy" },
+      { title: `Plans — ${SITE_NAME}` },
       {
         name: "description",
         content: "Choose the Free or Premium plan and unlock exclusive badges for your profile.",
       },
-      { property: "og:title", content: "Plans — Biosy" },
+      { property: "og:title", content: `Plans — ${SITE_NAME}` },
       {
         property: "og:description",
         content: "Free plan, lifetime Premium, and exclusive badges to customize your profile.",

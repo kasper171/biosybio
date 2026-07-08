@@ -4,8 +4,7 @@ import { getHotelCardFrameStyle, getHotelCardLayoutFromProfile } from "@/lib/hot
 import { listHotelConnections } from "@/lib/hotel/profile-hotel";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 import { DEFAULT_CARD_HEIGHT, type Profile } from "@/lib/profile-storage";
-import { getSocialIconScale } from "@/lib/social-icons";
-import { hasActiveTextAnimation, normalizeTextAnimationId } from "@/lib/text-animations";
+import { getSocialIconDimensions, getSocialIconGapPx } from "@/lib/social-icons";
 
 /** Mesmo limite visual do card (`line-clamp-3` na bio). */
 const BIO_LINE_CLAMP = 3;
@@ -81,30 +80,41 @@ function estimateFooterHeight(profile: Profile): number {
   return inner + 32;
 }
 
-function estimateAlignedSocialHeight(profile: Profile): number {
-  const count = countSocials(profile);
-  if (!count) return 0;
-  const scale = getSocialIconScale(profile);
-  const icon = Math.round((profile.social_icon_style === "logo" ? 32 : 36) * scale);
-  const titleExtra = profile.show_social_titles === true ? 14 : 0;
-  return 8 + icon + titleExtra;
+function socialItemFootprint(profile: Profile, compact: boolean): number {
+  const { iconPx, boxPx, logo } = getSocialIconDimensions(profile, compact);
+  return logo ? iconPx : boxPx;
 }
 
-function estimateSocialRowsHeight(profile: Profile, cardWidth: number): number {
+function estimateAlignedSocialHeight(profile: Profile, cardWidth: number): number {
   const count = countSocials(profile);
   if (!count) return 0;
 
-  const scale = getSocialIconScale(profile);
-  const logo = profile.social_icon_style === "logo";
-  const icon = Math.round((logo ? 36 : 44) * scale);
+  const itemPx = socialItemFootprint(profile, true);
   const titleExtra = profile.show_social_titles === true ? 14 : 0;
-  const gap = 3;
-  const rowWidth = cardWidth - 48;
-  const rowNeeded = count * icon + (count - 1) * gap;
-  if (rowNeeded <= rowWidth) {
-    return 6 + icon + titleExtra;
-  }
-  return 6 + icon + titleExtra;
+  const gap = getSocialIconGapPx(profile);
+  const rowWidth = Math.max(80, cardWidth - 48);
+  const itemsPerRow = Math.max(1, Math.floor((rowWidth + gap) / (itemPx + gap)));
+  const rows = Math.ceil(count / itemsPerRow);
+  const rowHeight = itemPx + titleExtra;
+  const wrapGap = 4;
+
+  return 8 + rows * rowHeight + Math.max(0, rows - 1) * wrapGap;
+}
+
+function estimateSocialRowsHeight(profile: Profile, cardWidth: number, compact = false): number {
+  const count = countSocials(profile);
+  if (!count) return 0;
+
+  const itemPx = socialItemFootprint(profile, compact);
+  const titleExtra = profile.show_social_titles === true ? 14 : 0;
+  const gap = getSocialIconGapPx(profile);
+  const rowWidth = Math.max(80, cardWidth - 48);
+  const itemsPerRow = Math.max(1, Math.floor((rowWidth + gap) / (itemPx + gap)));
+  const rows = Math.ceil(count / itemsPerRow);
+  const rowHeight = itemPx + titleExtra;
+  const wrapGap = 4;
+
+  return 6 + rows * rowHeight + Math.max(0, rows - 1) * wrapGap;
 }
 
 function roundCardHeight(h: number): number {
@@ -117,21 +127,20 @@ function estimateAlignedBody(profile: Profile, opts?: { blocks?: ProfileBlock[] 
   const frame = avatarFrameOverflow(avatarSize, Boolean(profile.avatar_frame_id));
   const avatarVisualH = avatarSize + frame * 2;
   const bio = profile.bio ?? "";
-  const hasBioFx = hasActiveTextAnimation(normalizeTextAnimationId(profile.bio_text_animation));
-  const hasNameFx = hasActiveTextAnimation(normalizeTextAnimationId(profile.name_text_animation));
   const showUsername = profile.show_username !== false;
   const showBadges = profile.show_role_badges !== false;
 
   const textWidth = Math.max(120, cardWidth - 48 - avatarSize - 16);
   const bioLines = estimateTextLines(bio, textWidth, 7);
 
-  let textCol = 26 + (hasNameFx ? 16 : 0);
+  let textCol = 26;
   if (showBadges) textCol += 26;
   if (showUsername) textCol += 18;
-  textCol += (bio ? 8 : 0) + bioLines * 16 + (hasBioFx ? 16 : 0);
+  textCol += (bio ? 8 : 0) + bioLines * 16;
 
-  const avatarStack = avatarVisualH + estimateAlignedSocialHeight(profile);
-  let body = Math.max(avatarStack, textCol) + ALIGNED_PADDING_Y;
+  const avatarStack = avatarVisualH;
+  const socialH = estimateAlignedSocialHeight(profile, cardWidth);
+  let body = Math.max(avatarStack, textCol) + socialH + ALIGNED_PADDING_Y;
   body += estimateInsideBlocksHeight(opts?.blocks, "aligned");
   body += estimateFooterHeight(profile);
   return body;
@@ -141,23 +150,34 @@ function estimateCenteredBody(profile: Profile, opts?: { blocks?: ProfileBlock[]
   const cardWidth = Number(profile.card_width) || 600;
   const avatarSize = Number(profile.avatar_size ?? 96);
   const avatar = Math.max(52, Math.round(avatarSize * 1.1));
+  const hasBanner = Boolean(profile.inner_banner_url);
   const bio = profile.bio ?? "";
-  const hasBioFx = hasActiveTextAnimation(normalizeTextAnimationId(profile.bio_text_animation));
-  const hasNameFx = hasActiveTextAnimation(normalizeTextAnimationId(profile.name_text_animation));
   const showUsername = profile.show_username !== false;
   const showBadges = profile.show_role_badges !== false;
 
   const bioLines = estimateTextLines(bio, cardWidth - 48, 7.5);
 
-  let body = 16 + avatar + 12;
-  body += 26 + (hasNameFx ? 16 : 0);
+  let body = (hasBanner ? 20 : 16) + avatar + 12;
+  body += 26;
   if (showBadges) body += 26;
   if (showUsername) body += 18;
-  body += (bio ? 8 : 0) + bioLines * 18 + (hasBioFx ? 16 : 0);
+  body += (bio ? 8 : 0) + bioLines * 18;
   body += estimateSocialRowsHeight(profile, cardWidth);
   body += 16;
   body += estimateInsideBlocksHeight(opts?.blocks, "centered");
   body += estimateFooterHeight(profile);
+
+  if (hasBanner) {
+    let cardH = body;
+    for (let i = 0; i < 10; i++) {
+      const strip = Math.round(cardH * BANNER_VISIBLE_RATIO);
+      const next = body + strip - BANNER_BEHIND_AVATAR_PX;
+      if (next <= cardH) break;
+      cardH = next;
+    }
+    return cardH;
+  }
+
   return body;
 }
 
@@ -166,18 +186,16 @@ function estimateDefaultBody(profile: Profile, opts?: { blocks?: ProfileBlock[] 
   const avatarSize = Number(profile.avatar_size ?? 96);
   const hasBanner = Boolean(profile.inner_banner_url);
   const bio = profile.bio ?? "";
-  const hasBioFx = hasActiveTextAnimation(normalizeTextAnimationId(profile.bio_text_animation));
-  const hasNameFx = hasActiveTextAnimation(normalizeTextAnimationId(profile.name_text_animation));
   const showUsername = profile.show_username !== false;
   const showBadges = profile.show_role_badges !== false;
 
   const bioLines = estimateTextLines(bio, cardWidth - 48, 7.5);
 
   let body = (hasBanner ? 20 : 24) + 8 + avatarSize + 12;
-  body += 24 + (hasNameFx ? 16 : 0);
+  body += 24;
   if (showBadges) body += 26;
   if (showUsername) body += 18;
-  body += (bio ? 8 : 0) + bioLines * 18 + (hasBioFx ? 16 : 0);
+  body += (bio ? 8 : 0) + bioLines * 18;
   body += estimateSocialRowsHeight(profile, cardWidth);
   body += 16;
   body += estimateInsideBlocksHeight(opts?.blocks, "default");

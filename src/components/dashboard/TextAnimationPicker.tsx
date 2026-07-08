@@ -5,8 +5,10 @@ import { ProfileAnimatedText } from "@/components/text-animations/ProfileAnimate
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
-const PREVIEW_TEXT = "Biosy";
-const MORPHING_PREVIEW_TEXT = "Bio|Sy|Biosy";
+import { SITE_NAME } from "@/lib/site";
+
+const PREVIEW_TEXT = SITE_NAME;
+const MORPHING_PREVIEW_TEXT = `Byo|Sy|${SITE_NAME}`;
 
 /** Efeitos que rodam uma vez no mount — remontamos para repetir no picker */
 const LOOP_ONCE_EFFECTS = new Set<TextAnimationId>([
