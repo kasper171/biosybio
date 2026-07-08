@@ -3,7 +3,11 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { ensureNodeWebSocket } from "./lib/ensure-node-websocket";
-import { applySecurityToHtmlResponse } from "./lib/security/apply-security-response.server";
+import {
+  applySecurityToHtmlResponse,
+  applySecurityToResponse,
+} from "./lib/security/apply-security-response.server";
+import { runWithCspNonce } from "./lib/security/csp-context.server";
 import { corsPreflightResponse } from "./lib/security/cors.server";
 
 type ServerEntry = {
@@ -42,17 +46,20 @@ async function normalizeCatastrophicSsrResponse(
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
-    try {
-      const preflight = corsPreflightResponse(request);
-      if (preflight) return preflight;
+    return runWithCspNonce(async (cspNonce) => {
+      try {
+        const preflight = corsPreflightResponse(request);
+        if (preflight) return preflight;
 
-      await ensureNodeWebSocket();
-      const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(request, response);
-    } catch (error) {
-      console.error(error);
-      return applySecurityToHtmlResponse(request, renderErrorPage(), { status: 500 });
-    }
+        await ensureNodeWebSocket();
+        const handler = await getServerEntry();
+        const response = await handler.fetch(request, env, ctx);
+        const normalized = await normalizeCatastrophicSsrResponse(request, response);
+        return applySecurityToResponse(request, normalized, cspNonce);
+      } catch (error) {
+        console.error(error);
+        return applySecurityToHtmlResponse(request, renderErrorPage(), { status: 500 });
+      }
+    });
   },
 };
