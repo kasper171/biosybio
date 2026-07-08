@@ -84,7 +84,7 @@ export function SiteNavbar({ children }: SiteNavbarProps) {
             transition={{ duration: 0.85, delay: 0.12, ease: ENTRANCE_EASE }}
             className="flex items-center gap-2 sm:gap-3"
           >
-            <LanguageSwitcher compact className="hidden sm:block" />
+            <LanguageSwitcher compact className="shrink-0" />
             <SiteAuthButtons className="site-navbar__actions" />
           </motion.div>
         </motion.div>

@@ -30,6 +30,7 @@ import {
   getDashboardTextScale,
   type DashboardTextScale,
 } from "@/lib/dashboard-text-scale";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/LocaleProvider";
 
 export type AccountSection = "overview" | "estatisticas" | "privacidade" | "templates" | "personalizar";
@@ -227,6 +228,9 @@ export function DashboardAccountLayout({
         </nav>
 
         <div className="border-t border-white/[0.06] p-3">
+          <div className="mb-3 px-1">
+            <LanguageSwitcher fullWidth />
+          </div>
           <div className="mb-2 space-y-0.5">
             <Link
               to="/$username"
