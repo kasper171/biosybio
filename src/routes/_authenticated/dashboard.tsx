@@ -77,12 +77,9 @@ import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions"
 import { formatSocialIconSizeLabel } from "@/lib/social-icons";
 import {
   getRoleBadgeGapPx,
-  getRoleBadgeSizePx,
   ROLE_BADGE_DISPLAY_PX,
   ROLE_BADGE_GAP_MAX,
   ROLE_BADGE_GAP_MIN,
-  ROLE_BADGE_SIZE_MAX,
-  ROLE_BADGE_SIZE_MIN,
 } from "@/lib/profile-roles";
 
 type PanelKey = PersonalizePanelKey;
@@ -360,7 +357,7 @@ function Dashboard() {
         show_role_badges: profile.show_role_badges !== false,
         role_badges_monochrome: profile.role_badges_monochrome === true,
         role_badges_mono_color: profile.role_badges_mono_color ?? "#ffffff",
-        role_badges_size_px: getRoleBadgeSizePx(profile),
+        role_badges_size_px: ROLE_BADGE_DISPLAY_PX,
         role_badges_gap: getRoleBadgeGapPx(profile),
         role_badges_bloom: profile.role_badges_bloom === true,
         role_badges_bloom_color: profile.role_badges_bloom_color ?? null,
@@ -727,26 +724,11 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
           onChange={(v) => update("show_role_badges", v)}
         />
         <SliderField
-          label={t("dashboard.perfil.roleBadges.size")}
-          min={ROLE_BADGE_SIZE_MIN}
-          max={ROLE_BADGE_SIZE_MAX}
-          step={1}
-          value={profile.role_badges_size_px ?? ROLE_BADGE_DISPLAY_PX}
-          onChange={(v) => update("role_badges_size_px", v)}
-          display={`${getRoleBadgeSizePx(profile)}px`}
-        />
-        <p className="text-[11px] leading-relaxed text-white/40">
-          {t("dashboard.perfil.roleBadges.sizeHint", {
-            min: ROLE_BADGE_SIZE_MIN,
-            max: ROLE_BADGE_SIZE_MAX,
-          })}
-        </p>
-        <SliderField
           label={t("dashboard.perfil.roleBadges.spacing")}
           min={ROLE_BADGE_GAP_MIN}
           max={ROLE_BADGE_GAP_MAX}
           step={1}
-          value={profile.role_badges_gap ?? 5}
+          value={profile.role_badges_gap ?? 0}
           onChange={(v) => update("role_badges_gap", v)}
           display={
             getRoleBadgeGapPx(profile) === 0

@@ -8,7 +8,7 @@ import { normalizeCardBorderStyle } from "@/lib/card-border";
 import { TEXT_GLOW_MAX_PX, normalizeTextGlowScope } from "@/lib/profile-colors";
 import { normalizeTextAnimationId } from "@/lib/text-animations";
 import { canUseAvatarFrame } from "@/lib/avatar-frames";
-import { getRoleBadgeGapPx, getRoleBadgeSizePx } from "@/lib/profile-roles";
+import { getRoleBadgeGapPx, ROLE_BADGE_DISPLAY_PX } from "@/lib/profile-roles";
 
 export function normalizeProfile(raw: Record<string, unknown>): Profile {
   const p = raw as Profile;
@@ -53,9 +53,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     show_role_badges: p.show_role_badges !== false,
     role_badges_monochrome: p.role_badges_monochrome === true,
     role_badges_mono_color: (p.role_badges_mono_color as string) ?? "#ffffff",
-    role_badges_size_px: getRoleBadgeSizePx({
-      role_badges_size_px: p.role_badges_size_px as number | undefined,
-    }),
+    role_badges_size_px: ROLE_BADGE_DISPLAY_PX,
     role_badges_gap: getRoleBadgeGapPx({
       role_badges_gap: p.role_badges_gap as number | undefined,
     }),

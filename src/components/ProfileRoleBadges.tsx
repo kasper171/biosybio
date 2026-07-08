@@ -9,6 +9,7 @@ import {
   getRoleIconUrl,
   getRoleTooltip,
   resolveRoleBadgeBloomColor,
+  ROLE_BADGE_OVERLAP_PX,
   sortProfileRoles,
   type ProfileRoleAssignment,
 } from "@/lib/profile-roles";
@@ -18,7 +19,6 @@ type Props = {
   profile: Profile;
   className?: string;
   align?: "left" | "center";
-  size?: number;
 };
 
 function useBadgeSrc(iconFile: string) {
@@ -36,21 +36,23 @@ function useBadgeSrc(iconFile: string) {
 function BadgeHoverShell({
   tooltip,
   size,
+  marginLeft,
   children,
 }: {
   tooltip: string;
   size: number;
+  marginLeft: number;
   children: ReactNode;
 }) {
   return (
     <span
-      className="group/badge relative inline-flex shrink-0 cursor-default isolation-isolate"
-      style={{ width: size, height: size }}
+      className="group/badge relative inline-flex shrink-0 cursor-default isolation-isolate overflow-visible"
+      style={{ width: size, height: size, marginLeft }}
       aria-label={tooltip}
     >
       <span
         className={cn(
-          "flex h-full w-full items-center justify-center transition-[transform,filter] duration-200",
+          "flex h-full w-full items-center justify-center overflow-hidden transition-[transform,filter] duration-200",
           "group-hover/badge:scale-110 group-hover/badge:drop-shadow-[0_0_7px_rgba(255,255,255,0.65)]",
         )}
       >
@@ -77,6 +79,7 @@ function RoleBadgeIcon({
   size,
   bloom,
   bloomColor,
+  marginLeft,
 }: {
   role: ProfileRoleAssignment;
   monochrome: boolean;
@@ -84,6 +87,7 @@ function RoleBadgeIcon({
   size: number;
   bloom: boolean;
   bloomColor: string;
+  marginLeft: number;
 }) {
   const { src, onError } = useBadgeSrc(role.icon_file);
   const tooltip = getRoleTooltip(role);
@@ -95,19 +99,20 @@ function RoleBadgeIcon({
   });
 
   return (
-    <BadgeHoverShell tooltip={tooltip} size={size}>
+    <BadgeHoverShell tooltip={tooltip} size={size} marginLeft={marginLeft}>
       <img
         src={src}
         alt=""
         draggable={false}
         onError={onError}
-        className="block h-full w-full object-contain object-center"
+        className="block h-full w-full object-cover object-center"
         style={{
           width: size,
           height: size,
           minWidth: size,
           minHeight: size,
-          overflow: "visible",
+          transform: "scale(1.22)",
+          transformOrigin: "center",
           filter: imageFilter,
         }}
         loading="lazy"
@@ -120,14 +125,13 @@ export function ProfileRoleBadges({
   profile,
   className,
   align = "center",
-  size,
 }: Props) {
   if (profile.show_role_badges === false) return null;
 
   const roles = sortProfileRoles(profile.roles ?? []);
   if (roles.length === 0) return null;
 
-  const badgeSize = size ?? getRoleBadgeSizePx(profile);
+  const badgeSize = getRoleBadgeSizePx(profile);
   const badgeGap = getRoleBadgeGapPx(profile);
   const monochrome = profile.role_badges_monochrome === true;
   const monoColor = profile.role_badges_mono_color ?? "#ffffff";
@@ -141,10 +145,9 @@ export function ProfileRoleBadges({
         align === "center" ? "justify-center" : "justify-start",
         className,
       )}
-      style={{ gap: `${badgeGap}px` }}
       aria-label="Profile roles"
     >
-      {roles.map((role) => (
+      {roles.map((role, index) => (
         <RoleBadgeIcon
           key={role.id}
           role={role}
@@ -153,6 +156,9 @@ export function ProfileRoleBadges({
           size={badgeSize}
           bloom={bloom}
           bloomColor={bloomColor}
+          marginLeft={
+            index > 0 ? badgeGap - ROLE_BADGE_OVERLAP_PX : 0
+          }
         />
       ))}
     </div>
