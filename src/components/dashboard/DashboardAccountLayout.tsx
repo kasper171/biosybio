@@ -359,5 +359,3 @@ export function DashCard({
     </div>
   );
 }
-
-export { PERSONALIZE_PANELS };
