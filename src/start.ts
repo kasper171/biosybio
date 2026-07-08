@@ -4,7 +4,7 @@ import { renderErrorPage } from "./lib/error-page";
 import { ensureNodeWebSocket } from "./lib/ensure-node-websocket";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 import { applySecurityToResponse, applySecurityToHtmlResponse } from "@/lib/security/apply-security-response.server";
-import { runWithCspNonce } from "@/lib/security/csp-context.server";
+import { runWithCspNonce, getCspNonce } from "@/lib/security/csp-context.server";
 import { corsPreflightResponse } from "@/lib/security/cors.server";
 
 const nodeWebSocketMiddleware = createMiddleware().server(async ({ next }) => {
@@ -17,8 +17,9 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ request, ne
   if (preflight) return preflight;
 
   return runWithCspNonce(async () => {
+    const cspNonce = getCspNonce();
     const response = await next();
-    return applySecurityToResponse(request, response);
+    return applySecurityToResponse(request, response, cspNonce);
   });
 });
 

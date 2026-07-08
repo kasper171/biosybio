@@ -17,6 +17,7 @@ import { applyStaticSecurityHeaders } from "@/lib/security/security-headers";
 export async function applySecurityToResponse(
   request: Request,
   response: Response,
+  cspNonce?: string,
 ): Promise<Response> {
   if (!(response instanceof Response)) return response;
 
@@ -25,7 +26,7 @@ export async function applySecurityToResponse(
     applyStaticSecurityHeaders(headerBag);
     applyCorsHeaders(request, headerBag);
 
-    const nonce = getCspNonce();
+    const nonce = cspNonce ?? getCspNonce();
     if (nonce) {
       headerBag.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
     }
