@@ -199,6 +199,10 @@ export type Profile = {
   name_particle_color: string;
   /** Cor das partículas na bio (efeito particle) */
   bio_particle_color: string;
+  /** Overlay de ruído animado cobrindo a página */
+  overlay_noise_enabled: boolean;
+  /** Intensidade do noise (0–100 → opacity CSS 3%–15%) */
+  overlay_noise_opacity: number;
   /** @deprecated mantido no banco; não usar no app */
   accent_color?: string;
 };

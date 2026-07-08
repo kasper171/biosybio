@@ -55,6 +55,7 @@ export const enDashboard: MessageTree = {
       etiquetas: "Labels",
       conexoes: "Connections",
       comentarios: "Comments",
+      overlays: "Overlays",
     },
     footer: {
       myPage: "My page",
@@ -361,6 +362,17 @@ export const enDashboard: MessageTree = {
       resetHint: "Fields reset to defaults. Save to apply.",
       viewPublicPage: "View public page",
     },
+  },
+  overlays: {
+    noise: {
+      section: "Animated noise",
+      description:
+        "Subtle TV-static texture over the full page. Does not affect clicks, scroll, or profile components.",
+      enable: "Enable animated noise",
+      opacity: "Intensity",
+      opacityHint: "0% = barely visible · 100% = strongest effect (max 15% opacity).",
+    },
+    futureHint: "More overlays (VHS, glitch, particles) coming soon in this tab.",
   },
   estatisticas: {
     title: "Analytics",

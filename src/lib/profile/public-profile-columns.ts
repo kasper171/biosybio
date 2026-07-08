@@ -133,6 +133,8 @@ export const PUBLIC_PROFILE_SELECT = [
   "bio_text_animation",
   "name_particle_color",
   "bio_particle_color",
+  "overlay_noise_enabled",
+  "overlay_noise_opacity",
 
   // Music
   "music_url",

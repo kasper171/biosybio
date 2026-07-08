@@ -58,6 +58,7 @@ import { LanyardNotFoundModal } from "@/components/dashboard/LanyardNotFoundModa
 import { HotelConnectionPanel } from "@/components/dashboard/HotelConnectionPanel";
 import { MoldurasPanel } from "@/components/dashboard/MoldurasPanel";
 import { EtiquetasPanel } from "@/components/dashboard/EtiquetasPanel";
+import { OverlaysPanel } from "@/components/dashboard/OverlaysPanel";
 import { RoleBadgesVisibilityPicker } from "@/components/dashboard/RoleBadgesVisibilityPicker";
 import { SOCIALS, SOCIAL_MAP, normalizeHandle } from "@/lib/socials";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
@@ -88,6 +89,7 @@ import {
   type RoleBadgesPlacement,
 } from "@/lib/profile-roles";
 import { normalizeProfileLabels } from "@/lib/profile-labels";
+import { normalizeOverlayNoiseOpacity } from "@/lib/overlays/profile-overlays";
 
 type PanelKey = PersonalizePanelKey;
 
@@ -128,6 +130,7 @@ function isPanelKey(value: unknown): value is PanelKey {
     value === "colors" ||
     value === "redes" ||
     value === "etiquetas" ||
+    value === "overlays" ||
     value === "conexoes" ||
     value === "comentarios"
   );
@@ -466,6 +469,8 @@ function Dashboard() {
         bio_text_animation: profile.bio_text_animation ?? "none",
         name_particle_color: profile.name_particle_color ?? "#ff2d7a",
         bio_particle_color: profile.bio_particle_color ?? "#ff2d7a",
+        overlay_noise_enabled: profile.overlay_noise_enabled === true,
+        overlay_noise_opacity: normalizeOverlayNoiseOpacity(profile.overlay_noise_opacity),
       })
       .eq("id", profile.id);
     if (error) {
@@ -615,6 +620,7 @@ function Dashboard() {
               {openPanel === "colors" && <ColorsPanel profile={profile} update={update} />}
               {openPanel === "redes" && <RedesPanel profile={profile} update={update} />}
               {openPanel === "etiquetas" && <EtiquetasPanel profile={profile} update={update} />}
+              {openPanel === "overlays" && <OverlaysPanel profile={profile} update={update} />}
               {openPanel === "conexoes" && <ConexoesPanel profile={profile} update={update} />}
               {openPanel === "comentarios" && <ComentariosPanel profile={profile} update={update} />}
             </motion.div>

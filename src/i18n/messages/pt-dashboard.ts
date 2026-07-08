@@ -54,6 +54,7 @@ export const ptDashboard: MessageTree = {
       etiquetas: "Etiquetas",
       conexoes: "Conexões",
       comentarios: "Comentários",
+      overlays: "Overlays",
     },
     footer: {
       myPage: "Minha página",
@@ -360,6 +361,17 @@ export const ptDashboard: MessageTree = {
       resetHint: "Campos redefinidos. Salve para aplicar.",
       viewPublicPage: "Ver página pública",
     },
+  },
+  overlays: {
+    noise: {
+      section: "Ruído animado",
+      description:
+        "Textura de estática sutil por cima de toda a página. Não altera cliques, scroll nem componentes do perfil.",
+      enable: "Ativar ruído animado",
+      opacity: "Intensidade",
+      opacityHint: "0% = quase imperceptível · 100% = efeito mais visível (máx. 15% de opacidade).",
+    },
+    futureHint: "Mais overlays (VHS, glitch, partículas) em breve nesta mesma aba.",
   },
   estatisticas: {
     title: "Estatísticas",

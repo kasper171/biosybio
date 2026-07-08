@@ -11,6 +11,7 @@ import {
   LayoutTemplate,
   Link2,
   LogOut,
+  Layers,
   MessageSquare,
   Music2,
   Palette,
@@ -53,6 +54,7 @@ export type PersonalizePanelKey =
   | "colors"
   | "redes"
   | "etiquetas"
+  | "overlays"
   | "conexoes"
   | "comentarios";
 
@@ -80,6 +82,7 @@ const PERSONALIZE_PANEL_DEFS: { key: PersonalizePanelKey; icon: LucideIcon }[] =
   { key: "colors", icon: Paintbrush },
   { key: "redes", icon: Link2 },
   { key: "etiquetas", icon: Tag },
+  { key: "overlays", icon: Layers },
   { key: "conexoes", icon: Link2 },
   { key: "comentarios", icon: MessageSquare },
 ];
