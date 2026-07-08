@@ -9,9 +9,9 @@ export const getDiscordDcdnProfileFn = createServerFn({ method: "POST" })
   .inputValidator(discordUserIdInput)
   .handler(async ({ data }) => {
     const { ensureDiscordServicesStarted } = await import("@/lib/discord/discord-services.server");
-    const { getDcdnProfileCached } = await import("@/lib/discord/dcdn-profile.server");
+    const { resolveDcdnProfile } = await import("@/lib/discord/dcdn-profile.server");
     ensureDiscordServicesStarted();
-    return getDcdnProfileCached(data.userId);
+    return resolveDcdnProfile(data.userId);
   });
 
 export const getDiscordPresenceFn = createServerFn({ method: "POST" })

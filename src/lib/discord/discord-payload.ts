@@ -51,6 +51,7 @@ export type DiscordDcdnProfile = {
 export type DiscordPresenceSlice = {
   activities: LanyardActivity[];
   spotify: LanyardSpotify;
+  discord_user?: DiscordUser;
 };
 
 export function parseDcdnPayload(payload: unknown, userId: string): DiscordDcdnProfile | null {
@@ -75,15 +76,32 @@ export function parseDcdnPayload(payload: unknown, userId: string): DiscordDcdnP
   };
 }
 
+export function parseLanyardDiscordUser(payload: unknown): DiscordUser | null {
+  const root = (payload as { data?: unknown })?.data ?? payload;
+  const obj = root as { discord_user?: Record<string, unknown> };
+  const user = obj?.discord_user;
+  if (!user?.id) return null;
+  return {
+    id: String(user.id),
+    username: String(user.username ?? "discord"),
+    global_name: (user.global_name as string | null) ?? null,
+    avatar: (user.avatar as string | null) ?? null,
+    discriminator: user.discriminator != null ? String(user.discriminator) : undefined,
+  };
+}
+
 export function parseLanyardPresencePayload(payload: unknown): DiscordPresenceSlice {
   const root = (payload as { data?: unknown })?.data ?? payload;
   const obj = root as {
     activities?: LanyardActivity[];
     spotify?: LanyardSpotify;
+    discord_user?: Record<string, unknown>;
   };
+  const discord_user = parseLanyardDiscordUser(payload) ?? undefined;
   return {
     activities: Array.isArray(obj?.activities) ? obj.activities : [],
     spotify: obj?.spotify ?? null,
+    discord_user,
   };
 }
 

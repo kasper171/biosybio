@@ -141,8 +141,12 @@ export function DiscordPresenceCard({
         activities: [],
         spotify: null,
       };
+      const lanyardUser = presence.discord_user;
+      const isPlaceholder =
+        base.user.username === "discord" && !base.user.avatar && !base.user.global_name;
       const next = {
         ...base,
+        user: lanyardUser && isPlaceholder ? lanyardUser : base.user,
         activities: presence.activities,
         spotify: presence.spotify,
       };
