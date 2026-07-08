@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ProfileOverlayType } from "@/lib/overlays/types";
+import { DenseNoiseFrameCycler } from "@/lib/overlays/dense-noise-frame-cache";
 import {
-  drawDenseNoise,
   drawGrain,
   drawScanlines,
   drawSparse,
@@ -17,10 +17,11 @@ function renderPreviewFrame(
   type: ProfileOverlayType,
   size: number,
   timestamp: number,
+  denseCycler?: DenseNoiseFrameCycler,
 ): void {
   switch (type) {
     case "noise-denso":
-      drawDenseNoise(ctx, size, size);
+      denseCycler?.draw(ctx, size, size);
       break;
     case "noise-esparso":
       drawSparse(ctx, size, size, 0.04);
@@ -44,6 +45,7 @@ export function OverlayPreviewCanvas({ type, className, opacity = 0.35 }: Previe
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
+  const denseCyclerRef = useRef(new DenseNoiseFrameCycler());
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -53,22 +55,24 @@ export function OverlayPreviewCanvas({ type, className, opacity = 0.35 }: Previe
 
     canvas.width = PREVIEW_SIZE;
     canvas.height = PREVIEW_SIZE;
+    denseCyclerRef.current.reset();
 
     const tick = (timestamp: number) => {
       if (timestamp - lastFrameRef.current >= PREVIEW_INTERVAL_MS) {
-        renderPreviewFrame(ctx, type, PREVIEW_SIZE, timestamp);
+        renderPreviewFrame(ctx, type, PREVIEW_SIZE, timestamp, denseCyclerRef.current);
         lastFrameRef.current = timestamp;
       }
       rafRef.current = window.requestAnimationFrame(tick);
     };
 
-    renderPreviewFrame(ctx, type, PREVIEW_SIZE, performance.now());
+    renderPreviewFrame(ctx, type, PREVIEW_SIZE, performance.now(), denseCyclerRef.current);
     rafRef.current = window.requestAnimationFrame(tick);
 
     return () => {
       if (rafRef.current !== null) {
         window.cancelAnimationFrame(rafRef.current);
       }
+      denseCyclerRef.current.reset();
     };
   }, [type]);
 

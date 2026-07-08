@@ -1,6 +1,6 @@
 import { BaseOverlayController } from "@/lib/overlays/base-overlay-controller";
+import { DenseNoiseFrameCycler } from "@/lib/overlays/dense-noise-frame-cache";
 import {
-  drawDenseNoise,
   drawGrain,
   drawScanlines,
   drawSparse,
@@ -8,13 +8,20 @@ import {
 } from "@/lib/overlays/overlay-draw";
 
 export class DenseNoiseOverlayController extends BaseOverlayController {
+  private cycler = new DenseNoiseFrameCycler();
+
   protected renderFrame(
     ctx: CanvasRenderingContext2D,
     width: number,
     height: number,
     _timestamp: number,
   ): void {
-    drawDenseNoise(ctx, width, height);
+    this.cycler.draw(ctx, width, height);
+  }
+
+  unmount(): void {
+    this.cycler.reset();
+    super.unmount();
   }
 }
 
