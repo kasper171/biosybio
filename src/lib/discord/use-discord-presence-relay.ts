@@ -1,133 +1,56 @@
 import { useEffect, useRef } from "react";
-import type { DiscordPresenceSlice } from "@/lib/discord/discord-payload";
-import { getDiscordPresenceFn } from "@/lib/discord/discord.functions";
+import {
+  parseLanyardPresenceEvent,
+  type DiscordPresenceSlice,
+} from "@/lib/discord/discord-payload";
 
-const POLL_FALLBACK_MS = 5000;
+const LANYARD_WS_URL = "wss://api.lanyard.rest/socket";
+const LANYARD_REST_URL = "https://api.lanyard.rest/v1/users";
+const MAX_RECONNECT_MS = 60_000;
 
-function presenceWsUrl(userId: string): string {
-  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${protocol}//${window.location.host}/api/discord/presence-ws?userId=${encodeURIComponent(userId)}`;
-}
-
-function presenceSseUrl(userId: string): string {
-  return `/api/discord/presence-stream?userId=${encodeURIComponent(userId)}`;
-}
-
-type RelayHandle = {
-  close: () => void;
+type LanyardWsMessage = {
+  op?: number;
+  t?: string;
+  d?: unknown;
 };
 
-function startPollFallback(
-  userId: string,
-  onPresence: (payload: DiscordPresenceSlice) => void,
-): RelayHandle {
-  let cancelled = false;
-
-  const tick = async () => {
-    if (cancelled) return;
-    try {
-      const data = await getDiscordPresenceFn({ data: { userId } });
-      if (!cancelled && data) onPresence(data);
-    } catch (error) {
-      console.warn("[useDiscordPresenceRelay] poll fallback", error);
-    }
-  };
-
-  void tick();
-  const timer = window.setInterval(() => void tick(), POLL_FALLBACK_MS);
-  return {
-    close: () => {
-      cancelled = true;
-      window.clearInterval(timer);
-    },
-  };
+function parsePresenceFromInitState(data: unknown, userId: string): DiscordPresenceSlice | null {
+  if (!data || typeof data !== "object") return null;
+  const root = data as Record<string, unknown>;
+  // subscribe_to_id → presence object directly
+  if ("activities" in root || "spotify" in root || "discord_user" in root) {
+    return parseLanyardPresenceEvent(data);
+  }
+  // subscribe_to_ids → map userId → presence
+  const entry = root[userId];
+  if (entry) return parseLanyardPresenceEvent(entry);
+  return null;
 }
 
-function startSseRelay(
-  userId: string,
-  onPresence: (payload: DiscordPresenceSlice) => void,
-  onFail: () => void,
-): RelayHandle {
-  let es: EventSource | null = null;
-  try {
-    es = new EventSource(presenceSseUrl(userId));
-  } catch (error) {
-    console.warn("[useDiscordPresenceRelay] EventSource failed", error);
-    onFail();
-    return { close: () => {} };
-  }
-
-  es.onmessage = (event) => {
-    try {
-      const payload = JSON.parse(event.data) as DiscordPresenceSlice;
-      onPresence(payload);
-    } catch (error) {
-      console.warn("[useDiscordPresenceRelay] invalid SSE payload", error);
-    }
-  };
-
-  es.onerror = () => {
-    console.warn("[useDiscordPresenceRelay] SSE error, falling back to poll");
-    es?.close();
-    onFail();
-  };
-
-  return {
-    close: () => {
-      es?.close();
-    },
-  };
+function parsePresenceFromUpdate(data: unknown, userId: string): DiscordPresenceSlice | null {
+  if (!data || typeof data !== "object") return null;
+  const root = data as Record<string, unknown>;
+  const eventUserId = String(root.user_id ?? "");
+  if (eventUserId && eventUserId !== userId) return null;
+  return parseLanyardPresenceEvent(data);
 }
 
-function startWsRelay(
-  userId: string,
-  onPresence: (payload: DiscordPresenceSlice) => void,
-  onFail: () => void,
-): RelayHandle {
-  let ws: WebSocket | null = null;
+async function fetchLanyardPresenceRest(userId: string): Promise<DiscordPresenceSlice | null> {
   try {
-    ws = new WebSocket(presenceWsUrl(userId));
+    const res = await fetch(`${LANYARD_REST_URL}/${userId}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json?.success) return null;
+    return parseLanyardPresenceEvent(json.data);
   } catch (error) {
-    console.warn("[useDiscordPresenceRelay] WebSocket failed", error);
-    onFail();
-    return { close: () => {} };
+    console.warn("[useLanyardPresence] REST fallback failed", error);
+    return null;
   }
-
-  ws.onmessage = (event) => {
-    try {
-      const parsed = JSON.parse(String(event.data)) as {
-        type?: string;
-        data?: DiscordPresenceSlice;
-      };
-      if (parsed?.data) onPresence(parsed.data);
-    } catch (error) {
-      console.warn("[useDiscordPresenceRelay] invalid WS payload", error);
-    }
-  };
-
-  ws.onerror = () => {
-    console.warn("[useDiscordPresenceRelay] WS error, trying SSE");
-    ws?.close();
-    onFail();
-  };
-
-  ws.onclose = (event) => {
-    if (!event.wasClean) {
-      console.warn("[useDiscordPresenceRelay] WS closed unexpectedly, trying SSE");
-      onFail();
-    }
-  };
-
-  return {
-    close: () => {
-      ws?.close();
-    },
-  };
 }
 
 /**
- * Subscribes to Discord presence via our backend relay (WS → SSE → cached poll).
- * Never calls Lanyard/dcdn directly from the browser.
+ * Presença em tempo real via WebSocket oficial do Lanyard (wss://api.lanyard.rest/socket).
+ * Não usa endpoint próprio do Byosy — a Vercel não suporta WS customizado em serverless.
  */
 export function useDiscordPresenceRelay(
   userId: string,
@@ -137,31 +60,123 @@ export function useDiscordPresenceRelay(
   onPresenceRef.current = onPresence;
 
   useEffect(() => {
-    let active: RelayHandle | null = null;
-    let poll: RelayHandle | null = null;
+    let ws: WebSocket | null = null;
+    let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    let reconnectAttempt = 0;
     let stopped = false;
+
+    const clearTimers = () => {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = undefined;
+      }
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = undefined;
+      }
+    };
 
     const deliver = (payload: DiscordPresenceSlice) => {
       onPresenceRef.current(payload);
     };
 
-    const startPoll = () => {
-      if (stopped || poll) return;
-      poll = startPollFallback(userId, deliver);
+    const handleMessage = (raw: string) => {
+      let msg: LanyardWsMessage;
+      try {
+        msg = JSON.parse(raw);
+      } catch (error) {
+        console.warn("[useLanyardPresence] invalid JSON", error);
+        return;
+      }
+
+      if (msg.op === 1 && msg.d && typeof msg.d === "object") {
+        const interval = Number(
+          (msg.d as { heartbeat_interval?: number }).heartbeat_interval ?? 30_000,
+        );
+        if (heartbeatTimer) clearInterval(heartbeatTimer);
+        heartbeatTimer = setInterval(() => {
+          try {
+            ws?.send(JSON.stringify({ op: 3 }));
+          } catch (error) {
+            console.warn("[useLanyardPresence] heartbeat failed", error);
+          }
+        }, interval);
+
+        ws?.send(
+          JSON.stringify({
+            op: 2,
+            d: { subscribe_to_id: userId },
+          }),
+        );
+        return;
+      }
+
+      if (msg.op !== 0) return;
+
+      if (msg.t === "INIT_STATE") {
+        const presence = parsePresenceFromInitState(msg.d, userId);
+        if (presence) deliver(presence);
+        return;
+      }
+
+      if (msg.t === "PRESENCE_UPDATE") {
+        const presence = parsePresenceFromUpdate(msg.d, userId);
+        if (presence) deliver(presence);
+      }
     };
 
-    const startSse = () => {
+    const scheduleReconnect = () => {
       if (stopped) return;
-      active?.close();
-      active = startSseRelay(userId, deliver, startPoll);
+      clearTimers();
+      const delay = Math.min(MAX_RECONNECT_MS, 1000 * 2 ** reconnectAttempt);
+      reconnectAttempt += 1;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = undefined;
+        connect();
+      }, delay);
     };
 
-    active = startWsRelay(userId, deliver, startSse);
+    const connect = () => {
+      if (stopped) return;
+      try {
+        ws = new WebSocket(LANYARD_WS_URL);
+      } catch (error) {
+        console.warn("[useLanyardPresence] WebSocket open failed", error);
+        void fetchLanyardPresenceRest(userId).then((p) => {
+          if (p) deliver(p);
+        });
+        scheduleReconnect();
+        return;
+      }
+
+      ws.onmessage = (event) => handleMessage(String(event.data));
+
+      ws.onopen = () => {
+        reconnectAttempt = 0;
+      };
+
+      ws.onerror = () => {
+        console.warn("[useLanyardPresence] WebSocket error");
+      };
+
+      ws.onclose = () => {
+        console.warn("[useLanyardPresence] WebSocket closed, reconnecting");
+        scheduleReconnect();
+      };
+    };
+
+    connect();
 
     return () => {
       stopped = true;
-      active?.close();
-      poll?.close();
+      clearTimers();
+      try {
+        ws?.close();
+      } catch {
+        // ignore
+      }
+      ws = null;
     };
   }, [userId]);
 }

@@ -37,6 +37,7 @@ export function buildContentSecurityPolicy(nonce: string): string {
       "https://*.supabase.co",
       "wss://*.supabase.co",
       "https://api.lanyard.rest",
+      "wss://api.lanyard.rest",
       "https://discord.com",
       "https://dcdn.dstn.to",
       "https://www.habbo.com",
