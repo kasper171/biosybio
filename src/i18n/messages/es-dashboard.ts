@@ -68,6 +68,8 @@ export const esDashboard: MessageTree = {
     hidePanel: "Ocultar panel",
     viewLive: "Ver en vivo",
     saveTemplate: "Guardar plantilla",
+    save: "Guardar",
+    saving: "Guardando...",
   },
   toasts: {
     profileLoadFailed: "No se pudo cargar tu perfil. Recarga la página.",
@@ -240,8 +242,9 @@ export const esDashboard: MessageTree = {
     colorHint: "Cambia solo la etiqueta seleccionada.",
     selectActiveHint: "Activa una etiqueta abajo para personalizar el color.",
     choose: "Elegir etiquetas",
+    removeLabel: "Quitar {{label}}",
     chooseHint:
-      "Haz clic para mostrar en tu perfil. Haz clic otra vez en la seleccionada para quitar. La seleccionada brilla más.",
+      "Haz clic para mostrar en tu perfil. Usa la X para quitar. La seleccionada brilla más.",
   },
   conexoes: {
     discord: {

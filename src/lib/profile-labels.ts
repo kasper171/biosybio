@@ -1,4 +1,5 @@
 import { hexToRgba } from "@/lib/profile-colors";
+import type { Profile } from "@/lib/profile-storage";
 
 export type ProfileLabelId =
   | "gamer"
@@ -123,6 +124,84 @@ export function getEnabledProfileLabels(state: ProfileLabelsState): ProfileLabel
   return state.enabled
     .map((id) => getProfileLabelDef(id))
     .filter((def): def is ProfileLabelDef => Boolean(def));
+}
+
+/** Espelha ProfileLabelsRow: mt-2, gap-1.5, pill ~22px de altura. */
+const LABEL_ROW_HEIGHT = 22;
+const LABEL_ROW_GAP = 6;
+const LABEL_BLOCK_MARGIN_TOP = 8;
+const LABEL_CHAR_WIDTH = 6.5;
+
+/** Comprimentos aproximados (pt/en) para quebra de linha no card. */
+const LABEL_TEXT_LENGTH: Record<ProfileLabelId, number> = {
+  gamer: 5,
+  developer: 9,
+  cybersecurity: 14,
+  fofo: 4,
+  estressado: 10,
+  artist: 7,
+  musician: 7,
+  streamer: 8,
+  student: 9,
+  entrepreneur: 13,
+  fitness: 7,
+  photographer: 10,
+  writer: 8,
+  designer: 8,
+  foodie: 6,
+  traveler: 8,
+  night_owl: 7,
+  coffee: 5,
+  anime: 5,
+  movies: 6,
+  sports: 8,
+  tech: 4,
+  creative: 8,
+  chill: 6,
+  introvert: 12,
+  extrovert: 11,
+  pet_lover: 9,
+  plants: 7,
+  crypto: 6,
+  vtuber: 6,
+  cosplayer: 9,
+  reader: 6,
+};
+
+function estimateLabelChipWidth(def: ProfileLabelDef, showEmoji: boolean): number {
+  const textLen = LABEL_TEXT_LENGTH[def.id] ?? def.id.length + 4;
+  return Math.ceil(20 + (showEmoji ? 18 : 0) + textLen * LABEL_CHAR_WIDTH);
+}
+
+/** Altura estimada da faixa de etiquetas (entre bio e redes sociais). */
+export function estimateProfileLabelsHeight(
+  profile: Pick<Profile, "profile_labels" | "card_width">,
+  contentWidth?: number,
+): number {
+  const state = normalizeProfileLabels(profile.profile_labels);
+  const labels = getEnabledProfileLabels(state);
+  if (!labels.length) return 0;
+
+  const width = contentWidth ?? Math.max(120, (Number(profile.card_width) || 600) - 48);
+  let rows = 1;
+  let rowUsed = 0;
+
+  for (const def of labels) {
+    const chipW = Math.min(estimateLabelChipWidth(def, state.show_emoji), width);
+    const gap = rowUsed > 0 ? LABEL_ROW_GAP : 0;
+    if (rowUsed > 0 && rowUsed + gap + chipW > width) {
+      rows += 1;
+      rowUsed = chipW;
+    } else {
+      rowUsed += gap + chipW;
+    }
+  }
+
+  return (
+    LABEL_BLOCK_MARGIN_TOP +
+    rows * LABEL_ROW_HEIGHT +
+    Math.max(0, rows - 1) * LABEL_ROW_GAP
+  );
 }
 
 export function profileLabelChipStyle(color: string, selected = false) {

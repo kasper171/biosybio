@@ -41,7 +41,8 @@ export function isRoleBadgeSvg(iconFileOrUrl: string): boolean {
  * Badges de cargo usam o mesmo slot — sem sincronizar configurações do Discord.
  */
 export const DISCORD_BADGE_REFERENCE_PX = 19;
-export const ROLE_BADGE_DISPLAY_PX = DISCORD_BADGE_REFERENCE_PX;
+/** +10% sobre a referência Discord (~21px no perfil). */
+export const ROLE_BADGE_DISPLAY_PX = Math.round(DISCORD_BADGE_REFERENCE_PX * 1.1);
 /** Render interno 2× e reduz no CSS — downscale mais nítido que exibir direto em ~19px */
 export const ROLE_BADGE_SUPERSAMPLE = 2;
 /** Compensa padding transparente nos assets para badges ficarem próximas com gap 0 */

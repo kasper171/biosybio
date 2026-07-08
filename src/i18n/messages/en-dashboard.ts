@@ -69,6 +69,8 @@ export const enDashboard: MessageTree = {
     hidePanel: "Hide panel",
     viewLive: "View live",
     saveTemplate: "Save template",
+    save: "Save",
+    saving: "Saving...",
   },
   toasts: {
     profileLoadFailed: "Could not load your profile. Reload the page.",
@@ -241,8 +243,9 @@ export const enDashboard: MessageTree = {
     colorHint: "Changes only the currently selected label.",
     selectActiveHint: "Enable a label below to customize its color.",
     choose: "Choose labels",
+    removeLabel: "Remove {{label}}",
     chooseHint:
-      "Click to show on your profile. Click the selected one again to remove. The selected label glows brighter.",
+      "Click to show on your profile. Use the X to remove. The selected label glows brighter.",
   },
   conexoes: {
     discord: {

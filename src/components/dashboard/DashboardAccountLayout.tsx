@@ -207,7 +207,7 @@ export function DashboardAccountLayout({
           </p>
           <div className="mb-6 space-y-0.5">
             {contaLinks.map((item) => (
-              <SidebarLink key={item.id} item={item} />
+              <SidebarLink key={item.id} item={item} compact={overlay} />
             ))}
           </div>
 
@@ -219,6 +219,7 @@ export function DashboardAccountLayout({
               personalizePanels.map((panel) => (
                 <SidebarLink
                   key={panel.key}
+                  compact={overlay}
                   item={{
                     id: panel.key,
                     label: panel.label,
@@ -231,6 +232,7 @@ export function DashboardAccountLayout({
               ))
             ) : (
               <SidebarLink
+                compact={overlay}
                 item={{
                   id: "personalizar",
                   label: "Open editor",
@@ -245,28 +247,32 @@ export function DashboardAccountLayout({
         </nav>
 
         <div className="border-t border-white/[0.06] p-3">
-          <div className="mb-3 px-1">
-            <LanguageSwitcher fullWidth />
-          </div>
-          <div className="mb-2 space-y-0.5">
-            <Link
-              to="/$username"
-              params={{ username: profile.username }}
-              target="_blank"
-              className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
-            >
-              <ExternalLink className="dash-icon-md" />
-              My page
-            </Link>
-            <button
-              type="button"
-              onClick={handleShare}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
-            >
-              <Share2 className="dash-icon-md" />
-              Share link
-            </button>
-          </div>
+          {!overlay && (
+            <>
+              <div className="mb-3 px-1">
+                <LanguageSwitcher fullWidth />
+              </div>
+              <div className="mb-2 space-y-0.5">
+                <Link
+                  to="/$username"
+                  params={{ username: profile.username }}
+                  target="_blank"
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
+                >
+                  <ExternalLink className="dash-icon-md" />
+                  {t("dashboard.layout.myPage")}
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
+                >
+                  <Share2 className="dash-icon-md" />
+                  {t("dashboard.layout.shareLink")}
+                </button>
+              </div>
+            </>
+          )}
 
           <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3 py-3">
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white/10">
@@ -309,10 +315,12 @@ export function DashboardAccountLayout({
   );
 }
 
-function SidebarLink({ item }: { item: NavLink }) {
+function SidebarLink({ item, compact = false }: { item: NavLink; compact?: boolean }) {
   const Icon = item.icon;
 
-  const className = `relative flex items-center gap-2.5 rounded-lg px-3 py-2 dash-t-body transition ${
+  const className = `relative flex items-center gap-2.5 rounded-lg px-3 dash-t-body transition ${
+    compact ? "py-1.5" : "py-2"
+  } ${
     item.active
       ? "bg-white/[0.05] font-medium text-white before:absolute before:inset-y-2 before:left-0 before:w-[2px] before:rounded-full before:bg-white/50"
       : "text-white/50 hover:bg-white/[0.03] hover:text-white/85"

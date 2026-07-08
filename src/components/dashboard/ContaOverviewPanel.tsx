@@ -32,6 +32,7 @@ import {
 } from "@/lib/profile-completion";
 import { fetchViewsLast7Days, type DailyViewStat } from "@/lib/profile-stats";
 import { DashboardAccountLayout } from "./DashboardAccountLayout";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   profile: Profile;
@@ -46,6 +47,7 @@ function formatViews(count: number): string {
 }
 
 export function ContaOverviewPanel({ profile }: Props) {
+  const { t } = useI18n();
   const [dailyViews, setDailyViews] = useState<DailyViewStat[]>([]);
   const [viewsLast7, setViewsLast7] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -190,7 +192,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                 target="_blank"
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 dash-t-body font-semibold text-[#0b0b0f] transition hover:bg-white/90"
               >
-                View live
+                {t("dashboard.layout.myPage")}
                 <ArrowUpRight className="dash-icon-sm" />
               </Link>
               <Link

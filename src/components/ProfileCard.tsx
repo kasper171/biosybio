@@ -14,6 +14,7 @@ import {
   getTitleBaseStyle,
   hexToRgba,
 } from "@/lib/profile-colors";
+import { estimateMinCardHeight } from "@/lib/card-min-height";
 import {
   DEFAULT_CARD_HEIGHT,
   DEFAULT_CARD_LAYOUT,
@@ -293,7 +294,6 @@ function ProfileNameAndRoleBadges({
           titleMargin,
         )}
       >
-        <span className="inline-flex shrink-0 items-center">{roleBadges}</span>
         <h3
           className={cn(
             "min-w-0 shrink truncate font-bold leading-tight",
@@ -304,6 +304,7 @@ function ProfileNameAndRoleBadges({
         >
           {nameBlock}
         </h3>
+        <span className="inline-flex shrink-0 items-center">{roleBadges}</span>
       </div>
     );
   }
@@ -779,7 +780,9 @@ export function ProfileCard({
   const borderWidth = profile.card_border_width ?? 0;
   const borderColor = profile.card_border_color;
   const radius = profile.card_border_radius ?? 16;
-  const cardH = Number(profile.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT;
+  const cardHSaved = Number(profile.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT;
+  const cardHMin = estimateMinCardHeight(profile);
+  const cardH = enforceCardHeight ? Math.max(cardHSaved, cardHMin) : cardHSaved;
 
   const borderChrome = buildCardBorderChrome({
     borderWidth,

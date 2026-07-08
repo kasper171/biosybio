@@ -2,6 +2,7 @@ import { AVATAR_FRAME_SCALE } from "@/lib/avatar-frames";
 import { getBlockFrameHeight } from "@/lib/block-frame";
 import { getHotelCardFrameStyle, getHotelCardLayoutFromProfile } from "@/lib/hotel/hotel-card-layout";
 import { listHotelConnections } from "@/lib/hotel/profile-hotel";
+import { estimateProfileLabelsHeight } from "@/lib/profile-labels";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 import { DEFAULT_CARD_HEIGHT, type Profile } from "@/lib/profile-storage";
 import { getRoleBadgeSizePx } from "@/lib/profile-roles";
@@ -139,6 +140,7 @@ function estimateAlignedBody(profile: Profile, opts?: { blocks?: ProfileBlock[] 
   if (showBadges) textCol += badgeRowH;
   if (showUsername) textCol += 18;
   textCol += (bio ? 8 : 0) + bioLines * 16;
+  textCol += estimateProfileLabelsHeight(profile, textWidth);
 
   const avatarStack = avatarVisualH;
   const socialH = estimateAlignedSocialHeight(profile, cardWidth);
@@ -165,6 +167,7 @@ function estimateCenteredBody(profile: Profile, opts?: { blocks?: ProfileBlock[]
   if (showBadges) body += badgeRowH;
   if (showUsername) body += 18;
   body += (bio ? 8 : 0) + bioLines * 18;
+  body += estimateProfileLabelsHeight(profile, cardWidth - 48);
   body += estimateSocialRowsHeight(profile, cardWidth);
   body += 16;
   body += estimateInsideBlocksHeight(opts?.blocks, "centered");
@@ -200,6 +203,7 @@ function estimateDefaultBody(profile: Profile, opts?: { blocks?: ProfileBlock[] 
   if (showBadges) body += badgeRowH;
   if (showUsername) body += 18;
   body += (bio ? 8 : 0) + bioLines * 18;
+  body += estimateProfileLabelsHeight(profile, cardWidth - 48);
   body += estimateSocialRowsHeight(profile, cardWidth);
   body += 16;
   body += estimateInsideBlocksHeight(opts?.blocks, "default");

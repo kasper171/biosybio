@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { X } from "lucide-react";
 import type { Profile } from "@/lib/profile-storage";
 import {
   getProfileLabelColor,
@@ -59,14 +59,6 @@ export function EtiquetasPanel({ profile, update }: Props) {
   const handleLabelClick = (id: ProfileLabelId) => {
     const isEnabled = labelsState.enabled.includes(id);
     if (isEnabled) {
-      if (selectedId === id) {
-        setLabelsState({
-          ...labelsState,
-          enabled: labelsState.enabled.filter((x) => x !== id),
-        });
-        setSelectedId((prev) => (prev === id ? labelsState.enabled.find((x) => x !== id) ?? null : prev));
-        return;
-      }
       setSelectedId(id);
       return;
     }
@@ -75,6 +67,18 @@ export function EtiquetasPanel({ profile, update }: Props) {
       enabled: [...labelsState.enabled, id],
     });
     setSelectedId(id);
+  };
+
+  const handleRemoveLabel = (id: ProfileLabelId) => {
+    const nextEnabled = labelsState.enabled.filter((x) => x !== id);
+    setLabelsState({
+      ...labelsState,
+      enabled: nextEnabled,
+    });
+    setSelectedId((prev) => {
+      if (prev !== id) return prev;
+      return nextEnabled[0] ?? null;
+    });
   };
 
   const selectedColor = selectedId
@@ -151,43 +155,50 @@ export function EtiquetasPanel({ profile, update }: Props) {
             const color = getProfileLabelColor(def.id, labelsState);
             const labelText = t(`labels.items.${def.id}`);
             return (
-              <button
-                key={def.id}
-                type="button"
-                onClick={() => handleLabelClick(def.id)}
-                title={labelText}
-                className={cn(
-                  "relative rounded-xl border px-2 py-2.5 text-left transition",
-                  isEnabled ? "opacity-100" : "opacity-40 hover:opacity-65",
-                  isSelected
-                    ? "border-pink-400/70 ring-2 ring-pink-400/35"
-                    : isEnabled
-                      ? "border-white/20 bg-white/[0.04] hover:bg-white/[0.07]"
-                      : "border-white/[0.06] bg-white/[0.02] hover:border-white/15",
-                )}
-                style={
-                  isEnabled
-                    ? {
-                        boxShadow: isSelected
-                          ? `0 0 16px ${color}55, inset 0 0 12px ${color}18`
-                          : `0 0 8px ${color}30`,
-                      }
-                    : undefined
-                }
-              >
-                <span
-                  className="mb-1 block text-[11px] font-semibold leading-tight"
-                  style={{ color: isEnabled ? color : "rgba(255,255,255,0.55)" }}
+              <div key={def.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => handleLabelClick(def.id)}
+                  title={labelText}
+                  className={cn(
+                    "w-full rounded-xl border px-2 py-2.5 text-left transition",
+                    isEnabled ? "opacity-100" : "opacity-40 hover:opacity-65",
+                    isSelected
+                      ? "border-pink-400/70 ring-2 ring-pink-400/35"
+                      : isEnabled
+                        ? "border-white/20 bg-white/[0.04] hover:bg-white/[0.07]"
+                        : "border-white/[0.06] bg-white/[0.02] hover:border-white/15",
+                  )}
+                  style={
+                    isEnabled
+                      ? {
+                          boxShadow: isSelected
+                            ? `0 0 16px ${color}55, inset 0 0 12px ${color}18`
+                            : `0 0 8px ${color}30`,
+                        }
+                      : undefined
+                  }
                 >
-                  {labelsState.show_emoji ? `${def.emoji} ` : ""}
-                  {labelText}
-                </span>
-                {isEnabled && (
-                  <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-green-500 text-white">
-                    <Check className="h-2.5 w-2.5" />
+                  <span
+                    className="block text-[11px] font-semibold leading-tight"
+                    style={{ color: isEnabled ? color : "rgba(255,255,255,0.55)" }}
+                  >
+                    {labelsState.show_emoji ? `${def.emoji} ` : ""}
+                    {labelText}
                   </span>
+                </button>
+                {isEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveLabel(def.id)}
+                    title={t("dashboard.etiquetas.removeLabel", { label: labelText })}
+                    aria-label={t("dashboard.etiquetas.removeLabel", { label: labelText })}
+                    className="absolute -right-1 -top-1 z-10 grid h-5 w-5 place-items-center rounded-full border border-white/15 bg-black/85 text-white/80 shadow-md transition hover:border-red-400/60 hover:bg-red-500/90 hover:text-white"
+                  >
+                    <X className="h-3 w-3" strokeWidth={2.5} />
+                  </button>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>

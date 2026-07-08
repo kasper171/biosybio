@@ -68,6 +68,8 @@ export const ptDashboard: MessageTree = {
     hidePanel: "Ocultar painel",
     viewLive: "Ver ao vivo",
     saveTemplate: "Salvar template",
+    save: "Salvar",
+    saving: "Salvando...",
   },
   toasts: {
     profileLoadFailed: "Não foi possível carregar seu perfil. Recarregue a página.",
@@ -240,8 +242,9 @@ export const ptDashboard: MessageTree = {
     colorHint: "Altera só a etiqueta selecionada no momento.",
     selectActiveHint: "Ative uma etiqueta abaixo para personalizar a cor.",
     choose: "Escolher etiquetas",
+    removeLabel: "Remover {{label}}",
     chooseHint:
-      "Clique para ativar no perfil. Clique de novo na selecionada para remover. A selecionada brilha mais.",
+      "Clique para ativar no perfil. Use o X para remover. A selecionada brilha mais.",
   },
   conexoes: {
     discord: {

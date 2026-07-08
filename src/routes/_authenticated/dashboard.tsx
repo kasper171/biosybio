@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   Save, Eye, User, Image as ImageIcon, Palette, Link2, Upload,
   X, Check, Trash2, Play, Pause, MessageSquare,
-  PanelLeftClose, ChevronRight, LayoutTemplate,
+  PanelLeftClose, ChevronRight, LayoutTemplate, Share2,
 } from "lucide-react";
 import {
   DEFAULT_CARD_HEIGHT,
@@ -62,7 +62,8 @@ import { SOCIALS, SOCIAL_MAP, normalizeHandle } from "@/lib/socials";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
 import { cn } from "@/lib/utils";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, profilePublicUrl } from "@/lib/site";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { canUseAvatarFrame } from "@/lib/avatar-frames";
 import { attachProfileRoles } from "@/lib/profile-roles";
 import {
@@ -338,6 +339,16 @@ function Dashboard() {
     toast.success(
       kind === "music" ? "Music removed" : kind === "music_art" ? "Cover removed" : "Image removed",
     );
+  };
+
+  const handleShareLink = async () => {
+    if (!profile) return;
+    try {
+      await navigator.clipboard.writeText(profilePublicUrl(profile.username));
+      toast.success(t("dashboard.toasts.linkCopied"));
+    } catch {
+      toast.error(t("dashboard.toasts.linkCopyFailed"));
+    }
   };
 
   const handleSave = async () => {
@@ -633,22 +644,15 @@ function Dashboard() {
             : "calc(var(--dash-sidebar-w) + 1rem)",
         }}
       >
-        <div className="pointer-events-auto flex items-center gap-2">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+          <LanguageSwitcher compact className="biosy-dashboard-shell border-white/[0.06] bg-transparent" />
           <button
             type="button"
-            onClick={() => setToolsPanelOpen(!toolsOpen)}
-            className="biosy-dashboard-shell flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-2 text-xs font-medium text-white/70 transition hover:bg-white/[0.04] hover:text-white"
-            title={toolsOpen ? t("dashboard.editor.minimizeTools") : t("dashboard.editor.openTools")}
-            aria-label={toolsOpen ? t("dashboard.editor.minimizeTools") : t("dashboard.editor.openTools")}
+            onClick={() => void handleShareLink()}
+            className="biosy-dashboard-shell flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-2 text-xs font-medium text-white/80 transition hover:bg-white/[0.04]"
           >
-            {toolsOpen ? (
-              <>
-                <PanelLeftClose className="h-3.5 w-3.5" />
-                <span>{t("dashboard.editor.hidePanel")}</span>
-              </>
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
+            <Share2 className="h-3.5 w-3.5" />
+            {t("dashboard.layout.shareLink")}
           </button>
           <Link
             to="/$username"
@@ -657,7 +661,7 @@ function Dashboard() {
             className="biosy-dashboard-shell flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-2 text-xs font-medium text-white/80 transition hover:bg-white/[0.04]"
           >
             <Eye className="h-3.5 w-3.5" />
-            View live
+            {t("dashboard.layout.myPage")}
           </Link>
           <button
             type="button"
@@ -665,7 +669,7 @@ function Dashboard() {
             className="biosy-dashboard-shell flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-2 text-xs font-medium text-white/80 transition hover:bg-white/[0.04]"
           >
             <LayoutTemplate className="h-3.5 w-3.5" />
-            Save template
+            {t("dashboard.editor.saveTemplate")}
           </button>
           <button
             type="button"
@@ -674,7 +678,7 @@ function Dashboard() {
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.08] px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/[0.12] disabled:opacity-50"
           >
             <Save className="h-3.5 w-3.5" />
-            {saving ? "Saving..." : "Save"}
+            {saving ? t("dashboard.editor.saving") : t("dashboard.editor.save")}
           </button>
         </div>
       </motion.div>
@@ -1359,7 +1363,7 @@ function AparenciaPanel({
         display={`${cardHeight}px`}
       />
       <p className="text-[11px] leading-relaxed text-white/40">
-        Minimum height: {minCardHeight}px — calculated from card content (bio, socials, Discord, hotel, inner blocks).
+        Minimum height: {minCardHeight}px — calculated from card content (bio, labels, socials, Discord, hotel, inner blocks).
       </p>
 
       <div className="border-t border-white/10 pt-4">
