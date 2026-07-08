@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Profile } from "@/lib/profile-storage";
 import { ensureProfileFontsLoaded } from "@/lib/profile-fonts";
 import { ProfilePageContent } from "@/components/ProfilePageContent";
@@ -90,8 +90,11 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
   const musicPlayerUi =
     showContent && hasMusic && !musicCardMode ? <ProfileMusicPlayerFloating /> : null;
 
+  const previewRootRef = useRef<HTMLDivElement>(null);
+
   return (
     <div
+      ref={previewRootRef}
       className="relative min-h-screen w-full"
       style={{ fontFamily: liveProfile.page_font_family }}
     >
@@ -119,7 +122,11 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
           zIndex={isEditor ? 20 : 50}
         />
       )}
-      <ProfileOverlayLayer profile={liveProfile} />
+      <ProfileOverlayLayer
+        profile={liveProfile}
+        isEditor={isEditor}
+        containerRef={previewRootRef}
+      />
     </div>
   );
 }

@@ -1,17 +1,40 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { createOverlayController } from "@/lib/overlays/overlay-registry";
 import type { ProfileOverlayType } from "@/lib/overlays/types";
 import type { OverlayController } from "@/lib/overlays/types";
 
 const HOST_Z_INDEX = 9999;
 
+export type ProfileOverlayScope = "viewport" | "preview";
+
+type Options = {
+  /** preview = só o container do preview (studio). viewport = página pública inteira. */
+  scope?: ProfileOverlayScope;
+  containerRef?: RefObject<HTMLElement | null>;
+};
+
 /**
- * Monta overlay visual isolado em document.body (fora da árvore do perfil).
- * Cleanup garante remoção total — sem canvas fantasma.
+ * Monta overlay visual isolado (fora da árvore de conteúdo do perfil).
+ * No studio usa o container do preview; na página pública cobre o viewport.
  */
-export function useProfileOverlay(activeType: ProfileOverlayType | null, cssOpacity: number): void {
+export function useProfileOverlay(
+  activeType: ProfileOverlayType | null,
+  cssOpacity: number,
+  options?: Options,
+): void {
   const controllerRef = useRef<OverlayController | null>(null);
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const scope = options?.scope ?? "viewport";
+  const containerRef = options?.containerRef;
+  const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (scope !== "preview") {
+      setContainerEl(null);
+      return;
+    }
+    setContainerEl(containerRef?.current ?? null);
+  });
 
   useEffect(() => {
     controllerRef.current?.unmount();
@@ -20,18 +43,22 @@ export function useProfileOverlay(activeType: ProfileOverlayType | null, cssOpac
     hostRef.current = null;
 
     if (!activeType) return;
+    if (scope === "preview" && !containerEl) return;
 
     const host = document.createElement("div");
     host.dataset.biosyOverlay = activeType;
+    const isPreview = scope === "preview" && containerEl;
     Object.assign(host.style, {
-      position: "fixed",
+      position: isPreview ? "absolute" : "fixed",
       inset: "0",
-      width: "100vw",
-      height: "100vh",
+      width: isPreview ? "100%" : "100vw",
+      height: isPreview ? "100%" : "100vh",
       pointerEvents: "none",
       zIndex: String(HOST_Z_INDEX),
     });
-    document.body.appendChild(host);
+
+    const mountTarget = isPreview ? containerEl! : document.body;
+    mountTarget.appendChild(host);
     hostRef.current = host;
 
     const controller = createOverlayController(activeType);
@@ -45,7 +72,7 @@ export function useProfileOverlay(activeType: ProfileOverlayType | null, cssOpac
       controllerRef.current = null;
       hostRef.current = null;
     };
-  }, [activeType]);
+  }, [activeType, scope, containerEl]);
 
   useEffect(() => {
     controllerRef.current?.setOpacity(cssOpacity);
