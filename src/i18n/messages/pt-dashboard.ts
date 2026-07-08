@@ -363,15 +363,19 @@ export const ptDashboard: MessageTree = {
     },
   },
   overlays: {
-    noise: {
-      section: "Ruído animado",
-      description:
-        "Textura de estática sutil por cima de toda a página. Não altera cliques, scroll nem componentes do perfil.",
-      enable: "Ativar ruído animado",
-      opacity: "Intensidade",
-      opacityHint: "0% = quase imperceptível · 100% = efeito mais visível (máx. 15% de opacidade).",
+    section: "Overlays",
+    description:
+      "Camada visual por cima de toda a página. Não altera cliques, scroll nem componentes do perfil.",
+    selectType: "Escolher overlay",
+    selectHint: "Clique para ativar. Clique de novo no selecionado para desligar. Apenas um por vez.",
+    opacity: "Intensidade",
+    opacityHint: "0% = quase imperceptível · 100% = efeito mais visível (máx. 15% de opacidade).",
+    types: {
+      noiseDenso: "Noise denso",
+      noiseEsparso: "Noise esparso",
+      scanlines: "Scanlines",
+      filmGrain: "Film grain",
     },
-    futureHint: "Mais overlays (VHS, glitch, partículas) em breve nesta mesma aba.",
   },
   estatisticas: {
     title: "Estatísticas",

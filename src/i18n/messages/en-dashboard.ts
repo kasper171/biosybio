@@ -364,15 +364,19 @@ export const enDashboard: MessageTree = {
     },
   },
   overlays: {
-    noise: {
-      section: "Animated noise",
-      description:
-        "Subtle TV-static texture over the full page. Does not affect clicks, scroll, or profile components.",
-      enable: "Enable animated noise",
-      opacity: "Intensity",
-      opacityHint: "0% = barely visible · 100% = strongest effect (max 15% opacity).",
+    section: "Overlays",
+    description:
+      "Visual layer over the full page. Does not affect clicks, scroll, or profile components.",
+    selectType: "Choose overlay",
+    selectHint: "Click to enable. Click the selected one again to turn off. Only one at a time.",
+    opacity: "Intensity",
+    opacityHint: "0% = barely visible · 100% = strongest effect (max 15% opacity).",
+    types: {
+      noiseDenso: "Dense noise",
+      noiseEsparso: "Sparse noise",
+      scanlines: "Scanlines",
+      filmGrain: "Film grain",
     },
-    futureHint: "More overlays (VHS, glitch, particles) coming soon in this tab.",
   },
   estatisticas: {
     title: "Analytics",

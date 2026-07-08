@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type { Profile } from "@/lib/profile-storage";
 import { useProfileOverlay } from "@/hooks/useProfileOverlay";
 import {
-  overlayNoiseCssOpacity,
+  overlayCssOpacity,
   resolveActiveProfileOverlay,
 } from "@/lib/overlays/profile-overlays";
 
@@ -18,7 +18,7 @@ type Props = {
  */
 export function ProfileOverlayLayer({ profile, isEditor, containerRef }: Props) {
   const activeType = resolveActiveProfileOverlay(profile);
-  const cssOpacity = overlayNoiseCssOpacity(profile.overlay_noise_opacity);
+  const cssOpacity = overlayCssOpacity(profile.overlay_opacity);
 
   useProfileOverlay(activeType, cssOpacity, {
     scope: isEditor ? "preview" : "viewport",

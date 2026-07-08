@@ -1,29 +1,25 @@
 import type { OverlayController } from "@/lib/overlays/types";
 
-const FRAME_INTERVAL_MS = 80;
-const OVERLAY_DEFAULT_OPACITY = 0.08;
+const DEFAULT_OPACITY = 0.08;
+const MAX_DPR = 2;
 
-function drawNoise(ctx: CanvasRenderingContext2D, width: number, height: number): void {
-  const imageData = ctx.createImageData(width, height);
-  const buffer = imageData.data;
-  for (let i = 0; i < buffer.length; i += 4) {
-    const v = Math.random() * 255;
-    buffer[i] = v;
-    buffer[i + 1] = v;
-    buffer[i + 2] = v;
-    buffer[i + 3] = 255;
-  }
-  ctx.putImageData(imageData, 0, 0);
-}
-
-export class NoiseOverlayController implements OverlayController {
-  private canvas: HTMLCanvasElement | null = null;
-  private ctx: CanvasRenderingContext2D | null = null;
-  private container: HTMLElement | null = null;
+export abstract class BaseOverlayController implements OverlayController {
+  protected canvas: HTMLCanvasElement | null = null;
+  protected ctx: CanvasRenderingContext2D | null = null;
+  protected container: HTMLElement | null = null;
   private rafId: number | null = null;
   private lastFrameAt = 0;
-  private opacity = OVERLAY_DEFAULT_OPACITY;
+  private opacity = DEFAULT_OPACITY;
   private resizeObserver: ResizeObserver | null = null;
+
+  protected frameIntervalMs = 80;
+
+  protected abstract renderFrame(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    timestamp: number,
+  ): void;
 
   mount(container: HTMLElement): void {
     this.unmount();
@@ -72,6 +68,18 @@ export class NoiseOverlayController implements OverlayController {
     }
   }
 
+  protected getLogicalSize(): { width: number; height: number; dpr: number } {
+    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+    if (!this.canvas) {
+      return { width: 1, height: 1, dpr };
+    }
+    return {
+      width: Math.max(1, Math.floor(this.canvas.width / dpr)),
+      height: Math.max(1, Math.floor(this.canvas.height / dpr)),
+      dpr,
+    };
+  }
+
   private handleWindowResize = (): void => {
     this.syncCanvasSize();
   };
@@ -80,27 +88,22 @@ export class NoiseOverlayController implements OverlayController {
     if (!this.canvas || !this.ctx || !this.container) return;
     const width = Math.max(1, Math.floor(this.container.clientWidth || window.innerWidth));
     const height = Math.max(1, Math.floor(this.container.clientHeight || window.innerHeight));
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
     this.canvas.width = Math.floor(width * dpr);
     this.canvas.height = Math.floor(height * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawNoise(this.ctx, width, height);
+    this.renderFrame(this.ctx, width, height, performance.now());
   }
 
   private tick = (timestamp: number): void => {
     if (!this.ctx || !this.canvas) return;
 
-    if (timestamp - this.lastFrameAt >= FRAME_INTERVAL_MS) {
-      const width = Math.max(1, Math.floor(this.canvas.width / Math.min(window.devicePixelRatio || 1, 2)));
-      const height = Math.max(1, Math.floor(this.canvas.height / Math.min(window.devicePixelRatio || 1, 2)));
-      drawNoise(this.ctx, width, height);
+    if (timestamp - this.lastFrameAt >= this.frameIntervalMs) {
+      const { width, height } = this.getLogicalSize();
+      this.renderFrame(this.ctx, width, height, timestamp);
       this.lastFrameAt = timestamp;
     }
 
     this.rafId = window.requestAnimationFrame(this.tick);
   };
-}
-
-export function createNoiseOverlayController(): OverlayController {
-  return new NoiseOverlayController();
 }

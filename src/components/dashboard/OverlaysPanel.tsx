@@ -1,6 +1,10 @@
 import type { Profile } from "@/lib/profile-storage";
-import { BiosyToggle } from "@/components/ui/BiosyToggle";
-import { normalizeOverlayNoiseOpacity } from "@/lib/overlays/profile-overlays";
+import { OverlayTypePicker } from "@/components/dashboard/OverlayTypePicker";
+import {
+  normalizeOverlayOpacity,
+  normalizeProfileOverlayType,
+  type ProfileOverlayType,
+} from "@/lib/overlays/profile-overlays";
 import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
@@ -10,56 +14,62 @@ type Props = {
 
 export function OverlaysPanel({ profile, update }: Props) {
   const { t } = useI18n();
-  const enabled = profile.overlay_noise_enabled === true;
-  const opacity = normalizeOverlayNoiseOpacity(profile.overlay_noise_opacity);
+  const activeType = normalizeProfileOverlayType(profile);
+  const opacity = normalizeOverlayOpacity(profile.overlay_opacity);
+
+  const labels: Record<ProfileOverlayType, string> = {
+    "noise-denso": t("dashboard.overlays.types.noiseDenso"),
+    "noise-esparso": t("dashboard.overlays.types.noiseEsparso"),
+    scanlines: t("dashboard.overlays.types.scanlines"),
+    "film-grain": t("dashboard.overlays.types.filmGrain"),
+  };
+
+  const handleSelect = (type: ProfileOverlayType | null) => {
+    update("overlay_type", type);
+  };
 
   return (
     <div className="space-y-5">
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-white/45">
-          {t("dashboard.overlays.noise.section")}
+          {t("dashboard.overlays.section")}
         </p>
         <p className="mb-4 text-[11px] leading-relaxed text-white/40">
-          {t("dashboard.overlays.noise.description")}
+          {t("dashboard.overlays.description")}
         </p>
 
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-sm text-white/80">{t("dashboard.overlays.noise.enable")}</span>
-          <BiosyToggle
-            checked={enabled}
-            onChange={(v) => update("overlay_noise_enabled", v)}
-            aria-label={t("dashboard.overlays.noise.enable")}
-          />
-        </div>
+        <p className="mb-2 text-xs font-medium text-white/55">
+          {t("dashboard.overlays.selectType")}
+        </p>
+        <OverlayTypePicker activeType={activeType} onSelect={handleSelect} labels={labels} />
+        <p className="mt-2 text-[11px] leading-relaxed text-white/40">
+          {t("dashboard.overlays.selectHint")}
+        </p>
 
-        {enabled && (
-          <div className="mt-4 space-y-2">
+        {activeType && (
+          <div className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
             <div className="flex items-center justify-between gap-3">
-              <label htmlFor="overlay-noise-opacity" className="text-xs font-medium text-white/55">
-                {t("dashboard.overlays.noise.opacity")}
+              <label htmlFor="overlay-opacity" className="text-xs font-medium text-white/55">
+                {t("dashboard.overlays.opacity")}
               </label>
               <span className="text-xs tabular-nums text-white/45">{opacity}%</span>
             </div>
             <input
-              id="overlay-noise-opacity"
+              id="overlay-opacity"
               type="range"
               min={0}
               max={100}
               step={1}
               value={opacity}
-              onChange={(e) => update("overlay_noise_opacity", Number(e.target.value))}
+              onChange={(e) => update("overlay_opacity", Number(e.target.value))}
               className="w-full accent-pink-500"
             />
             <p className="text-[11px] leading-relaxed text-white/40">
-              {t("dashboard.overlays.noise.opacityHint")}
+              {t("dashboard.overlays.opacityHint")}
             </p>
           </div>
         )}
       </div>
-
-      <p className="text-[11px] leading-relaxed text-white/35">
-        {t("dashboard.overlays.futureHint")}
-      </p>
     </div>
   );
 }

@@ -363,15 +363,19 @@ export const esDashboard: MessageTree = {
     },
   },
   overlays: {
-    noise: {
-      section: "Ruido animado",
-      description:
-        "Textura de estática sutil sobre toda la página. No afecta clics, scroll ni componentes del perfil.",
-      enable: "Activar ruido animado",
-      opacity: "Intensidad",
-      opacityHint: "0% = casi imperceptible · 100% = efecto más visible (máx. 15% de opacidad).",
+    section: "Overlays",
+    description:
+      "Capa visual sobre toda la página. No afecta clics, scroll ni componentes del perfil.",
+    selectType: "Elegir overlay",
+    selectHint: "Clic para activar. Clic de nuevo en el seleccionado para apagar. Solo uno a la vez.",
+    opacity: "Intensidad",
+    opacityHint: "0% = casi imperceptible · 100% = efecto más visible (máx. 15% de opacidad).",
+    types: {
+      noiseDenso: "Ruido denso",
+      noiseEsparso: "Ruido esparso",
+      scanlines: "Scanlines",
+      filmGrain: "Film grain",
     },
-    futureHint: "Más overlays (VHS, glitch, partículas) próximamente en esta pestaña.",
   },
   estatisticas: {
     title: "Estadísticas",
