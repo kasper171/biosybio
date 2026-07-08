@@ -1,5 +1,4 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import type { Profile } from "@/lib/profile-storage";
 import {
@@ -15,6 +14,7 @@ import {
 import { normalizeProfile } from "@/lib/normalize-profile";
 import { attachProfileRoles } from "@/lib/profile-roles";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
+import { fetchPublicProfileByUsernameFn } from "@/lib/profile/profile-public.functions";
 import { buildProfileShareMeta, resolveShareEmbedTitle } from "@/lib/share-embed";
 import { SITE_TITLE } from "@/lib/site";
 
@@ -79,13 +79,11 @@ function PublicProfile() {
     let cancelled = false;
 
     (async () => {
-      const { data, error } = await supabase
-        .from("profiles_public")
-        .select("*")
-        .eq("username", username)
-        .maybeSingle();
+      const data = await fetchPublicProfileByUsernameFn({
+        data: { username },
+      });
       if (cancelled) return;
-      if (error || !data) {
+      if (!data) {
         setNotfound(true);
         setLoading(false);
         return;
