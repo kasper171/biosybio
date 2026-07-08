@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { SITE_NAME } from "@/lib/site";
 
 /** Base exibida na home — somada às visualizações reais de todos os perfis */
 export const PLATFORM_VIEWS_BASE = 7_234;
@@ -27,36 +26,6 @@ export function formatCreatorViews(count: number): string {
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
   return formatPlatformMetric(count);
-}
-
-export type CreatorAvatar = {
-  avatar_url: string;
-  username: string;
-  display_name: string;
-};
-
-export async function fetchCreatorAvatars(limit = 5): Promise<CreatorAvatar[]> {
-  const { data, error } = await supabase
-    .from("profiles_public")
-    .select("username, display_name, avatar_url")
-    .not("avatar_url", "is", null)
-    .neq("avatar_url", "")
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error("[fetchCreatorAvatars]", error.message);
-    return [];
-  }
-
-  return (data ?? []) as CreatorAvatar[];
-}
-
-export function formatHeroCreatorLabel(count: number): string {
-  if (count <= 0) return `Be the first creator on ${SITE_NAME}`;
-  if (count >= 300) return `${count}+ creators already use ${SITE_NAME}`;
-  if (count === 1) return `1 creator already uses ${SITE_NAME}`;
-  return `${count} creators already use ${SITE_NAME}`;
 }
 
 export async function fetchPlatformStats(): Promise<PlatformStats> {

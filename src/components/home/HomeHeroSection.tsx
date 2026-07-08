@@ -5,7 +5,6 @@ import { MotionConfig } from "motion/react";
 import { toast } from "sonner";
 import { HomeHeroEntrance } from "@/components/home/HomeHeroEntrance";
 import { HomeHeroVisual } from "@/components/home/HomeHeroVisual";
-import { HomeSocialProof } from "@/components/home/HomeSocialProof";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
@@ -168,10 +167,6 @@ export function HomeHeroSection() {
                 )}
               </HomeHeroEntrance>
             ) : null}
-
-            <HomeHeroEntrance delay={720} duration={1000} variant="up" className="block">
-              <HomeSocialProof />
-            </HomeHeroEntrance>
           </div>
         </MotionConfig>
 

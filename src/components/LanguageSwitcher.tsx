@@ -1,7 +1,9 @@
 import { Check, ChevronDown } from "lucide-react";
+import { useEffect } from "react";
 import { LOCALES, type Locale } from "@/i18n/types";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
+import { preloadAllLocaleFlags } from "@/lib/locale-flag-assets";
 import { LocaleFlag } from "@/components/locale/LocaleFlag";
 import {
   DropdownMenu,
@@ -24,6 +26,10 @@ type Props = {
 export function LanguageSwitcher({ className, compact = false, fullWidth = false }: Props) {
   const { locale, setLocale, t } = useI18n();
   const current = LOCALES.find((item) => item.id === locale) ?? LOCALES[0];
+
+  useEffect(() => {
+    preloadAllLocaleFlags();
+  }, []);
 
   return (
     <DropdownMenu>
@@ -59,9 +65,10 @@ export function LanguageSwitcher({ className, compact = false, fullWidth = false
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
+        forceMount
         align={fullWidth ? "start" : "end"}
         sideOffset={8}
-        className="z-[120] min-w-[13.5rem] border border-white/10 bg-[#12121a]/95 p-1.5 text-white shadow-2xl shadow-black/40 backdrop-blur-xl"
+        className="z-[120] min-w-[13.5rem] border border-white/10 bg-[#12121a]/95 p-1.5 text-white shadow-2xl shadow-black/40 backdrop-blur-xl data-[state=closed]:hidden"
       >
         <DropdownMenuLabel className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
           {t("common.language")}

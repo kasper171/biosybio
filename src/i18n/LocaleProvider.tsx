@@ -3,6 +3,7 @@ import { getInitialLocale, writeStoredLocale } from "@/i18n/locale-storage";
 import { interpolate, resolveMessage } from "@/i18n/resolve";
 import { messages } from "@/i18n/messages";
 import type { Locale, TranslateParams } from "@/i18n/types";
+import { preloadAllLocaleFlags } from "@/lib/locale-flag-assets";
 
 type I18nContextValue = {
   locale: Locale;
@@ -24,6 +25,10 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     const lang = locale === "pt" ? "pt-BR" : locale === "es" ? "es" : "en";
     document.documentElement.lang = lang;
   }, [locale]);
+
+  useEffect(() => {
+    preloadAllLocaleFlags();
+  }, []);
 
   const t = useCallback(
     (key: string, params?: TranslateParams) => {
