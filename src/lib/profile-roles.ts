@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/profile-storage";
-import { buildLogoGlowFilter } from "@/lib/logo-glow-filter";
+import { buildSubtleGlowFilter } from "@/lib/logo-glow-filter";
 import badgeManifest from "@/generated/badges.manifest.json";
 
 export type ProfileRoleId = "staff" | "staff_dev" | "premium" | "donator" | "gifter";
@@ -71,7 +71,7 @@ export function buildRoleBadgeImageFilter(
   const parts: string[] = [];
   if (options.monochromeFilter) parts.push(options.monochromeFilter);
   if (options.bloom && options.bloomColor) {
-    parts.push(buildLogoGlowFilter(options.bloomColor, size));
+    parts.push(buildSubtleGlowFilter(options.bloomColor, size));
   }
   return parts.length > 0 ? parts.join(" ") : undefined;
 }
