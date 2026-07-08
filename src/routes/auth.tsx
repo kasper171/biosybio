@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice } from "@/lib/auth-errors";
@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 import { Check, X } from "lucide-react";
+import { AuthPageShell } from "@/components/auth/AuthPageShell";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -96,6 +97,11 @@ function AuthPage() {
     } else {
       toast.success(notice.title, notice.description ? { description: notice.description } : undefined);
     }
+  };
+
+  const switchMode = (next: "signin" | "signup") => {
+    setFormNotice(null);
+    setMode(next);
   };
 
   const handleEmail = async (e: React.FormEvent) => {
@@ -186,141 +192,131 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <Link to="/" className="text-2xl font-bold">
-            {SITE_NAME}
-          </Link>
-          <h1 className="mt-6 text-2xl font-bold">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
-          </h1>
-          <p className="mt-1 text-sm text-white/60">
-            {mode === "signin" ? "Sign in to manage your profile" : "Start building your profile in seconds"}
-          </p>
-        </div>
-
-        <div className="card-surface rounded-2xl p-6">
-          <form onSubmit={handleEmail} className="space-y-3">
-            {mode === "signup" && (
-              <div>
-                <label className="mb-1 block text-xs text-white/60">Username</label>
-                <div className="flex items-center rounded-lg border border-white/15 bg-white/5 px-3">
-                  <span className="text-sm text-white/40">{SITE_PROFILE_PREFIX}</span>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(cleanUsername(e.target.value))}
-                    placeholder="yourname"
-                    required
-                    minLength={MIN_USERNAME_LENGTH}
-                    maxLength={MAX_USERNAME_LENGTH}
-                    autoComplete="username"
-                    className="w-full bg-transparent py-2.5 text-sm outline-none"
-                  />
-                </div>
-              </div>
-            )}
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Email</label>
+    <AuthPageShell
+      mode={mode}
+      title={mode === "signin" ? "Welcome back" : "Create your account"}
+      subtitle={
+        mode === "signin"
+          ? "Sign in to manage your profile"
+          : "Start building your profile in seconds"
+      }
+      onModeChange={switchMode}
+      footer={
+        <p className="auth-page__switch">
+          {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
+          <button
+            type="button"
+            onClick={() => switchMode(mode === "signin" ? "signup" : "signin")}
+            className="auth-page__switch-btn"
+          >
+            {mode === "signin" ? "Sign up" : "Sign in"}
+          </button>
+        </p>
+      }
+    >
+      <form onSubmit={handleEmail} className="space-y-0">
+        {mode === "signup" && (
+          <div className="auth-page__field">
+            <label className="auth-page__label" htmlFor="auth-username">
+              Username
+            </label>
+            <div className="auth-page__username">
+              <span className="auth-page__username-prefix">{SITE_PROFILE_PREFIX}</span>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="auth-username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(cleanUsername(e.target.value))}
+                placeholder="yourname"
                 required
-                autoComplete="email"
-                className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-pink-hot/60"
+                minLength={MIN_USERNAME_LENGTH}
+                maxLength={MAX_USERNAME_LENGTH}
+                autoComplete="username"
+                className="auth-page__username-input"
               />
             </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={mode === "signup" ? 8 : 6}
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm outline-none focus:border-pink-hot/60"
-              />
-              {mode === "signup" && password.length > 0 && (
-                <div className="mt-2 space-y-2">
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className="h-full rounded-full transition-all duration-300"
-                      style={{ width: `${strengthPct}%`, background: strengthColor }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-white/50">Password strength</span>
-                    <span className="font-semibold capitalize" style={{ color: strengthColor }}>
-                      {strength}
-                    </span>
-                  </div>
-                  <ul className="space-y-1 pt-1">
-                    {passwordChecks.map((c) => (
-                      <li
-                        key={c.label}
-                        className="flex items-center gap-2 text-xs transition-colors"
-                        style={{ color: c.ok ? "oklch(0.72 0.20 145)" : "rgba(255,255,255,0.45)" }}
-                      >
-                        {c.ok ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
-                        <span className={c.ok ? "line-through opacity-80" : ""}>{c.label}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="glow-pink w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-              style={{
-                background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))",
-              }}
-            >
-              {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
-            </button>
+          </div>
+        )}
 
-            {formNotice && (
-              <div
-                role="alert"
-                className="rounded-lg border px-3 py-2.5 text-sm"
-                style={{
-                  borderColor:
-                    formNotice.type === "success"
-                      ? "oklch(0.72 0.20 145 / 0.45)"
-                      : "oklch(0.65 0.25 25 / 0.45)",
-                  background:
-                    formNotice.type === "success"
-                      ? "oklch(0.72 0.20 145 / 0.12)"
-                      : "oklch(0.65 0.25 25 / 0.12)",
-                }}
-              >
-                <p className="font-medium">{formNotice.title}</p>
-                {formNotice.description && (
-                  <p className="mt-0.5 text-xs text-white/70">{formNotice.description}</p>
-                )}
-              </div>
-            )}
-          </form>
-
-          <p className="mt-6 text-center text-sm text-white/60">
-            {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
-            <button
-              onClick={() => {
-                setFormNotice(null);
-                setMode(mode === "signin" ? "signup" : "signin");
-              }}
-              className="font-semibold text-pink-hot hover:underline"
-              style={{ color: "oklch(0.65 0.28 0)" }}
-            >
-              {mode === "signin" ? "Sign up" : "Sign in"}
-            </button>
-          </p>
+        <div className="auth-page__field">
+          <label className="auth-page__label" htmlFor="auth-email">
+            Email
+          </label>
+          <input
+            id="auth-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            placeholder="you@email.com"
+            className="auth-page__input"
+          />
         </div>
-      </div>
-    </div>
+
+        <div className="auth-page__field">
+          <label className="auth-page__label" htmlFor="auth-password">
+            Password
+          </label>
+          <input
+            id="auth-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={mode === "signup" ? 8 : 6}
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            placeholder="••••••••"
+            className="auth-page__input"
+          />
+          {mode === "signup" && password.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{ width: `${strengthPct}%`, background: strengthColor }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/50">Password strength</span>
+                <span className="font-semibold capitalize" style={{ color: strengthColor }}>
+                  {strength}
+                </span>
+              </div>
+              <ul className="space-y-1 pt-1">
+                {passwordChecks.map((c) => (
+                  <li
+                    key={c.label}
+                    className="flex items-center gap-2 text-xs transition-colors"
+                    style={{ color: c.ok ? "oklch(0.72 0.20 145)" : "rgba(255,255,255,0.45)" }}
+                  >
+                    {c.ok ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
+                    <span className={c.ok ? "line-through opacity-80" : ""}>{c.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <button type="submit" disabled={loading} className="auth-page__submit">
+          {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
+        </button>
+
+        {formNotice && (
+          <div
+            role="alert"
+            className={`auth-page__notice ${
+              formNotice.type === "success" ? "auth-page__notice--success" : "auth-page__notice--error"
+            }`}
+          >
+            <p className="font-medium">{formNotice.title}</p>
+            {formNotice.description && (
+              <p className="mt-0.5 text-xs text-white/70">{formNotice.description}</p>
+            )}
+          </div>
+        )}
+      </form>
+    </AuthPageShell>
   );
 }

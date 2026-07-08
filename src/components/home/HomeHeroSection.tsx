@@ -137,9 +137,7 @@ export function HomeHeroSection() {
                       type="text"
                       value={reserveUsername}
                       onChange={(e) => {
-                        setReserveUsername(
-                          e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
-                        );
+                        setReserveUsername(cleanUsername(e.target.value));
                         setReserveError(null);
                       }}
                       placeholder="yourname"

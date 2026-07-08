@@ -71,6 +71,7 @@ import {
 import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
 import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions";
 import { formatSocialIconSizeLabel } from "@/lib/social-icons";
+import { cleanUsername } from "@/lib/username";
 
 type PanelKey = PersonalizePanelKey;
 
@@ -209,8 +210,7 @@ function Dashboard() {
           (u.user.user_metadata?.username as string | undefined) ??
           u.user.email?.split("@")[0] ??
           "user";
-        const cleanUser =
-          fallbackUser.toLowerCase().replace(/[^a-z0-9_]/g, "") + u.user.id.slice(0, 4);
+        const cleanUser = cleanUsername(fallbackUser + u.user.id.slice(0, 4));
         const { error: upsertErr } = await supabase.from("profiles").upsert(
           {
             id: u.user.id,

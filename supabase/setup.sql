@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   public_template_enabled boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT username_format CHECK (username ~ '^[a-z0-9_]{2,30}$')
+  CONSTRAINT username_format CHECK (username ~ '^[a-z0-9]{2,30}$')
 );
 
 GRANT SELECT ON public.profiles TO anon;
@@ -91,7 +91,7 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'username',
              split_part(NEW.email, '@', 1),
              'user'),
-    '[^a-z0-9_]', '', 'g'
+    '[^a-z0-9]', '', 'g'
   ));
   IF length(base_username) < 2 THEN
     base_username := 'user' || substr(NEW.id::text, 1, 6);

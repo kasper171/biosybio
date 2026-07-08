@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { cleanUsername } from "@/lib/username";
 import { ensureLivePublicTemplateIfEnabled } from "@/lib/profile-template";
 import { normalizeProfile } from "@/lib/normalize-profile";
 import type { Profile } from "@/lib/profile-storage";
@@ -61,8 +61,7 @@ export function useDashboardProfile() {
         (u.user.user_metadata?.username as string | undefined) ??
         u.user.email?.split("@")[0] ??
         "user";
-      const cleanUser =
-        fallbackUser.toLowerCase().replace(/[^a-z0-9_]/g, "") + u.user.id.slice(0, 4);
+      const cleanUser = cleanUsername(fallbackUser + u.user.id.slice(0, 4));
       const { error: upsertErr } = await supabase.from("profiles").upsert(
         {
           id: u.user.id,

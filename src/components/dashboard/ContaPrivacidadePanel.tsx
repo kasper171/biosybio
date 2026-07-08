@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  cleanUsername,
   MAX_USERNAME_LENGTH,
   MIN_USERNAME_LENGTH,
   usernameLengthError,
@@ -117,7 +118,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   const saveProfileSettings = async () => {
-    const clean = username.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    const clean = cleanUsername(username);
     const lengthError = usernameLengthError(clean);
     if (lengthError) {
       toast.error(lengthError);
@@ -287,9 +288,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             <span className="shrink-0 text-sm text-white/40">{origin ? `${origin.replace(/^https?:\/\//, "")}/` : "/"}</span>
             <input
               value={username}
-              onChange={(e) =>
-                setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
-              }
+              onChange={(e) => setUsername(cleanUsername(e.target.value))}
               minLength={MIN_USERNAME_LENGTH}
               maxLength={MAX_USERNAME_LENGTH}
               className="w-full bg-transparent py-3 text-sm text-white outline-none"
