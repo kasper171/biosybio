@@ -126,11 +126,11 @@ export function getEnabledProfileLabels(state: ProfileLabelsState): ProfileLabel
     .filter((def): def is ProfileLabelDef => Boolean(def));
 }
 
-/** Espelha ProfileLabelsRow: mt-2, gap-1.5, pill ~20px de altura. */
-const LABEL_ROW_HEIGHT = 20;
+/** Espelha ProfileLabelsRow: mt-2, gap-1.5, pill ~18px de altura. */
+const LABEL_ROW_HEIGHT = 18;
 const LABEL_ROW_GAP = 6;
 const LABEL_BLOCK_MARGIN_TOP = 8;
-const LABEL_CHAR_WIDTH = 5.8;
+const LABEL_CHAR_WIDTH = 5.5;
 
 /** Comprimentos aproximados (pt/en) para quebra de linha no card. */
 const LABEL_TEXT_LENGTH: Record<ProfileLabelId, number> = {
@@ -186,11 +186,11 @@ export function estimateProfileLabelsHeight(
   const chipWidths = labels.map((def) =>
     Math.min(estimateLabelChipWidth(def, state.show_emoji), width),
   );
-  const avgChipW =
-    chipWidths.reduce((sum, w) => sum + w, 0) / Math.max(1, chipWidths.length);
+  // Menor chip → mais por linha na estimativa (evita reservar altura exagerada).
+  const minChipW = Math.min(...chipWidths);
   const itemsPerRow = Math.max(
     1,
-    Math.floor((width + LABEL_ROW_GAP) / (avgChipW + LABEL_ROW_GAP)),
+    Math.floor((width + LABEL_ROW_GAP) / (minChipW + LABEL_ROW_GAP)),
   );
   const rows = Math.ceil(labels.length / itemsPerRow);
 

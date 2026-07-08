@@ -37,13 +37,14 @@ const BANNER_VISIBLE_RATIO = 0.34;
 /** Quanto o banner sobe atrás do avatar (px fixo) */
 const BANNER_BEHIND_AVATAR_PX = 44;
 
-function CardFooter({ dividerStyle, children }: {
+function CardFooter({ dividerStyle, children, className }: {
   dividerStyle: CSSProperties;
   children: ReactNode;
+  className?: string;
 }) {
   return (
     <div
-      className="relative z-[6] shrink-0 border-t px-6 pb-5 pt-3"
+      className={cn("relative z-[6] shrink-0 border-t px-6 pb-5 pt-3", className)}
       style={dividerStyle}
     >
       {children}
@@ -404,7 +405,7 @@ function CardLayoutContent({
     return (
       <div className="relative flex min-h-0 flex-1 flex-col overflow-visible text-left">
         {overlayBadges}
-        <div className="flex shrink-0 flex-col overflow-visible">
+        <div className="flex min-h-0 flex-1 flex-col justify-start overflow-visible">
           <div
             className="grid shrink-0 gap-x-4 gap-y-2 overflow-visible px-6 pt-4 pb-2"
             style={{ gridTemplateColumns: `${avatarSize}px minmax(0, 1fr)` }}
@@ -474,7 +475,7 @@ function CardLayoutContent({
           {children && <div className="shrink-0 px-6 pb-2 text-left">{children}</div>}
         </div>
         {footer && (
-          <CardFooter dividerStyle={dividerStyle}>
+          <CardFooter dividerStyle={dividerStyle} className="mt-auto shrink-0">
             {footer}
           </CardFooter>
         )}
@@ -501,7 +502,7 @@ function CardLayoutContent({
         )}
         {hasBanner && <InnerCardBannerStrip bannerStripH={bannerStripH} />}
         <div
-          className="relative z-[3] shrink-0 flex flex-col overflow-visible px-6 pb-2"
+          className="relative z-[3] flex min-h-0 flex-1 flex-col overflow-visible px-6 pb-4"
           style={{
             marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0,
             paddingTop: hasBanner ? 16 : 0,
@@ -509,9 +510,8 @@ function CardLayoutContent({
         >
           <div
             className={cn(
-              "flex shrink-0 flex-col items-center overflow-visible py-4",
-              !footer && !hasBanner && "min-h-0 flex-1 justify-center",
-              (footer || hasBanner) && "justify-start",
+              "flex min-h-0 flex-1 flex-col items-center overflow-visible py-4",
+              hasBanner || footer ? "justify-start" : "justify-center",
             )}
           >
             <div
@@ -580,7 +580,7 @@ function CardLayoutContent({
           </div>
         </div>
         {footer && (
-          <CardFooter dividerStyle={dividerStyle}>
+          <CardFooter dividerStyle={dividerStyle} className="mt-auto shrink-0">
             {footer}
           </CardFooter>
         )}
@@ -604,10 +604,10 @@ function CardLayoutContent({
       )}
       {hasBanner && <InnerCardBannerStrip bannerStripH={bannerStripH} />}
       <div
-        className="relative z-[3] shrink-0 flex flex-col overflow-visible px-6 pb-2"
+        className="relative z-[3] flex min-h-0 flex-1 flex-col overflow-hidden px-6 pb-4"
         style={{ marginTop: hasBanner ? -BANNER_BEHIND_AVATAR_PX : 0, paddingTop: hasBanner ? 16 : 20 }}
       >
-        <div className="flex shrink-0 flex-col overflow-visible">
+        <div className="flex min-h-0 flex-1 flex-col justify-start overflow-visible">
           <div className="flex shrink-0 flex-col items-center overflow-visible text-center">
             <div
               className="relative z-[5] mx-auto mb-2 flex shrink-0 justify-center"
@@ -669,7 +669,7 @@ function CardLayoutContent({
         </div>
       </div>
       {footer && (
-        <CardFooter dividerStyle={dividerStyle}>
+        <CardFooter dividerStyle={dividerStyle} className="mt-auto shrink-0">
           {footer}
         </CardFooter>
       )}
