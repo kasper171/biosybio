@@ -1,22 +1,10 @@
 {
-  "staffdev": {
-    "file": "staffdev.png",
-    "v": "mrci5lmd"
-  },
   "staff": {
     "file": "staff.png",
-    "v": "mrci5gej"
+    "v": "mrcktgef"
   },
   "premium": {
     "file": "premium.png",
-    "v": "mrci5azt"
-  },
-  "donator": {
-    "file": "donator.png",
-    "v": "mrci5qzm"
-  },
-  "gifter": {
-    "file": "gifter.png",
-    "v": "mrcijfv2"
+    "v": "mrckpbzh"
   }
 }
