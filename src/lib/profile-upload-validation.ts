@@ -5,7 +5,8 @@ export type ProfileAssetKind =
   | "inner_banner"
   | "music"
   | "music_art"
-  | "share_embed";
+  | "share_embed"
+  | "page_favicon";
 
 const IMAGE_MIMES = new Set([
   "image/jpeg",
@@ -31,6 +32,7 @@ const MAX_BYTES: Record<ProfileAssetKind, number> = {
   music: 20 * 1024 * 1024,
   music_art: 5 * 1024 * 1024,
   share_embed: 5 * 1024 * 1024,
+  page_favicon: 1 * 1024 * 1024,
 };
 
 const EXT_BY_MIME: Record<string, string> = {

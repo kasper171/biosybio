@@ -133,6 +133,9 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     share_embed_title: (p.share_embed_title as string | null) ?? null,
     share_embed_description: (p.share_embed_description as string | null) ?? null,
     share_embed_image_url: (p.share_embed_image_url as string | null) ?? null,
+    page_title: (p.page_title as string | null) ?? null,
+    page_favicon_url: (p.page_favicon_url as string | null) ?? null,
+    page_title_typing_effect: p.page_title_typing_effect === true,
 
     page_font_family:
       (p.page_font_family as string) ??

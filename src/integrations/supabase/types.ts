@@ -78,6 +78,9 @@ export type Database = {
           share_embed_title: string | null
           share_embed_description: string | null
           share_embed_image_url: string | null
+          page_title: string | null
+          page_favicon_url: string | null
+          page_title_typing_effect: boolean
           updated_at: string
           username: string
           view_count: number
@@ -145,6 +148,9 @@ export type Database = {
           share_embed_title?: string | null
           share_embed_description?: string | null
           share_embed_image_url?: string | null
+          page_title?: string | null
+          page_favicon_url?: string | null
+          page_title_typing_effect?: boolean
           updated_at?: string
           username: string
           view_count?: number
@@ -212,6 +218,9 @@ export type Database = {
           share_embed_title?: string | null
           share_embed_description?: string | null
           share_embed_image_url?: string | null
+          page_title?: string | null
+          page_favicon_url?: string | null
+          page_title_typing_effect?: boolean
           updated_at?: string
           username?: string
           view_count?: number

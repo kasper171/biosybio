@@ -143,6 +143,12 @@ export type Profile = {
   share_embed_description: string | null;
   /** Imagem banner do embed (null = padrão Byosy) */
   share_embed_image_url: string | null;
+  /** Título da aba do navegador na página pública (null = padrão Byosy) */
+  page_title: string | null;
+  /** Ícone da aba (favicon) na página pública (null = logo Byosy) */
+  page_favicon_url: string | null;
+  /** Efeito digitação no título da aba */
+  page_title_typing_effect: boolean;
   /** Fonte da página inteira (stack CSS) */
   page_font_family: string;
   /** Fonte apenas do nome de exibição (stack CSS). Use "inherit" para herdar. */
@@ -201,7 +207,7 @@ const SIGNED_URL_TTL = 60 * 60 * 24 * 30;
 
 export async function uploadProfileAsset(
   userId: string,
-  kind: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art" | "share_embed",
+  kind: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art" | "share_embed" | "page_favicon",
   file: File,
 ): Promise<string> {
   const validation = validateProfileAssetUpload(kind, file);

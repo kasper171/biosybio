@@ -1,5 +1,6 @@
 import defaultShareImage from "@/assets/cta-banner.png";
 import { SITE_ORIGIN, SITE_TITLE } from "@/lib/site";
+import { resolvePageTitle, type PageMetaSource } from "@/lib/page-meta";
 
 export const DEFAULT_SHARE_EMBED_TITLE = SITE_TITLE;
 export const DEFAULT_SHARE_EMBED_DESCRIPTION =
@@ -8,7 +9,7 @@ export const DEFAULT_SHARE_EMBED_DESCRIPTION =
 export const SHARE_EMBED_TITLE_MAX = 120;
 export const SHARE_EMBED_DESCRIPTION_MAX = 300;
 
-export type ShareEmbedSource = {
+export type ShareEmbedSource = PageMetaSource & {
   share_embed_title?: string | null;
   share_embed_description?: string | null;
   share_embed_image_url?: string | null;
@@ -45,20 +46,21 @@ export function buildProfileShareMeta(
   | { property: string; content: string }
 > {
   const url = `${SITE_ORIGIN}/${username}`;
-  const title = resolveShareEmbedTitle(source);
+  const pageTitle = resolvePageTitle(source);
+  const embedTitle = resolveShareEmbedTitle(source);
   const description = resolveShareEmbedDescription(source);
   const image = resolveShareEmbedImageUrl(source);
 
   return [
-    { title },
+    { title: pageTitle },
     { name: "description", content: description },
-    { property: "og:title", content: title },
+    { property: "og:title", content: embedTitle },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },
     { property: "og:url", content: url },
     { property: "og:image", content: image },
     { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: title },
+    { name: "twitter:title", content: embedTitle },
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: image },
   ];

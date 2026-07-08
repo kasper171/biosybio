@@ -16,8 +16,8 @@ import {
   Palette,
   Share2,
   Shield,
-  User,
   Sparkles,
+  User,
   Frame,
   type LucideIcon,
 } from "lucide-react";
@@ -33,7 +33,13 @@ import {
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/LocaleProvider";
 
-export type AccountSection = "overview" | "estatisticas" | "privacidade" | "templates" | "personalizar";
+export type AccountSection =
+  | "overview"
+  | "estatisticas"
+  | "privacidade"
+  | "miscellaneous"
+  | "templates"
+  | "personalizar";
 
 export type PersonalizePanelKey =
   | "perfil"
@@ -56,7 +62,7 @@ type NavLink = {
   search?: {
     view?: "personalizar";
     panel?: PersonalizePanelKey;
-    section?: "estatisticas" | "privacidade" | "templates";
+    section?: "estatisticas" | "privacidade" | "miscellaneous" | "templates";
   };
   active?: boolean;
 };
@@ -150,6 +156,14 @@ export function DashboardAccountLayout({
       to: "/dashboard",
       search: { section: "privacidade" },
       active: activeSection === "privacidade",
+    },
+    {
+      id: "miscellaneous",
+      label: t("dashboard.layout.nav.miscellaneous"),
+      icon: Sparkles,
+      to: "/dashboard",
+      search: { section: "miscellaneous" },
+      active: activeSection === "miscellaneous",
     },
   ];
 

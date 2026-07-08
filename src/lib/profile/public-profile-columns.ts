@@ -140,4 +140,12 @@ export const PUBLIC_PROFILE_SELECT = [
 
   // Comments
   "comments_enabled",
+
+  // Page tab / share embed
+  "page_title",
+  "page_favicon_url",
+  "page_title_typing_effect",
+  "share_embed_title",
+  "share_embed_description",
+  "share_embed_image_url",
 ].join(", ");

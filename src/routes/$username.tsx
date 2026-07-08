@@ -17,15 +17,10 @@ import { ensureProfileFontsLoaded } from "@/lib/profile-fonts";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
 import { fetchPublicProfileByUsernameFn } from "@/lib/profile/profile-public.functions";
 import { warmupProfileTapVisuals } from "@/lib/profile/profile-visual-preload";
-import { buildProfileShareMeta, resolveShareEmbedTitle } from "@/lib/share-embed";
+import { buildProfileShareMeta } from "@/lib/share-embed";
+import { resolvePageFaviconUrl } from "@/lib/page-meta";
+import type { ProfileShareEmbedRow } from "@/lib/profile/profile-embed.server";
 import { SITE_TITLE } from "@/lib/site";
-
-type ProfileShareEmbedRow = {
-  username: string;
-  share_embed_title: string | null;
-  share_embed_description: string | null;
-  share_embed_image_url: string | null;
-};
 
 export const Route = createFileRoute("/$username")({
   loader: async ({ params }) => {
@@ -37,7 +32,15 @@ export const Route = createFileRoute("/$username")({
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: SITE_TITLE }] };
-    return { meta: buildProfileShareMeta(params.username, loaderData) };
+    return {
+      meta: buildProfileShareMeta(params.username, loaderData),
+      links: [
+        {
+          rel: "icon",
+          href: resolvePageFaviconUrl(loaderData.page_favicon_url),
+        },
+      ],
+    };
   },
   component: PublicProfile,
   notFoundComponent: () => (
@@ -85,7 +88,6 @@ function scheduleProfileViewIncrement(
 
 function PublicProfile() {
   const { username } = Route.useParams();
-  const shareEmbed = Route.useLoaderData();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [notfound, setNotfound] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -122,7 +124,6 @@ function PublicProfile() {
 
       setProfile(withRoles);
       setLoading(false);
-      document.title = resolveShareEmbedTitle(withRoles);
 
       void ensureProfileFontsLoaded(
         withRoles.page_font_family ?? "",
@@ -142,11 +143,6 @@ function PublicProfile() {
       cancelled = true;
     };
   }, [username]);
-
-  useEffect(() => {
-    if (!shareEmbed) return;
-    document.title = resolveShareEmbedTitle(shareEmbed);
-  }, [shareEmbed]);
 
   if (notfound) throw notFound();
 

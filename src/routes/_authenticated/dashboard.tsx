@@ -19,6 +19,7 @@ import { PublicProfileView } from "@/components/PublicProfileView";
 import { DashboardOverviewPage } from "@/components/dashboard/DashboardOverviewPage";
 import { DashboardEstatisticasPage } from "@/components/dashboard/DashboardEstatisticasPage";
 import { DashboardPrivacidadePage } from "@/components/dashboard/DashboardPrivacidadePage";
+import { DashboardMiscellaneousPage } from "@/components/dashboard/DashboardMiscellaneousPage";
 import { DashboardTemplatesPage } from "@/components/dashboard/DashboardTemplatesPage";
 import { FontPickerField, DEFAULT_PAGE_FONT_STACK } from "@/components/dashboard/FontPickerField";
 import { TextAnimationPicker } from "@/components/dashboard/TextAnimationPicker";
@@ -79,7 +80,7 @@ type PanelKey = PersonalizePanelKey;
 type DashboardSearch = {
   view?: "personalizar";
   panel?: PanelKey;
-  section?: "estatisticas" | "privacidade" | "templates";
+  section?: "estatisticas" | "privacidade" | "miscellaneous" | "templates";
 };
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -92,9 +93,11 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         ? "estatisticas"
         : search.section === "privacidade"
           ? "privacidade"
-          : search.section === "templates"
-            ? "templates"
-            : undefined,
+          : search.section === "miscellaneous"
+            ? "miscellaneous"
+            : search.section === "templates"
+              ? "templates"
+              : undefined,
   }),
   component: Dashboard,
 });
@@ -466,6 +469,11 @@ function Dashboard() {
     if (section === "privacidade") {
       return (
         <DashboardPrivacidadePage profile={profile} onProfileChange={setProfile} />
+      );
+    }
+    if (section === "miscellaneous") {
+      return (
+        <DashboardMiscellaneousPage profile={profile} onProfileChange={setProfile} />
       );
     }
     if (section === "templates") {

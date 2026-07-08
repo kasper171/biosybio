@@ -5,6 +5,9 @@ export type ProfileShareEmbedRow = {
   share_embed_title: string | null;
   share_embed_description: string | null;
   share_embed_image_url: string | null;
+  page_title: string | null;
+  page_favicon_url: string | null;
+  page_title_typing_effect: boolean;
 };
 
 export async function fetchProfileShareEmbed(
@@ -13,7 +16,9 @@ export async function fetchProfileShareEmbed(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("profiles")
-    .select("username, share_embed_title, share_embed_description, share_embed_image_url")
+    .select(
+      "username, share_embed_title, share_embed_description, share_embed_image_url, page_title, page_favicon_url, page_title_typing_effect",
+    )
     .eq("username", username)
     .maybeSingle();
 

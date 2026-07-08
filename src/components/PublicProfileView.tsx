@@ -6,7 +6,7 @@ import { TapToRevealOverlay } from "@/components/TapToRevealOverlay";
 import { ProfileMusicPlayerFloating } from "@/components/ProfileMusicPlayer";
 import { ProfileMusicProvider } from "@/contexts/ProfileMusicContext";
 import { useProfileBlocks } from "@/hooks/useProfileBlocks";
-import { useProfileHotelSync } from "@/hooks/useProfileHotelSync";
+import { useProfilePageMeta } from "@/hooks/useProfilePageMeta";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 
 type Props = {
@@ -64,6 +64,11 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
 
   const showOverlay = tapEnabled && !revealed;
   const showContent = !showOverlay;
+
+  useProfilePageMeta(liveProfile, {
+    enabled: showContent,
+    animationSeed: animKey,
+  });
 
   const handleReveal = () => {
     setRevealed(true);

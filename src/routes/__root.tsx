@@ -14,6 +14,7 @@ import { ErrorFace404 } from "@/components/errors/ErrorFace404";
 import { SiteStatusPage } from "@/components/errors/SiteStatusPage";
 import { reportClientError } from "../lib/report-client-error";
 import { SITE_NAME, SITE_ORIGIN, SITE_TITLE } from "@/lib/site";
+import { DEFAULT_SITE_FAVICON_URL } from "@/lib/page-meta";
 import { LocaleProvider, translate } from "@/i18n/LocaleProvider";
 
 function NotFoundComponent() {
@@ -69,6 +70,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "icon",
+        href: DEFAULT_SITE_FAVICON_URL,
       },
     ],
   }),

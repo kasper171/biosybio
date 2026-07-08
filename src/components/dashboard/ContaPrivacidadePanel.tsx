@@ -4,14 +4,11 @@ import { toast } from "sonner";
 import {
   AtSign,
   Globe,
-  Image as ImageIcon,
   KeyRound,
   Link2,
   Mail,
-  RotateCcw,
   Save,
   Shield,
-  Upload,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -21,73 +18,23 @@ import {
   usernameLengthError,
 } from "@/lib/username";
 import type { Profile } from "@/lib/profile-storage";
-import { uploadProfileAsset } from "@/lib/profile-storage";
 import { setPublicTemplateEnabled } from "@/lib/profile-template";
-import {
-  DEFAULT_SHARE_EMBED_DESCRIPTION,
-  DEFAULT_SHARE_EMBED_TITLE,
-  SHARE_EMBED_DESCRIPTION_MAX,
-  SHARE_EMBED_TITLE_MAX,
-  resolveShareEmbedDescription,
-  resolveShareEmbedImageUrl,
-  resolveShareEmbedTitle,
-} from "@/lib/share-embed";
-import { profilePublicUrl, SITE_NAME } from "@/lib/site";
-import { BiosyToggle } from "@/components/ui/BiosyToggle";
-import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/LocaleProvider";
 import { DashboardAccountLayout, DashCard } from "./DashboardAccountLayout";
+import { DashboardPrivacyToggle } from "./DashboardPrivacyToggle";
 
 type Props = {
   profile: Profile;
   onProfileChange: (profile: Profile) => void;
 };
 
-function PrivacyToggle({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label
-      className={cn(
-        "flex cursor-pointer items-start justify-between gap-4 rounded-xl border px-4 py-3 transition-all duration-200",
-        "border-white/[0.06] bg-white/[0.03] hover:border-white/10 hover:bg-white/[0.05]",
-        checked && "border-pink-500/25 bg-pink-500/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-      )}
-    >
-      <span>
-        <span className={cn("block text-sm font-medium transition-colors", checked ? "text-white" : "text-white/90")}>
-          {label}
-        </span>
-        <span className="mt-0.5 block text-xs leading-relaxed text-white/40">{description}</span>
-      </span>
-      <BiosyToggle
-        checked={checked}
-        onChange={onChange}
-        variant="switch"
-        aria-label={label}
-        className="mt-0.5"
-      />
-    </label>
-  );
-}
-
 export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
+  const { t } = useI18n();
   const [username, setUsername] = useState(profile.username);
   const [showUsername, setShowUsername] = useState(profile.show_username !== false);
   const [showViews, setShowViews] = useState(profile.show_view_count !== false);
   const [showUid, setShowUid] = useState(profile.show_public_uid !== false);
   const [publicTemplate, setPublicTemplate] = useState(profile.public_template_enabled === true);
-  const [embedTitle, setEmbedTitle] = useState(profile.share_embed_title ?? "");
-  const [embedDescription, setEmbedDescription] = useState(profile.share_embed_description ?? "");
-  const [embedImageUrl, setEmbedImageUrl] = useState(profile.share_embed_image_url ?? "");
-  const [uploadingEmbedImage, setUploadingEmbedImage] = useState(false);
   const [togglingTemplate, setTogglingTemplate] = useState(false);
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -110,9 +57,6 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     setShowViews(profile.show_view_count !== false);
     setShowUid(profile.show_public_uid !== false);
     setPublicTemplate(profile.public_template_enabled === true);
-    setEmbedTitle(profile.share_embed_title ?? "");
-    setEmbedDescription(profile.share_embed_description ?? "");
-    setEmbedImageUrl(profile.share_embed_image_url ?? "");
   }, [profile]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -148,9 +92,6 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
         show_username: showUsername,
         show_view_count: showViews,
         show_public_uid: showUid,
-        share_embed_title: embedTitle.trim() || null,
-        share_embed_description: embedDescription.trim() || null,
-        share_embed_image_url: embedImageUrl.trim() || null,
       })
       .eq("id", profile.id);
 
@@ -167,13 +108,10 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
       show_username: showUsername,
       show_view_count: showViews,
       show_public_uid: showUid,
-      share_embed_title: embedTitle.trim() || null,
-      share_embed_description: embedDescription.trim() || null,
-      share_embed_image_url: embedImageUrl.trim() || null,
     };
     onProfileChange(updated);
     setUsername(clean);
-    toast.success("Settings saved!");
+    toast.success(t("dashboard.toasts.settingsSaved"));
   };
 
   const handleEmailChange = async (e: React.FormEvent) => {
@@ -233,59 +171,29 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     }
   };
 
-  const handleEmbedImagePick = async (file: File | undefined) => {
-    if (!file) return;
-    setUploadingEmbedImage(true);
-    try {
-      const url = await uploadProfileAsset(profile.id, "share_embed", file);
-      setEmbedImageUrl(url);
-      toast.success("Embed banner uploaded!");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to upload image");
-    } finally {
-      setUploadingEmbedImage(false);
-    }
-  };
-
-  const resetShareEmbed = () => {
-    setEmbedTitle("");
-    setEmbedDescription("");
-    setEmbedImageUrl("");
-    toast.message("Fields reset to defaults. Save to apply.");
-  };
-
-  const previewSource = {
-    share_embed_title: embedTitle.trim() || null,
-    share_embed_description: embedDescription.trim() || null,
-    share_embed_image_url: embedImageUrl.trim() || null,
-  };
-  const previewTitle = resolveShareEmbedTitle(previewSource);
-  const previewDescription = resolveShareEmbedDescription(previewSource);
-  const previewImage = resolveShareEmbedImageUrl(previewSource);
-  const previewUrl = profilePublicUrl(username || profile.username);
-
   return (
     <DashboardAccountLayout profile={profile} activeSection="privacidade">
       <div className="mx-auto max-w-3xl space-y-6">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-bold text-white">
             <Shield className="h-5 w-5 text-pink-400" />
-            Account
+            {t("dashboard.privacidade.title")}
           </h1>
-          <p className="mt-1 text-sm text-white/45">
-            Profile link, share embed, privacy, and account details.
-          </p>
+          <p className="mt-1 text-sm text-white/45">{t("dashboard.privacidade.subtitle")}</p>
         </div>
 
-        <DashCard title="Username">
+        <DashCard title={t("dashboard.privacidade.username.title")}>
           <p className="mb-4 text-xs leading-relaxed text-white/45">
-            Your public link is based on your username. When you change it, the old link stops
-            working.
+            {t("dashboard.privacidade.username.description")}
           </p>
-          <label className="mb-1 block text-xs font-medium text-white/55">Profile link</label>
+          <label className="mb-1 block text-xs font-medium text-white/55">
+            {t("dashboard.privacidade.username.profileLink")}
+          </label>
           <div className="mb-3 flex items-center rounded-xl border border-white/[0.08] bg-black/30 px-3">
             <Link2 className="mr-2 h-4 w-4 shrink-0 text-white/35" />
-            <span className="shrink-0 text-sm text-white/40">{origin ? `${origin.replace(/^https?:\/\//, "")}/` : "/"}</span>
+            <span className="shrink-0 text-sm text-white/40">
+              {origin ? `${origin.replace(/^https?:\/\//, "")}/` : "/"}
+            </span>
             <input
               value={username}
               onChange={(e) => setUsername(cleanUsername(e.target.value))}
@@ -302,21 +210,21 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             className="inline-flex items-center gap-1.5 text-xs text-pink-400 transition hover:text-pink-300"
           >
             <AtSign className="h-3.5 w-3.5" />
-            View page @{username || profile.username}
+            {t("dashboard.privacidade.username.viewPage", {
+              username: username || profile.username,
+            })}
           </Link>
         </DashCard>
 
-        <DashCard title="Public template">
+        <DashCard title={t("dashboard.privacidade.publicTemplate.title")}>
           <p className="mb-4 text-xs leading-relaxed text-white/45">
-            Publish your current style as a community template. Anyone can copy layout,
-            colors, sizes, and effects — avatars, images, and music from users who apply it remain their own.
-            The template appears as{" "}
-            <span className="text-white/70">{profile.display_name || profile.username}&apos;s Template</span>{" "}
-            and updates automatically when you save your profile.
+            {t("dashboard.privacidade.publicTemplate.description", {
+              name: profile.display_name || profile.username,
+            })}
           </p>
-          <PrivacyToggle
-            label="Public template"
-            description="Syncs your live style to the public template gallery"
+          <DashboardPrivacyToggle
+            label={t("dashboard.privacidade.publicTemplate.toggle")}
+            description={t("dashboard.privacidade.publicTemplate.toggleDesc")}
             checked={publicTemplate}
             onChange={(v) => {
               if (!togglingTemplate) void handlePublicTemplateToggle(v);
@@ -328,155 +236,35 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             className="mt-4 inline-flex items-center gap-1.5 text-xs text-pink-400 transition hover:text-pink-300"
           >
             <Globe className="h-3.5 w-3.5" />
-            View template gallery
+            {t("dashboard.privacidade.publicTemplate.galleryLink")}
           </Link>
         </DashCard>
 
-        <DashCard title="Share embed">
-          <p className="mb-4 text-xs leading-relaxed text-white/45">
-            Customize how your link appears on Discord, WhatsApp, Twitter, and other apps.
-            Changes apply only to{" "}
-            <span className="text-white/70">{previewUrl}</span>. Empty fields use {SITE_NAME}
-            defaults.
-          </p>
-
-          <div className="mb-5 overflow-hidden rounded-xl border border-[#1e1f22] bg-[#2b2d31]">
-            <div className="border-b border-[#1e1f22] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[#949ba4]">
-              Preview (Discord)
-            </div>
-            <div className="space-y-2 p-3">
-              <p className="text-xs text-[#00a8fc]">{previewUrl}</p>
-              <div className="overflow-hidden rounded-lg border-l-4 border-[#5865f2] bg-[#1e1f22]">
-                {previewImage ? (
-                  <img src={previewImage} alt="" className="max-h-36 w-full object-cover" />
-                ) : null}
-                <div className="px-3 py-2.5">
-                  <p className="text-sm font-semibold text-[#f2f3f5]">{previewTitle}</p>
-                  <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-[#b5bac1]">
-                    {previewDescription}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-white/55">Title</label>
-              <input
-                value={embedTitle}
-                onChange={(e) => setEmbedTitle(e.target.value.slice(0, SHARE_EMBED_TITLE_MAX))}
-                maxLength={SHARE_EMBED_TITLE_MAX}
-                placeholder={DEFAULT_SHARE_EMBED_TITLE}
-                className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
-              />
-              <p className="mt-1 text-[10px] text-white/35">
-                {embedTitle.length}/{SHARE_EMBED_TITLE_MAX} · Default: {DEFAULT_SHARE_EMBED_TITLE}
-              </p>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-white/55">Description</label>
-              <textarea
-                value={embedDescription}
-                onChange={(e) =>
-                  setEmbedDescription(e.target.value.slice(0, SHARE_EMBED_DESCRIPTION_MAX))
-                }
-                maxLength={SHARE_EMBED_DESCRIPTION_MAX}
-                rows={3}
-                placeholder={DEFAULT_SHARE_EMBED_DESCRIPTION}
-                className="w-full resize-none rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
-              />
-              <p className="mt-1 text-[10px] text-white/35">
-                {embedDescription.length}/{SHARE_EMBED_DESCRIPTION_MAX}
-              </p>
-            </div>
-
-            <div>
-              <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/55">
-                <ImageIcon className="h-3.5 w-3.5" />
-                Banner image
-              </label>
-              {embedImageUrl ? (
-                <div className="mb-3 overflow-hidden rounded-xl border border-white/[0.08]">
-                  <img src={embedImageUrl} alt="" className="max-h-40 w-full object-cover" />
-                </div>
-              ) : (
-                <p className="mb-3 text-xs text-white/40">Using default {SITE_NAME} banner.</p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10">
-                  <Upload className="h-4 w-4" />
-                  {uploadingEmbedImage ? "Uploading..." : "Upload image"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="sr-only"
-                    disabled={uploadingEmbedImage}
-                    onChange={(e) => void handleEmbedImagePick(e.target.files?.[0])}
-                  />
-                </label>
-                {embedImageUrl ? (
-                  <button
-                    type="button"
-                    onClick={() => setEmbedImageUrl("")}
-                    className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/70 transition hover:bg-white/[0.06]"
-                  >
-                    Remove image
-                  </button>
-                ) : null}
-              </div>
-              <p className="mt-2 text-[10px] text-white/35">
-                Recommended: 1200×630 px (wide ratio). Discord uses this image at the top of the
-                embed.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={saveProfileSettings}
-              disabled={savingProfile}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-            >
-              <Save className="h-4 w-4" />
-              {savingProfile ? "Saving..." : "Save embed"}
-            </button>
-            <button
-              type="button"
-              onClick={resetShareEmbed}
-              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition hover:bg-white/[0.06]"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Reset to default
-            </button>
-          </div>
-        </DashCard>
-
-        <DashCard title="Card visibility">
+        <DashCard title={t("dashboard.privacidade.cardVisibility.title")}>
           <p className="mb-4 text-xs text-white/45">
-            Choose which information is visible in the corner of your public card.
+            {t("dashboard.privacidade.cardVisibility.description")}
           </p>
           <div className="space-y-2">
-            <PrivacyToggle
-              label="Show @ on card"
-              description="Displays the username (@username) below the display name"
+            <DashboardPrivacyToggle
+              label={t("dashboard.privacidade.cardVisibility.showUsername")}
+              description={t("dashboard.privacidade.cardVisibility.showUsernameDesc")}
               checked={showUsername}
               onChange={setShowUsername}
             />
-            <PrivacyToggle
-              label="Show views"
-              description="Displays the view counter in the top-right corner"
+            <DashboardPrivacyToggle
+              label={t("dashboard.privacidade.cardVisibility.showViews")}
+              description={t("dashboard.privacidade.cardVisibility.showViewsDesc")}
               checked={showViews}
               onChange={setShowViews}
             />
-            <PrivacyToggle
-              label="Show UID"
+            <DashboardPrivacyToggle
+              label={t("dashboard.privacidade.cardVisibility.showUid")}
               description={
                 profile.public_uid != null
-                  ? `Displays #${profile.public_uid.toLocaleString("en-US")} in the top-left corner`
-                  : "Displays your UID in the top-left corner of the card"
+                  ? t("dashboard.privacidade.cardVisibility.showUidDescWithId", {
+                      uid: profile.public_uid.toLocaleString("en-US"),
+                    })
+                  : t("dashboard.privacidade.cardVisibility.showUidDesc")
               }
               checked={showUid}
               onChange={setShowUid}
@@ -484,21 +272,21 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
           </div>
           <button
             type="button"
-            onClick={saveProfileSettings}
+            onClick={() => void saveProfileSettings()}
             disabled={savingProfile}
             className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
-            {savingProfile ? "Saving..." : "Save changes"}
+            {savingProfile ? t("dashboard.common.saving") : t("dashboard.privacidade.cardVisibility.saveChanges")}
           </button>
         </DashCard>
 
-        <DashCard title="Account email">
+        <DashCard title={t("dashboard.privacidade.email.title")}>
           <form onSubmit={handleEmailChange} className="space-y-3">
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/55">
                 <Mail className="h-3.5 w-3.5" />
-                Current email
+                {t("dashboard.privacidade.email.current")}
               </label>
               <input
                 value={email}
@@ -507,7 +295,9 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-white/55">New email</label>
+              <label className="mb-1.5 block text-xs font-medium text-white/55">
+                {t("dashboard.privacidade.email.new")}
+              </label>
               <input
                 type="email"
                 value={newEmail}
@@ -521,17 +311,17 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               disabled={savingEmail}
               className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
             >
-              {savingEmail ? "Sending..." : "Change email"}
+              {savingEmail ? t("dashboard.common.saving") : t("dashboard.privacidade.email.changeEmail")}
             </button>
           </form>
         </DashCard>
 
-        <DashCard title="Password">
+        <DashCard title={t("dashboard.privacidade.password.title")}>
           <form onSubmit={handlePasswordChange} className="space-y-3">
             <div>
               <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/55">
                 <KeyRound className="h-3.5 w-3.5" />
-                New password
+                {t("dashboard.privacidade.password.new")}
               </label>
               <input
                 type="password"
@@ -539,12 +329,12 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
                 onChange={(e) => setNewPassword(e.target.value)}
                 autoComplete="new-password"
                 className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
-                placeholder="Minimum 8 characters"
+                placeholder={t("dashboard.privacidade.password.minChars")}
               />
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-white/55">
-                Confirm new password
+                {t("dashboard.privacidade.password.confirm")}
               </label>
               <input
                 type="password"
@@ -552,7 +342,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 autoComplete="new-password"
                 className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-pink-500/50"
-                placeholder="Repeat password"
+                placeholder={t("dashboard.privacidade.password.repeat")}
               />
             </div>
             <button
@@ -560,7 +350,7 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
               disabled={savingPassword}
               className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
             >
-              {savingPassword ? "Saving..." : "Change password"}
+              {savingPassword ? t("dashboard.common.saving") : t("dashboard.privacidade.password.changePassword")}
             </button>
           </form>
         </DashCard>
