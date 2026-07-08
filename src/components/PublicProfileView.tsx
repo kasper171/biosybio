@@ -6,6 +6,7 @@ import { TapToRevealOverlay } from "@/components/TapToRevealOverlay";
 import { ProfileMusicPlayerFloating } from "@/components/ProfileMusicPlayer";
 import { ProfileMusicProvider } from "@/contexts/ProfileMusicContext";
 import { useProfileBlocks } from "@/hooks/useProfileBlocks";
+import { useProfileHotelSync } from "@/hooks/useProfileHotelSync";
 import { useProfilePageMeta } from "@/hooks/useProfilePageMeta";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 
