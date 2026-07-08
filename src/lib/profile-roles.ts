@@ -26,13 +26,30 @@ export const FULL_ACCESS_ROLE_IDS: ReadonlySet<ProfileRoleId> = new Set([
 
 const ROLE_ICON_BASE = "/badges";
 
-/** Área quadrada uniforme — badges de cargo no perfil (sempre 20px, não afeta Discord) */
-export const ROLE_BADGE_DISPLAY_PX = 20;
+/**
+ * Referência visual das badges no card Discord (19.2 * scale 100% → 19px).
+ * Badges de cargo usam o mesmo slot — sem sincronizar configurações do Discord.
+ */
+export const DISCORD_BADGE_REFERENCE_PX = 19;
+export const ROLE_BADGE_DISPLAY_PX = DISCORD_BADGE_REFERENCE_PX;
+/** PNGs de cargo têm padding transparente; zoom interno para preencher como ícone Discord */
+export const ROLE_BADGE_IMAGE_FILL_SCALE = 1.42;
 /** Compensa padding transparente nos PNGs para badges ficarem próximas com gap 0 */
-export const ROLE_BADGE_OVERLAP_PX = 6;
+export const ROLE_BADGE_OVERLAP_PX = 5;
 export const ROLE_BADGE_GAP_MIN = 0;
 export const ROLE_BADGE_GAP_MAX = 20;
 export const ROLE_BADGE_GAP_DEFAULT = 0;
+
+export type RoleBadgesPlacement = "below_name" | "inline_name" | "below_socials";
+
+export const ROLE_BADGES_PLACEMENT_DEFAULT: RoleBadgesPlacement = "below_name";
+
+export function normalizeRoleBadgesPlacement(value: unknown): RoleBadgesPlacement {
+  if (value === "inline_name" || value === "below_socials" || value === "below_name") {
+    return value;
+  }
+  return ROLE_BADGES_PLACEMENT_DEFAULT;
+}
 
 export function getRoleBadgeGapPx(
   profile: Pick<Profile, "role_badges_gap">,

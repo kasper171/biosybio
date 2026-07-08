@@ -10,6 +10,7 @@ import {
   getRoleTooltip,
   resolveRoleBadgeBloomColor,
   ROLE_BADGE_OVERLAP_PX,
+  ROLE_BADGE_IMAGE_FILL_SCALE,
   sortProfileRoles,
   type ProfileRoleAssignment,
 } from "@/lib/profile-roles";
@@ -113,7 +114,11 @@ function RoleBadgeIcon({
         alt=""
         draggable={false}
         onError={onError}
-        className="block h-full w-full object-contain object-center"
+        className="block h-full w-full object-cover object-center"
+        style={{
+          transform: `scale(${ROLE_BADGE_IMAGE_FILL_SCALE})`,
+          transformOrigin: "center",
+        }}
         loading="lazy"
       />
     </BadgeHoverShell>

@@ -33,6 +33,8 @@ export type Profile = {
   role_badges_size_px: number;
   /** Espaço entre badges de cargo em px (0 = encostadas, máx. 20) */
   role_badges_gap: number;
+  /** Posição das badges de cargo no card */
+  role_badges_placement: "below_name" | "inline_name" | "below_socials";
   /** Bloom individual em cada badge (mesmo método das logos sociais) */
   role_badges_bloom: boolean;
   role_badges_bloom_color: string | null;

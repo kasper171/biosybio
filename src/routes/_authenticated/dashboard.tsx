@@ -77,9 +77,11 @@ import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions"
 import { formatSocialIconSizeLabel } from "@/lib/social-icons";
 import {
   getRoleBadgeGapPx,
+  normalizeRoleBadgesPlacement,
   ROLE_BADGE_DISPLAY_PX,
   ROLE_BADGE_GAP_MAX,
   ROLE_BADGE_GAP_MIN,
+  type RoleBadgesPlacement,
 } from "@/lib/profile-roles";
 
 type PanelKey = PersonalizePanelKey;
@@ -359,6 +361,7 @@ function Dashboard() {
         role_badges_mono_color: profile.role_badges_mono_color ?? "#ffffff",
         role_badges_size_px: ROLE_BADGE_DISPLAY_PX,
         role_badges_gap: getRoleBadgeGapPx(profile),
+        role_badges_placement: normalizeRoleBadgesPlacement(profile.role_badges_placement),
         role_badges_bloom: profile.role_badges_bloom === true,
         role_badges_bloom_color: profile.role_badges_bloom_color ?? null,
         banner_url: profile.banner_url,
@@ -723,6 +726,33 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
           checked={profile.show_role_badges !== false}
           onChange={(v) => update("show_role_badges", v)}
         />
+        <div>
+          <p className="mb-2 text-xs font-medium text-white/55">
+            {t("dashboard.perfil.roleBadges.placement")}
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {(
+              [
+                ["below_name", "dashboard.perfil.roleBadges.placementBelowName"],
+                ["inline_name", "dashboard.perfil.roleBadges.placementInlineName"],
+                ["below_socials", "dashboard.perfil.roleBadges.placementBelowSocials"],
+              ] as const satisfies ReadonlyArray<[RoleBadgesPlacement, string]>
+            ).map(([value, labelKey]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => update("role_badges_placement", value)}
+                className={`rounded-lg px-3 py-2 text-xs font-medium transition ${
+                  normalizeRoleBadgesPlacement(profile.role_badges_placement) === value
+                    ? "bg-white text-black"
+                    : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
+                }`}
+              >
+                {t(labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
         <SliderField
           label={t("dashboard.perfil.roleBadges.spacing")}
           min={ROLE_BADGE_GAP_MIN}

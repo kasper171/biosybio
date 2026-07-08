@@ -26,6 +26,7 @@ import { ProfileAnimatedText } from "@/components/text-animations/ProfileAnimate
 import { AvatarWithFrame } from "@/components/AvatarWithFrame";
 import { AVATAR_FRAME_SCALE } from "@/lib/avatar-frames";
 import { ProfileRoleBadges } from "@/components/ProfileRoleBadges";
+import { normalizeRoleBadgesPlacement, type RoleBadgesPlacement } from "@/lib/profile-roles";
 import { cn } from "@/lib/utils";
 import { getSocialIconsRowStyle, getSocialIconsRowClassName } from "@/lib/social-icons";
 import { imageObjectPosition } from "@/lib/image-position";
@@ -229,6 +230,103 @@ function BioBlock({
   );
 }
 
+function ProfileNameAndRoleBadges({
+  profile,
+  placement,
+  roleBadgeAlign,
+  titleClassName,
+  centerName,
+  titleBase,
+  nameAnimates,
+  typedName,
+  fullName,
+  titleGlow,
+  nameTextEffect,
+  titleAccent,
+  nameParticleColor,
+}: {
+  profile: Profile;
+  placement: RoleBadgesPlacement;
+  roleBadgeAlign: "left" | "center";
+  titleClassName: string;
+  centerName: boolean;
+  titleBase: CSSProperties;
+  nameAnimates: boolean;
+  typedName: string;
+  fullName: string;
+  titleGlow: CSSProperties;
+  nameTextEffect: TextAnimationId;
+  titleAccent: string;
+  nameParticleColor: string;
+}) {
+  const roleBadges = (
+    <ProfileRoleBadges
+      profile={profile}
+      align={roleBadgeAlign}
+      className={cn(placement !== "inline_name" && "mt-1", "shrink-0")}
+    />
+  );
+
+  const nameBlock = (
+    <NameBlock
+      animate={nameAnimates}
+      typedName={typedName}
+      fullName={fullName}
+      glowStyle={titleGlow}
+      textEffect={nameTextEffect}
+      accentColor={titleAccent}
+      particleColor={nameParticleColor}
+    />
+  );
+
+  if (placement === "inline_name") {
+    return (
+      <div
+        className={cn(
+          "flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1",
+          centerName ? "justify-center" : "justify-start",
+        )}
+      >
+        <h3 className={cn(titleClassName, "min-w-0 shrink truncate")} style={titleBase}>
+          {nameBlock}
+        </h3>
+        {roleBadges}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <h3 className={titleClassName} style={titleBase}>
+        {nameBlock}
+      </h3>
+      {placement === "below_name" && roleBadges}
+    </>
+  );
+}
+
+function RoleBadgesBelowSocials({
+  profile,
+  placement,
+  roleBadgeAlign,
+  className,
+}: {
+  profile: Profile;
+  placement: RoleBadgesPlacement;
+  roleBadgeAlign: "left" | "center";
+  hasSocialIcons?: boolean;
+  className?: string;
+}) {
+  if (placement !== "below_socials") return null;
+  return (
+    <ProfileRoleBadges
+      profile={profile}
+      align={roleBadgeAlign}
+      className={cn("mt-1 shrink-0", className)}
+    />
+  );
+}
+
 function CardLayoutContent({
   profile, layout, avatarSize, avatarRingWidth, avatarRingColor,
   hasBanner, bannerStripH, bannerTotalH, bannerPosX, bannerPosY,
@@ -256,6 +354,7 @@ function CardLayoutContent({
     animateBioText && bioTextEffect === "none";
 
   const roleBadgeAlign = layout === "aligned" ? "left" : "center";
+  const badgePlacement = normalizeRoleBadgesPlacement(profile.role_badges_placement);
 
   const overlayBadges = (
     <>
@@ -312,21 +411,21 @@ function CardLayoutContent({
               className="flex min-h-0 flex-col justify-center self-center overflow-hidden text-left"
               style={{ minHeight: avatarVisualH }}
             >
-              <h3
-                className="w-full shrink-0 truncate text-left text-xl font-bold leading-tight"
-                style={titleBase}
-              >
-                <NameBlock
-                  animate={nameAnimates}
-                  typedName={typedName}
-                  fullName={fullName}
-                  glowStyle={titleGlow}
-                  textEffect={nameTextEffect}
-                  accentColor={titleAccent}
-                  particleColor={nameParticleColor}
-                />
-              </h3>
-              <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5 shrink-0" />
+              <ProfileNameAndRoleBadges
+                profile={profile}
+                placement={badgePlacement}
+                roleBadgeAlign={roleBadgeAlign}
+                titleClassName="w-full shrink-0 truncate text-left text-xl font-bold leading-tight"
+                centerName={false}
+                titleBase={titleBase}
+                nameAnimates={nameAnimates}
+                typedName={typedName}
+                fullName={fullName}
+                titleGlow={titleGlow}
+                nameTextEffect={nameTextEffect}
+                titleAccent={titleAccent}
+                nameParticleColor={nameParticleColor}
+              />
               {profile.show_username !== false && (
                 <p className="mt-1 shrink-0 text-left text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
                   {fullUsername}
@@ -351,6 +450,12 @@ function CardLayoutContent({
                 {socialIcons}
               </div>
             )}
+            <RoleBadgesBelowSocials
+              profile={profile}
+              placement={badgePlacement}
+              roleBadgeAlign={roleBadgeAlign}
+              className={cn("col-span-2", getSocialIconsRowClassName("aligned"))}
+            />
           </div>
           {children && <div className="shrink-0 px-6 pb-2 text-left">{children}</div>}
         </div>
@@ -411,21 +516,21 @@ function CardLayoutContent({
                   ringColor={avatarRingColor}
                 />
               </div>
-              <h3
-                className="mt-3 w-full max-w-full shrink-0 truncate text-xl font-bold leading-tight"
-                style={titleBase}
-              >
-                <NameBlock
-                  animate={nameAnimates}
-                  typedName={typedName}
-                  fullName={fullName}
-                  glowStyle={titleGlow}
-                  textEffect={nameTextEffect}
-                  accentColor={titleAccent}
-                  particleColor={nameParticleColor}
-                />
-              </h3>
-              <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5 shrink-0" />
+              <ProfileNameAndRoleBadges
+                profile={profile}
+                placement={badgePlacement}
+                roleBadgeAlign={roleBadgeAlign}
+                titleClassName="mt-3 w-full max-w-full shrink-0 truncate text-xl font-bold leading-tight"
+                centerName
+                titleBase={titleBase}
+                nameAnimates={nameAnimates}
+                typedName={typedName}
+                fullName={fullName}
+                titleGlow={titleGlow}
+                nameTextEffect={nameTextEffect}
+                titleAccent={titleAccent}
+                nameParticleColor={nameParticleColor}
+              />
               {profile.show_username !== false && (
                 <p className="mt-1 max-w-full shrink-0 truncate text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
                   {fullUsername}
@@ -449,6 +554,11 @@ function CardLayoutContent({
                   {socialIcons}
                 </div>
               )}
+              <RoleBadgesBelowSocials
+                profile={profile}
+                placement={badgePlacement}
+                roleBadgeAlign={roleBadgeAlign}
+              />
               {children && <div className="mt-3 w-full shrink-0">{children}</div>}
             </div>
           </div>
@@ -494,21 +604,21 @@ function CardLayoutContent({
                 ringColor={avatarRingColor}
               />
             </div>
-            <h3
-              className="w-full shrink-0 truncate text-center text-lg font-bold leading-tight"
-              style={titleBase}
-            >
-              <NameBlock
-                animate={nameAnimates}
-                typedName={typedName}
-                fullName={fullName}
-                glowStyle={titleGlow}
-                textEffect={nameTextEffect}
-                accentColor={titleAccent}
-                particleColor={nameParticleColor}
-              />
-            </h3>
-            <ProfileRoleBadges profile={profile} align={roleBadgeAlign} className="mt-1.5 shrink-0" />
+            <ProfileNameAndRoleBadges
+              profile={profile}
+              placement={badgePlacement}
+              roleBadgeAlign={roleBadgeAlign}
+              titleClassName="w-full shrink-0 truncate text-center text-lg font-bold leading-tight"
+              centerName
+              titleBase={titleBase}
+              nameAnimates={nameAnimates}
+              typedName={typedName}
+              fullName={fullName}
+              titleGlow={titleGlow}
+              nameTextEffect={nameTextEffect}
+              titleAccent={titleAccent}
+              nameParticleColor={nameParticleColor}
+            />
             {profile.show_username !== false && (
               <p className="mt-1 shrink-0 truncate text-center text-xs" style={{ ...mutedStyle, ...mutedGlow }}>
                 {fullUsername}
@@ -532,6 +642,11 @@ function CardLayoutContent({
                 {socialIcons}
               </div>
             )}
+            <RoleBadgesBelowSocials
+              profile={profile}
+              placement={badgePlacement}
+              roleBadgeAlign={roleBadgeAlign}
+            />
           </div>
           {children && <div className="mt-3 w-full shrink-0">{children}</div>}
         </div>
