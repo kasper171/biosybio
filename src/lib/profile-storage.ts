@@ -62,6 +62,10 @@ export type Profile = {
   social_original_colors: boolean;
   social_icon_color: string;
   social_icon_style: "boxed" | "logo";
+  /** Escala dos ícones sociais (60–140, padrão 100) */
+  social_icon_size: number;
+  /** Bloom / glow ao redor dos ícones sociais */
+  social_icon_bloom: boolean;
   /** Exibe o nome da rede abaixo do ícone */
   show_social_titles: boolean;
   card_border_style: string;

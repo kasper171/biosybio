@@ -361,6 +361,8 @@ function Dashboard() {
         social_original_colors: profile.social_original_colors,
         social_icon_color: profile.social_icon_color ?? "#ffffff",
         social_icon_style: profile.social_icon_style ?? "boxed",
+        social_icon_size: profile.social_icon_size ?? 100,
+        social_icon_bloom: profile.social_icon_bloom === true,
         show_social_titles: profile.show_social_titles === true,
         card_border_style: profile.card_border_style,
         discord_user_id: profile.discord_user_id,
@@ -1556,6 +1558,27 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
               Logo only
             </button>
           </div>
+        </div>
+        <div className="mt-3">
+          <SliderField
+            label="Icon size"
+            min={60}
+            max={140}
+            step={5}
+            value={profile.social_icon_size ?? 100}
+            onChange={(v) => update("social_icon_size", v)}
+            display={`${profile.social_icon_size ?? 100}%`}
+          />
+        </div>
+        <div className="mt-3">
+          <ToggleField
+            label="Bloom around icons"
+            checked={profile.social_icon_bloom === true}
+            onChange={(v) => update("social_icon_bloom", v)}
+          />
+          <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+            Soft glow around each social icon using the icon color.
+          </p>
         </div>
         <div className="mt-3">
           <ToggleField

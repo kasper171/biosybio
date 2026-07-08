@@ -22,7 +22,12 @@ import {
   listHotelConnections,
 } from "@/lib/hotel";
 import { SOCIAL_MAP, resolveSocialUrl } from "@/lib/socials";
+import {
+  getSocialIconBloomStyle,
+  getSocialIconDimensions,
+} from "@/lib/social-icons";
 import { FaGlobe } from "react-icons/fa";
+import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 
@@ -46,6 +51,7 @@ export function ProfilePageContent({
   const entries = Object.entries(profile.socials || {}).filter(([, v]) => v);
   const useBrand = profile.social_original_colors !== false;
   const showSocialTitles = profile.show_social_titles === true;
+  const socialBloom = profile.social_icon_bloom === true;
   const discordMode = profile.discord_card_mode ?? "inside";
   const socialIconStyle = profile.social_icon_style ?? "boxed";
   const bgBlur = profile.background_blur ?? 0;
@@ -218,22 +224,8 @@ export function ProfilePageContent({
                 ? (def?.brandColor ?? profile.social_icon_color ?? "#ffffff")
                 : (profile.social_icon_color ?? "#ffffff");
               const compact = cardLayout === "aligned";
-              const iconBoxClass =
-                socialIconStyle === "logo"
-                  ? compact
-                    ? "h-8 w-8 rounded-full bg-transparent"
-                    : "h-9 w-9 rounded-full bg-transparent"
-                  : compact
-                    ? "h-9 w-9 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10"
-                    : "h-11 w-11 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10";
-              const iconClass =
-                socialIconStyle === "logo"
-                  ? compact
-                    ? "h-5 w-5"
-                    : "h-6 w-6"
-                  : compact
-                    ? "h-4 w-4"
-                    : "h-5 w-5";
+              const { boxPx, iconPx } = getSocialIconDimensions(profile, compact);
+              const bloomStyle = getSocialIconBloomStyle(iconColor, socialBloom);
               return (
                 <a
                   key={key}
@@ -247,14 +239,31 @@ export function ProfilePageContent({
                       window.open(url, "_blank", "noopener,noreferrer");
                     });
                   }}
-                  className={`flex shrink-0 flex-col items-center transition hover:scale-105 ${
-                    showSocialTitles ? "gap-1" : ""
-                  }`}
+                  className={cn(
+                    "flex shrink-0 flex-col items-center transition hover:scale-105",
+                    showSocialTitles ? "gap-0.5" : "",
+                  )}
                 >
                   <span
-                    className={`grid place-items-center transition ${iconBoxClass}`}
+                    className={cn(
+                      "grid place-items-center transition",
+                      socialIconStyle === "logo"
+                        ? "rounded-full bg-transparent"
+                        : "rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10",
+                    )}
+                    style={{
+                      width: boxPx,
+                      height: boxPx,
+                      ...bloomStyle,
+                    }}
                   >
-                    <Icon className={iconClass} style={{ color: iconColor }} />
+                    <Icon
+                      style={{
+                        color: iconColor,
+                        width: iconPx,
+                        height: iconPx,
+                      }}
+                    />
                   </span>
                   {showSocialTitles && (
                     <span className="max-w-[4.5rem] truncate text-center text-[10px] leading-tight text-white/65">

@@ -47,6 +47,8 @@ export type Database = {
           inner_banner_url: string | null
           social_original_colors: boolean
           social_icon_style: string
+          social_icon_size: number
+          social_icon_bloom: boolean
           show_social_titles: boolean
           socials: Json
           show_view_count: boolean
@@ -110,6 +112,8 @@ export type Database = {
           inner_banner_url?: string | null
           social_original_colors?: boolean
           social_icon_style?: string
+          social_icon_size?: number
+          social_icon_bloom?: boolean
           show_social_titles?: boolean
           socials?: Json
           show_view_count?: boolean
@@ -173,6 +177,8 @@ export type Database = {
           inner_banner_url?: string | null
           social_original_colors?: boolean
           social_icon_style?: string
+          social_icon_size?: number
+          social_icon_bloom?: boolean
           show_social_titles?: boolean
           socials?: Json
           show_view_count?: boolean

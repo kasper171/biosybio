@@ -4,6 +4,7 @@ import { getHotelCardFrameStyle, getHotelCardLayoutFromProfile } from "@/lib/hot
 import { listHotelConnections } from "@/lib/hotel/profile-hotel";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 import { DEFAULT_CARD_HEIGHT, type Profile } from "@/lib/profile-storage";
+import { getSocialIconScale } from "@/lib/social-icons";
 import { hasActiveTextAnimation, normalizeTextAnimationId } from "@/lib/text-animations";
 
 /** Mesmo limite visual do card (`line-clamp-3` na bio). */
@@ -83,7 +84,8 @@ function estimateFooterHeight(profile: Profile): number {
 function estimateAlignedSocialHeight(profile: Profile): number {
   const count = countSocials(profile);
   if (!count) return 0;
-  const icon = profile.social_icon_style === "logo" ? 32 : 36;
+  const scale = getSocialIconScale(profile);
+  const icon = Math.round((profile.social_icon_style === "logo" ? 32 : 36) * scale);
   const titleExtra = profile.show_social_titles === true ? 14 : 0;
   return 8 + icon + titleExtra;
 }
@@ -92,10 +94,11 @@ function estimateSocialRowsHeight(profile: Profile, cardWidth: number): number {
   const count = countSocials(profile);
   if (!count) return 0;
 
+  const scale = getSocialIconScale(profile);
   const logo = profile.social_icon_style === "logo";
-  const icon = logo ? 36 : 44;
+  const icon = Math.round((logo ? 36 : 44) * scale);
   const titleExtra = profile.show_social_titles === true ? 14 : 0;
-  const gap = 8;
+  const gap = 4;
   const rowWidth = cardWidth - 48;
   const rowNeeded = count * icon + (count - 1) * gap;
   if (rowNeeded <= rowWidth) {
