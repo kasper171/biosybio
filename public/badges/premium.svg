@@ -1,0 +1,20 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" style="">
+<title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Badge premium com diamante rosa/vermelho</title>
+<desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Diamante facetado em tom rosa avermelhado, sem moldura ao redor, representando status premium</desc>
+<defs>
+<linearGradient id="diamondTop" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#F4C0D1"/>
+<stop offset="100%" stop-color="#ED93B1"/>
+</linearGradient>
+<linearGradient id="diamondBottom" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#D4537E"/>
+<stop offset="100%" stop-color="#993556"/>
+</linearGradient>
+</defs>
+<polygon points="40,70 100,30 160,70" fill="url(#diamondTop)" stroke="#72243E" stroke-width="2.5" stroke-linejoin="round" style="stroke:rgb(114, 36, 62);color:rgb(11, 11, 11);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+<polygon points="40,70 100,175 60,70" fill="url(#diamondBottom)" stroke="#72243E" stroke-width="2.5" stroke-linejoin="round" style="stroke:rgb(114, 36, 62);color:rgb(11, 11, 11);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+<polygon points="60,70 100,175 140,70" fill="url(#diamondBottom)" stroke="#72243E" stroke-width="2.5" stroke-linejoin="round" style="stroke:rgb(114, 36, 62);color:rgb(11, 11, 11);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+<polygon points="140,70 100,175 160,70" fill="url(#diamondBottom)" stroke="#72243E" stroke-width="2.5" stroke-linejoin="round" style="stroke:rgb(114, 36, 62);color:rgb(11, 11, 11);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+<line x1="40" y1="70" x2="160" y2="70" stroke="#72243E" stroke-width="2.5" style="fill:rgb(0, 0, 0);stroke:rgb(114, 36, 62);color:rgb(11, 11, 11);stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+<line x1="100" y1="30" x2="100" y2="175" stroke="#72243E" stroke-width="1.5" opacity="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(114, 36, 62);color:rgb(11, 11, 11);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.5;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+</svg>

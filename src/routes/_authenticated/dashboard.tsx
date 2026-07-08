@@ -57,6 +57,7 @@ import { DiscordConnectedCard } from "@/components/dashboard/DiscordConnectedCar
 import { LanyardNotFoundModal } from "@/components/dashboard/LanyardNotFoundModal";
 import { HotelConnectionPanel } from "@/components/dashboard/HotelConnectionPanel";
 import { MoldurasPanel } from "@/components/dashboard/MoldurasPanel";
+import { EtiquetasPanel } from "@/components/dashboard/EtiquetasPanel";
 import { SOCIALS, SOCIAL_MAP, normalizeHandle } from "@/lib/socials";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
@@ -83,6 +84,7 @@ import {
   ROLE_BADGE_GAP_MIN,
   type RoleBadgesPlacement,
 } from "@/lib/profile-roles";
+import { normalizeProfileLabels } from "@/lib/profile-labels";
 
 type PanelKey = PersonalizePanelKey;
 
@@ -122,6 +124,7 @@ function isPanelKey(value: unknown): value is PanelKey {
     value === "efeitos" ||
     value === "colors" ||
     value === "redes" ||
+    value === "etiquetas" ||
     value === "conexoes" ||
     value === "comentarios"
   );
@@ -364,6 +367,7 @@ function Dashboard() {
         role_badges_placement: normalizeRoleBadgesPlacement(profile.role_badges_placement),
         role_badges_bloom: profile.role_badges_bloom === true,
         role_badges_bloom_color: profile.role_badges_bloom_color ?? null,
+        profile_labels: normalizeProfileLabels(profile.profile_labels),
         banner_url: profile.banner_url,
         background_url: profile.background_url,
         background_pos_x: profile.background_pos_x ?? 50,
@@ -596,6 +600,7 @@ function Dashboard() {
               {openPanel === "efeitos" && <EfeitosPanel profile={profile} update={update} />}
               {openPanel === "colors" && <ColorsPanel profile={profile} update={update} />}
               {openPanel === "redes" && <RedesPanel profile={profile} update={update} />}
+              {openPanel === "etiquetas" && <EtiquetasPanel profile={profile} update={update} />}
               {openPanel === "conexoes" && <ConexoesPanel profile={profile} update={update} />}
               {openPanel === "comentarios" && <ComentariosPanel profile={profile} update={update} />}
             </motion.div>

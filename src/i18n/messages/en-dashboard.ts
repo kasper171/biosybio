@@ -52,6 +52,7 @@ export const enDashboard: MessageTree = {
       efeitos: "Effects",
       colors: "Colors",
       redes: "Social links",
+      etiquetas: "Labels",
       conexoes: "Connections",
       comentarios: "Comments",
     },
@@ -231,6 +232,17 @@ export const enDashboard: MessageTree = {
     chooseNetworks: "Choose networks",
     fillLinks: "Fill in your links",
     iconStyle: { section: "Icon style", boxed: "Boxed", logoOnly: "Logo only" },
+  },
+  etiquetas: {
+    displayMode: "Display mode",
+    textWithEmoji: "Text + emoji",
+    textOnly: "Text only",
+    colorForSelected: "Color — {{label}}",
+    colorHint: "Changes only the currently selected label.",
+    selectActiveHint: "Enable a label below to customize its color.",
+    choose: "Choose labels",
+    chooseHint:
+      "Click to show on your profile. Click the selected one again to remove. The selected label glows brighter.",
   },
   conexoes: {
     discord: {

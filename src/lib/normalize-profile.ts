@@ -9,6 +9,7 @@ import { TEXT_GLOW_MAX_PX, normalizeTextGlowScope } from "@/lib/profile-colors";
 import { normalizeTextAnimationId } from "@/lib/text-animations";
 import { canUseAvatarFrame } from "@/lib/avatar-frames";
 import { getRoleBadgeGapPx, normalizeRoleBadgesPlacement, ROLE_BADGE_DISPLAY_PX } from "@/lib/profile-roles";
+import { normalizeProfileLabels } from "@/lib/profile-labels";
 
 export function normalizeProfile(raw: Record<string, unknown>): Profile {
   const p = raw as Profile;
@@ -60,6 +61,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     role_badges_placement: normalizeRoleBadgesPlacement(p.role_badges_placement),
     role_badges_bloom: p.role_badges_bloom === true,
     role_badges_bloom_color: (p.role_badges_bloom_color as string | null) ?? null,
+    profile_labels: normalizeProfileLabels(p.profile_labels),
     inner_banner_pos_x: Number(p.inner_banner_pos_x ?? 50),
     inner_banner_pos_y: Number(p.inner_banner_pos_y ?? 50),
     background_blur: Number(p.background_blur ?? 0),

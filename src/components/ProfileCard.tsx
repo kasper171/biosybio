@@ -26,9 +26,10 @@ import { ProfileAnimatedText } from "@/components/text-animations/ProfileAnimate
 import { AvatarWithFrame } from "@/components/AvatarWithFrame";
 import { AVATAR_FRAME_SCALE } from "@/lib/avatar-frames";
 import { ProfileRoleBadges } from "@/components/ProfileRoleBadges";
+import { ProfileLabelsRow } from "@/components/ProfileLabelsRow";
 import { normalizeRoleBadgesPlacement, type RoleBadgesPlacement } from "@/lib/profile-roles";
 import { cn } from "@/lib/utils";
-import { getSocialIconsRowStyle, getSocialIconsRowClassName } from "@/lib/social-icons";
+import { getSocialIconsRowStyle, getSocialIconsRowClassName, SOCIAL_ICONS_AFTER_BIO_GAP_CLASS } from "@/lib/social-icons";
 import { imageObjectPosition } from "@/lib/image-position";
 
 /** Altura visível do banner (% do card) — não depende do tamanho do anel */
@@ -280,17 +281,29 @@ function ProfileNameAndRoleBadges({
   );
 
   if (placement === "inline_name") {
+    const titleSizeMatch = titleClassName.match(/\btext-(?:xs|sm|base|lg|xl|2xl)\b/);
+    const titleSize = titleSizeMatch?.[0] ?? "text-xl";
+    const titleMargin = titleClassName.includes("mt-3") ? "mt-3" : "";
+
     return (
       <div
         className={cn(
-          "flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1",
+          "flex w-full min-w-0 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1",
           centerName ? "justify-center" : "justify-start",
+          titleMargin,
         )}
       >
-        <h3 className={cn(titleClassName, "min-w-0 shrink truncate")} style={titleBase}>
+        <span className="inline-flex shrink-0 items-center">{roleBadges}</span>
+        <h3
+          className={cn(
+            "min-w-0 shrink truncate font-bold leading-tight",
+            titleSize,
+            centerName ? "text-center" : "text-left",
+          )}
+          style={titleBase}
+        >
           {nameBlock}
         </h3>
-        {roleBadges}
       </div>
     );
   }
@@ -408,7 +421,7 @@ function CardLayoutContent({
               />
             </div>
             <div
-              className="flex min-h-0 flex-col justify-center self-center overflow-hidden text-left"
+              className="flex min-h-0 flex-col justify-center self-center overflow-visible text-left"
               style={{ minHeight: avatarVisualH }}
             >
               <ProfileNameAndRoleBadges
@@ -441,6 +454,7 @@ function CardLayoutContent({
                 accentColor={bodyAccent}
                 particleColor={bioParticleColor}
               />
+              <ProfileLabelsRow profile={profile} align={roleBadgeAlign} className="mt-2 shrink-0" />
             </div>
             {socialIcons && (
               <div
@@ -546,9 +560,10 @@ function CardLayoutContent({
                 accentColor={bodyAccent}
                 particleColor={bioParticleColor}
               />
+              <ProfileLabelsRow profile={profile} align={roleBadgeAlign} className="mt-2 shrink-0" />
               {socialIcons && (
                 <div
-                  className={cn("mt-1.5", getSocialIconsRowClassName("centered"))}
+                  className={cn(SOCIAL_ICONS_AFTER_BIO_GAP_CLASS, getSocialIconsRowClassName("centered"))}
                   style={getSocialIconsRowStyle(profile)}
                 >
                   {socialIcons}
@@ -634,9 +649,10 @@ function CardLayoutContent({
               accentColor={bodyAccent}
               particleColor={bioParticleColor}
             />
+            <ProfileLabelsRow profile={profile} align={roleBadgeAlign} className="mt-2 shrink-0" />
             {socialIcons && (
               <div
-                className={cn("mt-1.5", getSocialIconsRowClassName("default"))}
+                className={cn(SOCIAL_ICONS_AFTER_BIO_GAP_CLASS, getSocialIconsRowClassName("default"))}
                 style={getSocialIconsRowStyle(profile)}
               >
                 {socialIcons}

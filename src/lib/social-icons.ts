@@ -29,6 +29,9 @@ export function getSocialIconsRowStyle(profile: Profile): CSSProperties {
   return { gap: `${getSocialIconGapPx(profile)}px` };
 }
 
+/** Espaço entre a descrição/bio e a fileira de ícones sociais (Tailwind mt-3.5 ≈ 14px) */
+export const SOCIAL_ICONS_AFTER_BIO_GAP_CLASS = "mt-3.5";
+
 export function getSocialIconsRowClassName(
   layout: Profile["card_layout"] | undefined,
 ): string {

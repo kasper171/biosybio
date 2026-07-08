@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { validateProfileAssetUpload } from "@/lib/profile-upload-validation";
+import type { ProfileLabelsState } from "@/lib/profile-labels";
 
 export const DEFAULT_CARD_WIDTH = 600;
 export const DEFAULT_CARD_HEIGHT = 400;
@@ -38,6 +39,8 @@ export type Profile = {
   /** Bloom individual em cada badge (mesmo método das logos sociais) */
   role_badges_bloom: boolean;
   role_badges_bloom_color: string | null;
+  /** Etiquetas de perfil (tags pré-definidas) */
+  profile_labels: ProfileLabelsState;
   banner_url: string | null;
   background_url: string | null;
   background_pos_x: number;

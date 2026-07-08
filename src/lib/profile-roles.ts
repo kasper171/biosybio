@@ -26,15 +26,25 @@ export const FULL_ACCESS_ROLE_IDS: ReadonlySet<ProfileRoleId> = new Set([
 
 const ROLE_ICON_BASE = "/badges";
 
+export const BADGE_ICON_EXTENSIONS = [".svg", ".png", ".webp"] as const;
+
+export function normalizeBadgeBase(iconFile: string): string {
+  return iconFile.replace(/\.(svg|png|webp)$/i, "");
+}
+
+export function isRoleBadgeSvg(iconFileOrUrl: string): boolean {
+  return /\.svg(\?|$)/i.test(iconFileOrUrl);
+}
+
 /**
  * Referência visual das badges no card Discord (19.2 * scale 100% → 19px).
  * Badges de cargo usam o mesmo slot — sem sincronizar configurações do Discord.
  */
 export const DISCORD_BADGE_REFERENCE_PX = 19;
 export const ROLE_BADGE_DISPLAY_PX = DISCORD_BADGE_REFERENCE_PX;
-/** PNGs de cargo têm padding transparente; zoom interno para preencher como ícone Discord */
-export const ROLE_BADGE_IMAGE_FILL_SCALE = 1.42;
-/** Compensa padding transparente nos PNGs para badges ficarem próximas com gap 0 */
+/** Render interno 2× e reduz no CSS — downscale mais nítido que exibir direto em ~19px */
+export const ROLE_BADGE_SUPERSAMPLE = 2;
+/** Compensa padding transparente nos assets para badges ficarem próximas com gap 0 */
 export const ROLE_BADGE_OVERLAP_PX = 5;
 export const ROLE_BADGE_GAP_MIN = 0;
 export const ROLE_BADGE_GAP_MAX = 20;
@@ -94,16 +104,25 @@ export function buildRoleBadgeImageFilter(
 }
 
 export function getRoleIconUrl(iconFile: string): string {
-  const base = iconFile.replace(/\.(png|svg|webp)$/i, "");
+  const base = normalizeBadgeBase(iconFile);
   const entry = (badgeManifest as Record<string, { file: string; v?: string } | string>)[base];
   const file = typeof entry === "string" ? entry : entry?.file ?? iconFile;
   const v = typeof entry === "object" && entry?.v ? `?v=${entry.v}` : "";
   return `${ROLE_ICON_BASE}/${file}${v}`;
 }
 
-/** @deprecated use getRoleIconUrl — manifest já resolve a extensão correta */
-export function getRoleIconFallbackUrl(iconFile: string): string {
-  return getRoleIconUrl(iconFile);
+/** Fallbacks quando manifest/DB ainda referenciam extensão antiga. */
+export function getRoleIconFallbackUrls(iconFile: string): string[] {
+  const base = normalizeBadgeBase(iconFile);
+  const primary = getRoleIconUrl(iconFile).split("?")[0]!;
+  const urls: string[] = [];
+
+  for (const ext of BADGE_ICON_EXTENSIONS) {
+    const url = `${ROLE_ICON_BASE}/${base}${ext}`;
+    if (url !== primary) urls.push(url);
+  }
+
+  return urls;
 }
 
 export function profileHasFullAccess(profile: Pick<Profile, "is_premium" | "roles">): boolean {
@@ -161,7 +180,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
-/** Filtro CSS só no pixel do PNG — preserva transparência, sem fundo quadrado */
+/** Filtro CSS na imagem da badge — preserva transparência, sem fundo quadrado */
 export function badgeMonochromeCssFilter(hex: string): string {
   const rgb = hexToRgb(hex);
   if (!rgb) return "grayscale(1) brightness(1.05) contrast(1.06)";

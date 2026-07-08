@@ -115,7 +115,7 @@ function estimateSocialRowsHeight(profile: Profile, cardWidth: number, compact =
   const rowHeight = itemPx + titleExtra;
   const wrapGap = 4;
 
-  return 6 + rows * rowHeight + Math.max(0, rows - 1) * wrapGap;
+  return 14 + rows * rowHeight + Math.max(0, rows - 1) * wrapGap;
 }
 
 function roundCardHeight(h: number): number {

@@ -17,6 +17,7 @@ import {
   Share2,
   Shield,
   Sparkles,
+  Tag,
   User,
   Frame,
   type LucideIcon,
@@ -51,6 +52,7 @@ export type PersonalizePanelKey =
   | "efeitos"
   | "colors"
   | "redes"
+  | "etiquetas"
   | "conexoes"
   | "comentarios";
 
@@ -77,6 +79,7 @@ const PERSONALIZE_PANEL_DEFS: { key: PersonalizePanelKey; icon: LucideIcon }[] =
   { key: "efeitos", icon: Sparkles },
   { key: "colors", icon: Paintbrush },
   { key: "redes", icon: Link2 },
+  { key: "etiquetas", icon: Tag },
   { key: "conexoes", icon: Link2 },
   { key: "comentarios", icon: MessageSquare },
 ];

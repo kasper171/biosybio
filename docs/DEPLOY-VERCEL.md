@@ -98,7 +98,7 @@ npx vercel dev
 - [ ] Login / cadastro em `/auth`
 - [ ] Dashboard após login
 - [ ] Upload de mídia e música
-- [ ] Molduras e badges (arquivos em `public/molduras`, `public/badges`)
+- [ ] Molduras e badges (arquivos em `public/molduras`, `public/badges` — badges em SVG preferencialmente)
 - [ ] Player de música e cards hotel/discord
 
 ## Problemas comuns

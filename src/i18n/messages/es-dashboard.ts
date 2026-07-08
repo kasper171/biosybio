@@ -51,6 +51,7 @@ export const esDashboard: MessageTree = {
       efeitos: "Efectos",
       colors: "Colores",
       redes: "Redes sociales",
+      etiquetas: "Etiquetas",
       conexoes: "Conexiones",
       comentarios: "Comentarios",
     },
@@ -230,6 +231,17 @@ export const esDashboard: MessageTree = {
     chooseNetworks: "Elegir redes",
     fillLinks: "Completa tus enlaces",
     iconStyle: { section: "Estilo de iconos", boxed: "Con caja", logoOnly: "Solo logo" },
+  },
+  etiquetas: {
+    displayMode: "Modo de visualización",
+    textWithEmoji: "Texto + emoji",
+    textOnly: "Solo texto",
+    colorForSelected: "Color — {{label}}",
+    colorHint: "Cambia solo la etiqueta seleccionada.",
+    selectActiveHint: "Activa una etiqueta abajo para personalizar el color.",
+    choose: "Elegir etiquetas",
+    chooseHint:
+      "Haz clic para mostrar en tu perfil. Haz clic otra vez en la seleccionada para quitar. La seleccionada brilla más.",
   },
   conexoes: {
     discord: {

@@ -9,7 +9,9 @@ const publicDir = path.join(root, "public", "badges");
 const manifestFile = path.join(root, "src", "generated", "badges.manifest.json");
 
 const BADGE_BASES = ["staffdev", "staff", "premium", "donator", "gifter"];
-const EXT_ORDER = [".png", ".webp", ".svg"];
+/** SVG primeiro — vetor nítido em qualquer tamanho (~19px no perfil). */
+const EXT_ORDER = [".svg", ".png", ".webp"];
+const ALL_EXTS = [".svg", ".png", ".webp"];
 
 function findInDir(dir, base) {
   for (const ext of EXT_ORDER) {
@@ -33,7 +35,9 @@ function main() {
     const hit = inPublic ?? inAssets;
 
     if (!hit) {
-      console.warn(`[badges] Falta ${base}.png em public/badges ou src/assets/badges`);
+      console.warn(
+        `[badges] Falta ${base}.svg (ou .png/.webp) em public/badges ou src/assets/badges`,
+      );
       continue;
     }
 
@@ -48,14 +52,13 @@ function main() {
       console.log(`[badges] ${fileName} já em public/badges/`);
     }
 
-    // Remove SVG/WEBP antigo se existir PNG
-    if (hit.ext === ".png") {
-      for (const oldExt of [".svg", ".webp"]) {
-        const orphan = path.join(publicDir, `${base}${oldExt}`);
-        if (fs.existsSync(orphan)) {
-          fs.unlinkSync(orphan);
-          console.log(`[badges] removido placeholder ${base}${oldExt}`);
-        }
+    // Mantém só um formato por badge em public/
+    for (const oldExt of ALL_EXTS) {
+      if (oldExt === hit.ext) continue;
+      const orphan = path.join(publicDir, `${base}${oldExt}`);
+      if (fs.existsSync(orphan)) {
+        fs.unlinkSync(orphan);
+        console.log(`[badges] removido ${base}${oldExt} (usando ${fileName})`);
       }
     }
 
@@ -75,7 +78,10 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`[badges] ${resolved}/${BADGE_BASES.length} badges → manifest atualizado (PNG priorizado)`);
+  console.log(`[badges] ${resolved}/${BADGE_BASES.length} badges → manifest atualizado (SVG priorizado)`);
+  console.log(
+    "[badges] Dica: prefira SVG flat com viewBox ajustado; PNG 128–256px também funciona como fallback.",
+  );
 }
 
 main();

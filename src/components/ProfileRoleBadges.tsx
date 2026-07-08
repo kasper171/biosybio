@@ -5,12 +5,13 @@ import {
   buildRoleBadgeImageFilter,
   getRoleBadgeGapPx,
   getRoleBadgeSizePx,
-  getRoleIconFallbackUrl,
+  getRoleIconFallbackUrls,
   getRoleIconUrl,
+  isRoleBadgeSvg,
   getRoleTooltip,
   resolveRoleBadgeBloomColor,
   ROLE_BADGE_OVERLAP_PX,
-  ROLE_BADGE_IMAGE_FILL_SCALE,
+  ROLE_BADGE_SUPERSAMPLE,
   sortProfileRoles,
   type ProfileRoleAssignment,
 } from "@/lib/profile-roles";
@@ -24,11 +25,13 @@ type Props = {
 
 function useBadgeSrc(iconFile: string) {
   const primary = getRoleIconUrl(iconFile);
-  const fallback = getRoleIconFallbackUrl(iconFile);
-  const [src, setSrc] = useState(primary);
+  const fallbacks = getRoleIconFallbackUrls(iconFile);
+  const [index, setIndex] = useState(0);
+  const candidates = [primary, ...fallbacks];
+  const src = candidates[Math.min(index, candidates.length - 1)] ?? primary;
 
   const onError = () => {
-    setSrc((current) => (current === fallback ? current : fallback));
+    setIndex((current) => Math.min(current + 1, candidates.length - 1));
   };
 
   return { src, onError };
@@ -38,13 +41,11 @@ function BadgeHoverShell({
   tooltip,
   size,
   marginLeft,
-  imageFilter,
   children,
 }: {
   tooltip: string;
   size: number;
   marginLeft: number;
-  imageFilter?: string;
   children: ReactNode;
 }) {
   return (
@@ -55,10 +56,9 @@ function BadgeHoverShell({
     >
       <span
         className={cn(
-          "flex h-full w-full items-center justify-center overflow-hidden rounded-sm transition-transform duration-200",
+          "flex h-full w-full items-center justify-center overflow-hidden transition-transform duration-200",
           "group-hover/badge:scale-110",
         )}
-        style={{ filter: imageFilter }}
       >
         {children}
       </span>
@@ -101,26 +101,35 @@ function RoleBadgeIcon({
     bloom,
     bloomColor,
   });
+  const isSvg = isRoleBadgeSvg(src);
+  const supersample = isSvg ? 1 : ROLE_BADGE_SUPERSAMPLE;
+  const renderSize = size * supersample;
 
   return (
-    <BadgeHoverShell
-      tooltip={tooltip}
-      size={size}
-      marginLeft={marginLeft}
-      imageFilter={imageFilter}
-    >
-      <img
-        src={src}
-        alt=""
-        draggable={false}
-        onError={onError}
-        className="block h-full w-full object-cover object-center"
+    <BadgeHoverShell tooltip={tooltip} size={size} marginLeft={marginLeft}>
+      <span
+        className="flex items-center justify-center"
         style={{
-          transform: `scale(${ROLE_BADGE_IMAGE_FILL_SCALE})`,
+          width: renderSize,
+          height: renderSize,
+          transform: supersample > 1 ? `scale(${1 / supersample})` : undefined,
           transformOrigin: "center",
+          filter: imageFilter,
         }}
-        loading="lazy"
-      />
+      >
+        <img
+          src={src}
+          alt=""
+          draggable={false}
+          onError={onError}
+          width={renderSize}
+          height={renderSize}
+          decoding="async"
+          className="block h-full w-full object-contain object-center"
+          style={{ imageRendering: "auto" }}
+          loading="lazy"
+        />
+      </span>
     </BadgeHoverShell>
   );
 }
