@@ -8,12 +8,12 @@ import {
   getRoleBadgeVisualScale,
   getRoleIconFallbackUrls,
   getRoleIconUrl,
+  getVisibleProfileRoles,
   isRoleBadgeSvg,
   getRoleTooltip,
   resolveRoleBadgeBloomColor,
   ROLE_BADGE_OVERLAP_PX,
   ROLE_BADGE_SUPERSAMPLE,
-  sortProfileRoles,
   type ProfileRoleAssignment,
 } from "@/lib/profile-roles";
 import { cn } from "@/lib/utils";
@@ -148,7 +148,7 @@ export function ProfileRoleBadges({
 }: Props) {
   if (profile.show_role_badges === false) return null;
 
-  const roles = sortProfileRoles(profile.roles ?? []);
+  const roles = getVisibleProfileRoles(profile);
   if (roles.length === 0) return null;
 
   const badgeSize = getRoleBadgeSizePx(profile);

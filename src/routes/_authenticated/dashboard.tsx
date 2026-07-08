@@ -58,6 +58,7 @@ import { LanyardNotFoundModal } from "@/components/dashboard/LanyardNotFoundModa
 import { HotelConnectionPanel } from "@/components/dashboard/HotelConnectionPanel";
 import { MoldurasPanel } from "@/components/dashboard/MoldurasPanel";
 import { EtiquetasPanel } from "@/components/dashboard/EtiquetasPanel";
+import { RoleBadgesVisibilityPicker } from "@/components/dashboard/RoleBadgesVisibilityPicker";
 import { SOCIALS, SOCIAL_MAP, normalizeHandle } from "@/lib/socials";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
@@ -79,6 +80,7 @@ import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions"
 import { formatSocialIconSizeLabel } from "@/lib/social-icons";
 import {
   getRoleBadgeGapPx,
+  normalizeRoleBadgesHidden,
   normalizeRoleBadgesPlacement,
   ROLE_BADGE_DISPLAY_PX,
   ROLE_BADGE_GAP_MAX,
@@ -160,12 +162,12 @@ function Dashboard() {
   );
 
   useEffect(() => {
-    if (!profile || !isPersonalizar) return;
+    if (!profile) return;
     const current = profile.card_height ?? DEFAULT_CARD_HEIGHT;
     if (current < minCardHeight) {
       setProfile((prev) => (prev ? { ...prev, card_height: minCardHeight } : prev));
     }
-  }, [minCardHeight, profile?.card_height, profile?.id, isPersonalizar]);
+  }, [minCardHeight, profile?.card_height, profile?.id]);
 
   useEffect(() => {
     setTextScale(getDashboardTextScale());
@@ -378,6 +380,7 @@ function Dashboard() {
         role_badges_placement: normalizeRoleBadgesPlacement(profile.role_badges_placement),
         role_badges_bloom: profile.role_badges_bloom === true,
         role_badges_bloom_color: profile.role_badges_bloom_color ?? null,
+        role_badges_hidden: normalizeRoleBadgesHidden(profile.role_badges_hidden),
         profile_labels: normalizeProfileLabels(profile.profile_labels),
         banner_url: profile.banner_url,
         background_url: profile.background_url,
@@ -828,12 +831,11 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
             </p>
           </Field>
         )}
-        {(profile.roles?.length ?? 0) > 0 ? (
-          <p className="text-[11px] text-white/45">
-            Your roles: {profile.roles!.map((r) => r.label).join(", ")}
-          </p>
-        ) : (
-          <p className="text-[11px] text-white/35">No roles assigned to your account.</p>
+        {(profile.roles?.length ?? 0) > 0 && (
+          <RoleBadgesVisibilityPicker profile={profile} update={update} />
+        )}
+        {(profile.roles?.length ?? 0) === 0 && (
+          <p className="text-[11px] text-white/35">{t("dashboard.perfil.roleBadges.noRolesAssigned")}</p>
         )}
       </div>
 

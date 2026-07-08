@@ -106,6 +106,60 @@ export function normalizeRoleBadgesPlacement(value: unknown): RoleBadgesPlacemen
   return ROLE_BADGES_PLACEMENT_DEFAULT;
 }
 
+const VALID_PROFILE_ROLE_IDS = new Set<ProfileRoleId>([
+  "staff",
+  "staff_dev",
+  "premium",
+  "donator",
+  "gifter",
+]);
+
+export function normalizeRoleBadgesHidden(raw: unknown): ProfileRoleId[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<ProfileRoleId>();
+  const out: ProfileRoleId[] = [];
+  for (const item of raw) {
+    if (typeof item !== "string") continue;
+    const id = item as ProfileRoleId;
+    if (!VALID_PROFILE_ROLE_IDS.has(id) || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
+export function pruneRoleBadgesHidden(
+  hidden: ProfileRoleId[],
+  assignedRoleIds: ProfileRoleId[],
+): ProfileRoleId[] {
+  const assigned = new Set(assignedRoleIds);
+  return hidden.filter((id) => assigned.has(id));
+}
+
+export function isRoleBadgeVisibleOnProfile(
+  roleId: ProfileRoleId,
+  hidden: ProfileRoleId[],
+): boolean {
+  return !hidden.includes(roleId);
+}
+
+export function toggleRoleBadgeHidden(
+  roleId: ProfileRoleId,
+  hidden: ProfileRoleId[],
+): ProfileRoleId[] {
+  if (hidden.includes(roleId)) {
+    return hidden.filter((id) => id !== roleId);
+  }
+  return [...hidden, roleId];
+}
+
+export function getVisibleProfileRoles(
+  profile: Pick<Profile, "roles" | "role_badges_hidden">,
+): ProfileRoleAssignment[] {
+  const hidden = new Set(normalizeRoleBadgesHidden(profile.role_badges_hidden));
+  return sortProfileRoles((profile.roles ?? []).filter((r) => !hidden.has(r.role_id)));
+}
+
 export function getRoleBadgeGapPx(
   profile: Pick<Profile, "role_badges_gap">,
 ): number {
@@ -122,6 +176,42 @@ export function getRoleBadgeSizePx(
   _profile?: Pick<Profile, "role_badges_size_px">,
 ): number {
   return ROLE_BADGE_DISPLAY_PX;
+}
+
+/** Altura extra no bloco do nome (somente placement below_name). */
+export function estimateRoleBadgesNameAreaHeight(
+  profile: Pick<Profile, "show_role_badges" | "role_badges_placement" | "role_badges_hidden"> & {
+    roles?: ProfileRoleAssignment[];
+  },
+): number {
+  if (profile.show_role_badges === false) return 0;
+  if (normalizeRoleBadgesPlacement(profile.role_badges_placement) !== "below_name") return 0;
+  if (getVisibleProfileRoles(profile).length === 0) return 0;
+  return getRoleBadgeSizePx(profile) + 4;
+}
+
+/** Altura das badges abaixo das redes + folga mínima antes do rodapé Discord. */
+export function estimateRoleBadgesBelowSocialsHeight(
+  profile: Pick<
+    Profile,
+    "show_role_badges" | "role_badges_placement" | "role_badges_gap" | "card_width" | "role_badges_hidden"
+  > & { roles?: ProfileRoleAssignment[] },
+  opts?: { rowWidth?: number },
+): number {
+  if (profile.show_role_badges === false) return 0;
+  if (normalizeRoleBadgesPlacement(profile.role_badges_placement) !== "below_socials") return 0;
+  const count = getVisibleProfileRoles(profile).length;
+  if (!count) return 0;
+
+  const badgeSize = getRoleBadgeSizePx(profile);
+  const gap = Math.max(0, getRoleBadgeGapPx(profile) - ROLE_BADGE_OVERLAP_PX);
+  const cardWidth = Number(profile.card_width) || 600;
+  const rowWidth = opts?.rowWidth ?? Math.max(80, cardWidth - 48);
+  const step = Math.max(1, badgeSize + gap);
+  const itemsPerRow = Math.max(1, Math.floor((rowWidth + gap) / step));
+  const rows = Math.ceil(count / itemsPerRow);
+
+  return 4 + rows * badgeSize + Math.max(0, rows - 1) * 2 + 4;
 }
 
 export function resolveRoleBadgeBloomColor(

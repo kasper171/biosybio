@@ -111,6 +111,9 @@ export const ptDashboard: MessageTree = {
       bloomColorHint: "Só a cor do brilho — não altera a imagem da badge.",
       monochrome: "Cor monocromática",
       badgeColor: "Cor do badge",
+      chooseVisible: "Badges na página",
+      chooseVisibleHint: "Clique para acender ou apagar. Apagadas não aparecem no perfil público.",
+      noRolesAssigned: "Nenhum cargo atribuído à sua conta.",
     },
     tapToReveal: {
       section: "Toque para revelar",

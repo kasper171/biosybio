@@ -112,6 +112,9 @@ export const enDashboard: MessageTree = {
       bloomColorHint: "Glow color only — does not change the badge image.",
       monochrome: "Monochrome color",
       badgeColor: "Badge color",
+      chooseVisible: "Badges on page",
+      chooseVisibleHint: "Click to turn on or off. Dimmed badges are hidden on your public profile.",
+      noRolesAssigned: "No roles assigned to your account.",
     },
     tapToReveal: {
       section: "Tap to reveal",

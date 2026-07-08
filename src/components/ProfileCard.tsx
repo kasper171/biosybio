@@ -336,8 +336,28 @@ function RoleBadgesBelowSocials({
     <ProfileRoleBadges
       profile={profile}
       align={roleBadgeAlign}
-      className={cn("mt-1 shrink-0", className)}
+      className={cn("mt-1 mb-1 shrink-0", className)}
     />
+  );
+}
+
+/** No layout alinhado, ancora conteúdo na largura do avatar (centralizado). */
+function AlignedAvatarColumnRow({
+  avatarSize,
+  children,
+  className,
+}: {
+  avatarSize: number;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("col-span-2 grid gap-x-4", className)}
+      style={{ gridTemplateColumns: `${avatarSize}px minmax(0, 1fr)` }}
+    >
+      <div className="flex min-w-0 justify-center overflow-visible">{children}</div>
+    </div>
   );
 }
 
@@ -458,19 +478,25 @@ function CardLayoutContent({
               <ProfileLabelsRow profile={profile} align={roleBadgeAlign} className="mt-2 shrink-0" />
             </div>
             {socialIcons && (
-              <div
-                className={cn("col-span-2", getSocialIconsRowClassName("aligned"))}
-                style={getSocialIconsRowStyle(profile)}
-              >
-                {socialIcons}
-              </div>
+              <AlignedAvatarColumnRow avatarSize={avatarSize}>
+                <div
+                  className={getSocialIconsRowClassName("aligned")}
+                  style={getSocialIconsRowStyle(profile)}
+                >
+                  {socialIcons}
+                </div>
+              </AlignedAvatarColumnRow>
             )}
-            <RoleBadgesBelowSocials
-              profile={profile}
-              placement={badgePlacement}
-              roleBadgeAlign={roleBadgeAlign}
-              className="col-span-2 w-full"
-            />
+            {badgePlacement === "below_socials" && (
+              <AlignedAvatarColumnRow avatarSize={avatarSize}>
+                <RoleBadgesBelowSocials
+                  profile={profile}
+                  placement={badgePlacement}
+                  roleBadgeAlign="center"
+                  className="w-full"
+                />
+              </AlignedAvatarColumnRow>
+            )}
           </div>
           {children && <div className="shrink-0 px-6 pb-2 text-left">{children}</div>}
         </div>

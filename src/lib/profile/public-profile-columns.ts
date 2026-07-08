@@ -31,6 +31,7 @@ export const PUBLIC_PROFILE_SELECT = [
   "role_badges_placement",
   "role_badges_bloom",
   "role_badges_bloom_color",
+  "role_badges_hidden",
   "profile_labels",
 
   // Banner / wallpaper

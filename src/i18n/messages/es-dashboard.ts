@@ -111,6 +111,9 @@ export const esDashboard: MessageTree = {
       bloomColorHint: "Solo el color del brillo — no cambia la imagen de la insignia.",
       monochrome: "Color monocromático",
       badgeColor: "Color de insignia",
+      chooseVisible: "Insignias en la página",
+      chooseVisibleHint: "Haz clic para encender o apagar. Las apagadas no aparecen en el perfil público.",
+      noRolesAssigned: "No hay roles asignados a tu cuenta.",
     },
     tapToReveal: {
       section: "Toca para revelar",

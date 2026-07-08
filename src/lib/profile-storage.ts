@@ -39,6 +39,8 @@ export type Profile = {
   /** Bloom individual em cada badge (mesmo método das logos sociais) */
   role_badges_bloom: boolean;
   role_badges_bloom_color: string | null;
+  /** role_ids ocultos na página — vazio = todas visíveis */
+  role_badges_hidden: import("@/lib/profile-roles").ProfileRoleId[];
   /** Etiquetas de perfil (tags pré-definidas) */
   profile_labels: ProfileLabelsState;
   banner_url: string | null;
