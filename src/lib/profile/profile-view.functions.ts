@@ -29,7 +29,7 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
       60,
       60,
     );
-    if (!ipAllowed) {
+    if (ipAllowed.kind === "denied") {
       return { ok: false as const, viewCount: null, rateLimited: true as const };
     }
 
@@ -39,7 +39,7 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
       200,
       60,
     );
-    if (!profileAllowed) {
+    if (profileAllowed.kind === "denied") {
       return { ok: false as const, viewCount: null, rateLimited: true as const };
     }
 

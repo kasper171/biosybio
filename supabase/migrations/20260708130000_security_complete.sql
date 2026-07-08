@@ -126,7 +126,6 @@ SELECT
   share_embed_title,
   share_embed_description,
   share_embed_image_url,
-  blocks,
   accent_color
 FROM public.profiles;
 

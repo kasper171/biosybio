@@ -53,13 +53,13 @@ export const checkUsernameTakenFn = createServerFn({ method: "POST" })
       };
     }
 
-    const ipAllowed = await consumeRateLimit(
+    const rate = await consumeRateLimit(
       supabaseAdmin,
       rateLimitBucket(["username_check", "ip", clientIp]),
       40,
       60,
     );
-    if (!ipAllowed) {
+    if (rate.kind === "denied") {
       return {
         ok: false as const,
         error: "Too many requests. Try again in a moment.",
@@ -119,13 +119,13 @@ export const signUpFn = createServerFn({ method: "POST" })
       };
     }
 
-    const ipAllowed = await consumeRateLimit(
+    const rate = await consumeRateLimit(
       supabaseAdmin,
       rateLimitBucket(["signup", "ip", clientIp]),
       5,
       3600,
     );
-    if (!ipAllowed) {
+    if (rate.kind === "denied") {
       await writeAuditLog({
         action: "signup_rate_limited",
         metadata: { email, username: cleanUser },

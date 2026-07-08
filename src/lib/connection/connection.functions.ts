@@ -118,7 +118,7 @@ export const verifyHotelMottoFn = createServerFn({ method: "POST" })
       15,
       60,
     );
-    if (!allowed) {
+    if (allowed.kind === "denied") {
       return {
         ok: false as const,
         error: "Too many validation attempts. Wait a moment.",

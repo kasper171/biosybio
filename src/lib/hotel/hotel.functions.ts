@@ -25,7 +25,7 @@ export const fetchHotelProfileFn = createServerFn({ method: "POST" })
       20,
       60,
     );
-    if (!allowed) {
+    if (allowed.kind === "denied") {
       return {
         ok: false,
         error: "service_unavailable",

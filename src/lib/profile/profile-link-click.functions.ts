@@ -30,7 +30,7 @@ export const incrementProfileLinkClickFn = createServerFn({ method: "POST" })
       120,
       60,
     );
-    if (!ipAllowed) {
+    if (ipAllowed.kind === "denied") {
       return { ok: false as const, rateLimited: true as const };
     }
 

@@ -11,7 +11,6 @@ import {
   MAX_USERNAME_LENGTH,
   usernameLengthError,
 } from "@/lib/username";
-import { isUsernameTaken } from "@/lib/username-availability";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
 import { AuthPageShell } from "@/components/auth/AuthPageShell";
@@ -146,28 +145,26 @@ function AuthPage() {
           return;
         }
 
-        const { taken } = await isUsernameTaken(cleanUser);
-        if (taken) {
-          if (await trySignIn(email, password)) {
-            notify(
-              { title: t("auth.accountFound"), description: t("auth.signingIn") },
-              "success",
-            );
-            navigate({ to: "/dashboard" });
-            return;
-          }
-          notify({
-            title: t("auth.usernameTaken"),
-            description: t("auth.usernameTakenDesc", { path: profileDisplayPath(cleanUser) }),
-          });
-          return;
-        }
-
         const result = await signUpFn({
           data: { email, password, username: cleanUser },
         });
 
         if (!result.ok) {
+          if (result.code === "username_taken") {
+            if (await trySignIn(email, password)) {
+              notify(
+                { title: t("auth.accountFound"), description: t("auth.signingIn") },
+                "success",
+              );
+              navigate({ to: "/dashboard" });
+              return;
+            }
+            notify({
+              title: t("auth.usernameTaken"),
+              description: t("auth.usernameTakenDesc", { path: profileDisplayPath(cleanUser) }),
+            });
+            return;
+          }
           if ("tryLogin" in result && result.tryLogin && (await trySignIn(email, password))) {
             notify(
               { title: t("auth.accountFound"), description: t("auth.signingIn") },

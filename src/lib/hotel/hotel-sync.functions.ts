@@ -56,7 +56,7 @@ export const syncProfileHotelDataFn = createServerFn({ method: "POST" })
       10,
       60,
     );
-    if (!allowed) {
+    if (allowed.kind === "denied") {
       return { ok: false as const, error: "rate_limited" as const, patch: null };
     }
 
