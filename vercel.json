@@ -61,10 +61,6 @@
           "value": "on"
         },
         {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' 'strict-dynamic'; style-src 'self' https://fonts.googleapis.com; style-src-elem 'self' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://cdn.discordapp.com https://media.discordapp.net https://dcdn.dstn.to https://i.scdn.co https://img.youtube.com https://www.habbo.com https://www.habbo.com.br https://imaging.habblet.city; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.lanyard.rest https://discord.com https://dcdn.dstn.to https://www.habbo.com https://www.habbo.com.br https://api.habblet.city; media-src 'self' blob: https://*.supabase.co; worker-src 'self' blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://open.spotify.com"
-        },
-        {
           "key": "Cache-Control",
           "value": "no-cache, no-store, must-revalidate"
         }

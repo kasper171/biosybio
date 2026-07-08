@@ -14,7 +14,8 @@ export function buildContentSecurityPolicy(nonce: string): string {
     "object-src 'none'",
     "upgrade-insecure-requests",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    "style-src 'self' https://fonts.googleapis.com",
+    `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
+    `style-src-elem 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
     "style-src-attr 'unsafe-inline'",
     [
       "img-src 'self' data: blob:",
