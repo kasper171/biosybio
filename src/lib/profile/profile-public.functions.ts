@@ -8,6 +8,11 @@ const usernameInput = z.object({
 export const fetchPublicProfileByUsernameFn = createServerFn({ method: "POST" })
   .inputValidator(usernameInput)
   .handler(async ({ data }) => {
-    const { fetchPublicProfileByUsername } = await import("@/lib/profile/profile-public.server");
-    return fetchPublicProfileByUsername(data.username);
+    try {
+      const { fetchPublicProfileByUsername } = await import("@/lib/profile/profile-public.server");
+      return await fetchPublicProfileByUsername(data.username);
+    } catch (error) {
+      console.error("[fetchPublicProfileByUsernameFn]", error);
+      return null;
+    }
   });
