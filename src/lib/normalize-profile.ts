@@ -30,6 +30,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     social_icon_style: (p.social_icon_style as "boxed" | "logo") === "logo" ? "logo" : "boxed",
     social_icon_size: Math.min(140, Math.max(60, Number(p.social_icon_size ?? 100) || 100)),
     social_icon_bloom: p.social_icon_bloom === true,
+    social_icon_bloom_color: p.social_icon_bloom_color ?? null,
     show_social_titles: p.show_social_titles === true,
     avatar_border_color: (p.avatar_border_color as string) ?? p.card_border_color ?? "#ff2d7a",
     avatar_border_width: Number(p.avatar_border_width ?? 4),

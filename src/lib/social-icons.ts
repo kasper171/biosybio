@@ -2,6 +2,9 @@ import type { CSSProperties } from "react";
 import type { Profile } from "@/lib/profile-storage";
 import { hexToRgba } from "@/lib/profile-colors";
 
+/** Espaço horizontal entre ícones sociais no card (~30% menor que gap-1 / 4px) */
+export const SOCIAL_ICON_GAP_PX = 3;
+
 export function getSocialIconScale(profile: Profile): number {
   const raw = Number(profile.social_icon_size ?? 100);
   if (!Number.isFinite(raw)) return 1;
@@ -21,17 +24,26 @@ export function getSocialIconDimensions(profile: Profile, compact: boolean) {
   };
 }
 
+export function resolveSocialIconBloomColor(
+  profile: Profile,
+  iconColor: string,
+): string {
+  const custom = profile.social_icon_bloom_color?.trim();
+  if (custom) return custom;
+  return iconColor;
+}
+
+/** Glow suave aplicado no ícone (SVG), não no container retangular */
 export function getSocialIconBloomStyle(
-  color: string,
+  glowColor: string,
   enabled: boolean,
 ): CSSProperties | undefined {
   if (!enabled) return undefined;
 
   return {
     filter: [
-      `drop-shadow(0 0 3px ${color})`,
-      `drop-shadow(0 0 8px ${hexToRgba(color, 0.85)})`,
-      `drop-shadow(0 0 16px ${hexToRgba(color, 0.45)})`,
+      `drop-shadow(0 0 1px ${hexToRgba(glowColor, 0.55)})`,
+      `drop-shadow(0 0 4px ${hexToRgba(glowColor, 0.28)})`,
     ].join(" "),
   };
 }

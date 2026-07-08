@@ -154,6 +154,7 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS social_icon_style text NOT NULL DEFAULT 'boxed',
   ADD COLUMN IF NOT EXISTS social_icon_size integer NOT NULL DEFAULT 100,
   ADD COLUMN IF NOT EXISTS social_icon_bloom boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS social_icon_bloom_color text,
   ADD COLUMN IF NOT EXISTS avatar_border_color text NOT NULL DEFAULT '#ff2d7a',
   ADD COLUMN IF NOT EXISTS avatar_border_width numeric NOT NULL DEFAULT 4,
   ADD COLUMN IF NOT EXISTS avatar_size numeric NOT NULL DEFAULT 96,

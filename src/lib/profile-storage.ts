@@ -66,6 +66,8 @@ export type Profile = {
   social_icon_size: number;
   /** Bloom / glow ao redor dos ícones sociais */
   social_icon_bloom: boolean;
+  /** Cor do glow (independente da cor do ícone) */
+  social_icon_bloom_color: string | null;
   /** Exibe o nome da rede abaixo do ícone */
   show_social_titles: boolean;
   card_border_style: string;

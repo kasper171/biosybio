@@ -49,6 +49,7 @@ export type Database = {
           social_icon_style: string
           social_icon_size: number
           social_icon_bloom: boolean
+          social_icon_bloom_color: string | null
           show_social_titles: boolean
           socials: Json
           show_view_count: boolean
@@ -114,6 +115,7 @@ export type Database = {
           social_icon_style?: string
           social_icon_size?: number
           social_icon_bloom?: boolean
+          social_icon_bloom_color?: string | null
           show_social_titles?: boolean
           socials?: Json
           show_view_count?: boolean
@@ -179,6 +181,7 @@ export type Database = {
           social_icon_style?: string
           social_icon_size?: number
           social_icon_bloom?: boolean
+          social_icon_bloom_color?: string | null
           show_social_titles?: boolean
           socials?: Json
           show_view_count?: boolean

@@ -25,6 +25,7 @@ import { SOCIAL_MAP, resolveSocialUrl } from "@/lib/socials";
 import {
   getSocialIconBloomStyle,
   getSocialIconDimensions,
+  resolveSocialIconBloomColor,
 } from "@/lib/social-icons";
 import { FaGlobe } from "react-icons/fa";
 import { cn } from "@/lib/utils";
@@ -225,7 +226,8 @@ export function ProfilePageContent({
                 : (profile.social_icon_color ?? "#ffffff");
               const compact = cardLayout === "aligned";
               const { boxPx, iconPx } = getSocialIconDimensions(profile, compact);
-              const bloomStyle = getSocialIconBloomStyle(iconColor, socialBloom);
+              const bloomColor = resolveSocialIconBloomColor(profile, iconColor);
+              const bloomStyle = getSocialIconBloomStyle(bloomColor, socialBloom);
               return (
                 <a
                   key={key}
@@ -254,7 +256,6 @@ export function ProfilePageContent({
                     style={{
                       width: boxPx,
                       height: boxPx,
-                      ...bloomStyle,
                     }}
                   >
                     <Icon
@@ -262,6 +263,7 @@ export function ProfilePageContent({
                         color: iconColor,
                         width: iconPx,
                         height: iconPx,
+                        ...bloomStyle,
                       }}
                     />
                   </span>

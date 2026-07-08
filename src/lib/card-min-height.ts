@@ -98,7 +98,7 @@ function estimateSocialRowsHeight(profile: Profile, cardWidth: number): number {
   const logo = profile.social_icon_style === "logo";
   const icon = Math.round((logo ? 36 : 44) * scale);
   const titleExtra = profile.show_social_titles === true ? 14 : 0;
-  const gap = 4;
+  const gap = 3;
   const rowWidth = cardWidth - 48;
   const rowNeeded = count * icon + (count - 1) * gap;
   if (rowNeeded <= rowWidth) {

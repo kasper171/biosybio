@@ -10,6 +10,8 @@
 param(
   [switch]$SkipLocalBuild,
   [switch]$ForceReinstall,
+  # Deploy via Git push ja dispara build na Vercel. CLI manual consome quota (100/dia no plano Free).
+  [switch]$VercelCli,
   [string]$VercelProjectName = "biosybio"
 )
 
@@ -42,6 +44,14 @@ function Invoke-Npm {
 
 function Test-NodeModulesReady {
   return (Test-Path "node_modules\vite\package.json") -and (Test-Path "node_modules\@tanstack\react-start\package.json")
+}
+
+function Reset-StagedEnvSecrets {
+  git reset HEAD -- .env 2>$null
+  git reset HEAD -- vercel-env-import.txt 2>$null
+  Get-ChildItem -Path . -Filter ".env.*" -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -ne ".env.example" } |
+    ForEach-Object { git reset HEAD -- $_.Name 2>$null }
 }
 
 Write-Step -Number "1" -Message "Verificando pasta do projeto"
@@ -137,7 +147,7 @@ if ($SkipLocalBuild) {
 
 Write-Step -Number "7" -Message "Commit e push para o GitHub"
 git add -A
-git reset HEAD -- .env .env.* vercel-env-import.txt 2>$null
+Reset-StagedEnvSecrets
 $stillDirty = git status --porcelain
 if ($stillDirty) {
   $msg = "deploy: redeploy completo $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
@@ -156,33 +166,40 @@ git push -u origin $branch
 if ($LASTEXITCODE -ne 0) { Fail "git push falhou. Verifique login no GitHub." }
 Write-Host "Push concluido." -ForegroundColor Green
 
-Write-Step -Number "8" -Message "Deploy na Vercel em producao com rebuild forcado"
-Write-Host "O push no GitHub ja deve ter disparado deploy automatico (se o repo esta ligado na Vercel)." -ForegroundColor Green
+Write-Step -Number "8" -Message "Deploy na Vercel"
+Write-Host "O push no GitHub dispara deploy automatico (repo ligado na Vercel)." -ForegroundColor Green
 Write-Host "Acompanhe em: https://vercel.com/rodrigodiscord01-9846s-projects/biosybio" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Tentando deploy direto via CLI (projeto: $VercelProjectName)..." -ForegroundColor Cyan
-Write-Host "Na primeira vez pode pedir para linkar o projeto na conta Vercel." -ForegroundColor Yellow
 
-$vercelArgs = @(
-  "deploy",
-  "--prod",
-  "--force",
-  "--yes",
-  "--name", $VercelProjectName
-)
-
-npx --yes vercel@latest @vercelArgs
-if ($LASTEXITCODE -ne 0) {
+if (-not $VercelCli) {
   Write-Host ""
-  Write-Host "Deploy via CLI falhou, mas o PUSH NO GITHUB JA FOI FEITO." -ForegroundColor Yellow
-  Write-Host "Se o repositorio kasper171/biosybio esta conectado na Vercel, o site" -ForegroundColor Yellow
-  Write-Host "ja esta sendo atualizado automaticamente. Confira:" -ForegroundColor Yellow
-  Write-Host "https://vercel.com/rodrigodiscord01-9846s-projects/biosybio" -ForegroundColor Yellow
-  Write-Host ""
-  Write-Host "Para linkar o CLI ao projeto existente (opcional, uma vez so):" -ForegroundColor Cyan
-  Write-Host "  npx vercel link --project $VercelProjectName" -ForegroundColor Cyan
+  Write-Host "CLI da Vercel omitido (economiza quota: max 100 deploys/dia no plano Free)." -ForegroundColor Yellow
+  Write-Host "Para forcar deploy manual via CLI: adicione -VercelCli ao comando." -ForegroundColor Yellow
 } else {
-  Write-Host "Deploy via CLI concluido." -ForegroundColor Green
+  Write-Host ""
+  Write-Host "Tentando deploy direto via CLI (projeto: $VercelProjectName)..." -ForegroundColor Cyan
+  Write-Host "Na primeira vez pode pedir para linkar o projeto na conta Vercel." -ForegroundColor Yellow
+
+  $vercelArgs = @("deploy", "--prod", "--force", "--yes")
+  if (Test-Path ".vercel\project.json") {
+    $vercelArgs += "--project", $VercelProjectName
+  }
+
+  $vercelOut = npx --yes vercel@latest @vercelArgs 2>&1 | Out-String
+  Write-Host $vercelOut
+  if ($LASTEXITCODE -ne 0) {
+    if ($vercelOut -match "api-deployments-free-per-day") {
+      Write-Host ""
+      Write-Host "Limite diario de deploys da Vercel atingido (plano Free)." -ForegroundColor Yellow
+      Write-Host "O push no GitHub JA FOI FEITO - o deploy automatico deve rodar em alguns minutos." -ForegroundColor Green
+    } else {
+      Write-Host ""
+      Write-Host "Deploy via CLI falhou, mas o PUSH NO GITHUB JA FOI FEITO." -ForegroundColor Yellow
+    }
+    Write-Host "Confira: https://vercel.com/rodrigodiscord01-9846s-projects/biosybio" -ForegroundColor Cyan
+    Write-Host "Para linkar o CLI (opcional): npx vercel link --project $VercelProjectName" -ForegroundColor Cyan
+  } else {
+    Write-Host "Deploy via CLI concluido." -ForegroundColor Green
+  }
 }
 
 Write-Step -Number "9" -Message "Checklist pos-deploy"
@@ -197,9 +214,8 @@ Confira na Vercel (Settings -> Environment Variables) se existem TODAS:
   * SUPABASE_SERVICE_ROLE_KEY
 
 Migracoes SQL no Supabase se ainda nao rodou:
-  * supabase/migrations/20260707010000_username_min_2_chars.sql
-  * supabase/migrations/20260707020000_default_card_centered_600x400.sql
-  * supabase/migrations/20260707030000_connection_unique_constraints.sql
+  * supabase/migrations/20260707110000_social_icon_size_bloom.sql
+  * supabase/migrations/20260707120000_social_icon_bloom_color.sql
 
 Teste: https://www.byosy.bio/auth?mode=signup
 '@
