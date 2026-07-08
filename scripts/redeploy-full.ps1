@@ -54,6 +54,34 @@ function Reset-StagedEnvSecrets {
     ForEach-Object { git reset HEAD -- $_.Name 2>$null }
 }
 
+function Get-GitHubRepoSlug {
+  $remote = (git remote get-url origin 2>$null).Trim()
+  if (-not $remote) { return $null }
+  if ($remote -match "github\.com[:/](?<owner>[^/]+)/(?<repo>[^/.]+)") {
+    return "$($Matches.owner)/$($Matches.repo)"
+  }
+  return $null
+}
+
+function Test-VercelRateLimited {
+  param([string]$CommitSha)
+  $repo = Get-GitHubRepoSlug
+  if (-not $repo -or -not $CommitSha) { return $false }
+  try {
+    Start-Sleep -Seconds 5
+    $uri = "https://api.github.com/repos/$repo/commits/$CommitSha/status"
+    $status = Invoke-RestMethod -Uri $uri -Headers @{ "User-Agent" = "biosy-redeploy-script" }
+    foreach ($entry in $status.statuses) {
+      if ($entry.context -eq "Vercel" -and $entry.description -match "rate limit") {
+        return $true
+      }
+    }
+  } catch {
+    Write-Host "AVISO: nao foi possivel verificar status da Vercel no GitHub." -ForegroundColor Yellow
+  }
+  return $false
+}
+
 Write-Step -Number "1" -Message "Verificando pasta do projeto"
 if (-not (Test-Path "package.json")) {
   Fail "package.json nao encontrado. Rode este script dentro da pasta Byosy."
@@ -166,14 +194,28 @@ git push -u origin $branch
 if ($LASTEXITCODE -ne 0) { Fail "git push falhou. Verifique login no GitHub." }
 Write-Host "Push concluido." -ForegroundColor Green
 
+$headSha = (git rev-parse HEAD).Trim()
+$vercelRateLimited = Test-VercelRateLimited -CommitSha $headSha
+
 Write-Step -Number "8" -Message "Deploy na Vercel"
-Write-Host "O push no GitHub dispara deploy automatico (repo ligado na Vercel)." -ForegroundColor Green
 Write-Host "Acompanhe em: https://vercel.com/rodrigodiscord01-9846s-projects/biosybio" -ForegroundColor Cyan
 
-if (-not $VercelCli) {
+if ($vercelRateLimited) {
   Write-Host ""
-  Write-Host "CLI da Vercel omitido (economiza quota: max 100 deploys/dia no plano Free)." -ForegroundColor Yellow
-  Write-Host "Para forcar deploy manual via CLI: adicione -VercelCli ao comando." -ForegroundColor Yellow
+  Write-Host "BLOQUEIO DA VERCEL: limite diario de deploys atingido (plano Free, max 100/dia)." -ForegroundColor Red
+  Write-Host "O push no GitHub foi feito (commit $headSha), mas a Vercel NAO vai compilar ate resetar a quota (~24h)." -ForegroundColor Yellow
+  Write-Host "Producao continua no deploy anterior. Evite rodar redeploy varias vezes seguidas." -ForegroundColor Yellow
+  Write-Host "Opcoes: aguardar 24h e redeploy, ou upgrade Pro em https://vercel.com/account/plan" -ForegroundColor Yellow
+} else {
+  Write-Host "O push no GitHub dispara deploy automatico (repo ligado na Vercel)." -ForegroundColor Green
+}
+
+if (-not $VercelCli) {
+  if (-not $vercelRateLimited) {
+    Write-Host ""
+    Write-Host "CLI da Vercel omitido (economiza quota: max 100 deploys/dia no plano Free)." -ForegroundColor Yellow
+    Write-Host "Para forcar deploy manual via CLI: adicione -VercelCli ao comando." -ForegroundColor Yellow
+  }
 } else {
   Write-Host ""
   Write-Host "Tentando deploy direto via CLI (projeto: $VercelProjectName)..." -ForegroundColor Cyan
@@ -190,7 +232,7 @@ if (-not $VercelCli) {
     if ($vercelOut -match "api-deployments-free-per-day") {
       Write-Host ""
       Write-Host "Limite diario de deploys da Vercel atingido (plano Free)." -ForegroundColor Yellow
-      Write-Host "O push no GitHub JA FOI FEITO - o deploy automatico deve rodar em alguns minutos." -ForegroundColor Green
+      Write-Host "Nenhum deploy novo sera feito ate a quota resetar (~24h)." -ForegroundColor Yellow
     } else {
       Write-Host ""
       Write-Host "Deploy via CLI falhou, mas o PUSH NO GITHUB JA FOI FEITO." -ForegroundColor Yellow
@@ -203,7 +245,22 @@ if (-not $VercelCli) {
 }
 
 Write-Step -Number "9" -Message "Checklist pos-deploy"
-$checklist = @'
+if ($vercelRateLimited) {
+  $checklist = @'
+PUSH OK, MAS DEPLOY BLOQUEADO PELA VERCEL (quota diaria).
+
+O codigo esta no GitHub, mas www.byosy.bio ainda mostra o deploy anterior.
+Amanha (apos reset da quota), rode de novo:
+  powershell -ExecutionPolicy Bypass -File .\scripts\redeploy-full.ps1 -SkipLocalBuild
+
+Ou no painel Vercel: Deployments -> Redeploy no ultimo commit (quando a quota liberar).
+
+Migracoes SQL no Supabase (rode manualmente se ainda nao rodou):
+  * supabase/migrations/20260707110000_social_icon_size_bloom.sql
+  * supabase/migrations/20260707120000_social_icon_bloom_color.sql
+'@
+} else {
+  $checklist = @'
 DEPLOY CONCLUIDO.
 
 Confira na Vercel (Settings -> Environment Variables) se existem TODAS:
@@ -219,4 +276,5 @@ Migracoes SQL no Supabase se ainda nao rodou:
 
 Teste: https://www.byosy.bio/auth?mode=signup
 '@
+}
 Write-Host $checklist -ForegroundColor Green
