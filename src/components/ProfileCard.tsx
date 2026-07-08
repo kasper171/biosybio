@@ -345,7 +345,7 @@ function CardLayoutContent({
             </div>
             {socialIcons && (
               <div
-                className={cn("col-span-2", getSocialIconsRowClassName("aligned"))}
+                className={getSocialIconsRowClassName("aligned")}
                 style={getSocialIconsRowStyle(profile)}
               >
                 {socialIcons}

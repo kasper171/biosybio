@@ -33,7 +33,7 @@ export function getSocialIconsRowClassName(
   layout: Profile["card_layout"] | undefined,
 ): string {
   const base = "biosy-social-icons-row flex min-w-0 max-w-full flex-wrap items-center overflow-visible";
-  if (layout === "aligned") return `${base} w-full justify-start`;
+  if (layout === "aligned") return `${base} justify-center`;
   return `${base} shrink-0 justify-center`;
 }
 
