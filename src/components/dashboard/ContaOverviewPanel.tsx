@@ -192,7 +192,7 @@ export function ContaOverviewPanel({ profile }: Props) {
                 target="_blank"
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 dash-t-body font-semibold text-[#0b0b0f] transition hover:bg-white/90"
               >
-                {t("dashboard.layout.myPage")}
+                {t("dashboard.layout.footer.myPage")}
                 <ArrowUpRight className="dash-icon-sm" />
               </Link>
               <Link

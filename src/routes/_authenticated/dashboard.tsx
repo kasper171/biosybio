@@ -652,7 +652,7 @@ function Dashboard() {
             className="biosy-dashboard-shell flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-2 text-xs font-medium text-white/80 transition hover:bg-white/[0.04]"
           >
             <Share2 className="h-3.5 w-3.5" />
-            {t("dashboard.layout.shareLink")}
+            {t("dashboard.layout.footer.shareLink")}
           </button>
           <Link
             to="/$username"
@@ -661,7 +661,7 @@ function Dashboard() {
             className="biosy-dashboard-shell flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-2 text-xs font-medium text-white/80 transition hover:bg-white/[0.04]"
           >
             <Eye className="h-3.5 w-3.5" />
-            {t("dashboard.layout.myPage")}
+            {t("dashboard.layout.footer.myPage")}
           </Link>
           <button
             type="button"

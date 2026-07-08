@@ -260,7 +260,7 @@ export function DashboardAccountLayout({
                   className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
                 >
                   <ExternalLink className="dash-icon-md" />
-                  {t("dashboard.layout.myPage")}
+                  {t("dashboard.layout.footer.myPage")}
                 </Link>
                 <button
                   type="button"
@@ -268,7 +268,7 @@ export function DashboardAccountLayout({
                   className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 dash-t-body text-white/60 transition hover:bg-white/[0.04] hover:text-white"
                 >
                   <Share2 className="dash-icon-md" />
-                  {t("dashboard.layout.shareLink")}
+                  {t("dashboard.layout.footer.shareLink")}
                 </button>
               </div>
             </>
