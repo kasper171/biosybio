@@ -30,6 +30,7 @@ import {
   getDashboardTextScale,
   type DashboardTextScale,
 } from "@/lib/dashboard-text-scale";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 export type AccountSection = "overview" | "estatisticas" | "privacidade" | "templates" | "personalizar";
 
@@ -59,19 +60,33 @@ type NavLink = {
   active?: boolean;
 };
 
-const PERSONALIZE_PANELS: { key: PersonalizePanelKey; label: string; icon: LucideIcon }[] = [
-  { key: "perfil", label: "Profile", icon: User },
-  { key: "midia", label: "Media", icon: ImageIcon },
-  { key: "audio", label: "Audio", icon: Music2 },
-  { key: "blocos", label: "Blocks", icon: LayoutGrid },
-  { key: "aparencia", label: "Appearance", icon: Palette },
-  { key: "molduras", label: "Frames", icon: Frame },
-  { key: "efeitos", label: "Effects", icon: Sparkles },
-  { key: "colors", label: "Colors", icon: Paintbrush },
-  { key: "redes", label: "Social links", icon: Link2 },
-  { key: "conexoes", label: "Connections", icon: Link2 },
-  { key: "comentarios", label: "Comments", icon: MessageSquare },
+const PERSONALIZE_PANEL_DEFS: { key: PersonalizePanelKey; icon: LucideIcon }[] = [
+  { key: "perfil", icon: User },
+  { key: "midia", icon: ImageIcon },
+  { key: "audio", icon: Music2 },
+  { key: "blocos", icon: LayoutGrid },
+  { key: "aparencia", icon: Palette },
+  { key: "molduras", icon: Frame },
+  { key: "efeitos", icon: Sparkles },
+  { key: "colors", icon: Paintbrush },
+  { key: "redes", icon: Link2 },
+  { key: "conexoes", icon: Link2 },
+  { key: "comentarios", icon: MessageSquare },
 ];
+
+export function usePersonalizePanels() {
+  const { t } = useI18n();
+  return PERSONALIZE_PANEL_DEFS.map((panel) => ({
+    ...panel,
+    label: t(`dashboard.layout.panels.${panel.key}`),
+  }));
+}
+
+/** @deprecated Use usePersonalizePanels() */
+export const PERSONALIZE_PANELS = PERSONALIZE_PANEL_DEFS.map((p) => ({
+  ...p,
+  label: p.key,
+}));
 
 type Props = {
   profile: Profile;
@@ -92,6 +107,8 @@ export function DashboardAccountLayout({
   overlay = false,
 }: Props) {
   const navigate = useNavigate();
+  const { t } = useI18n();
+  const personalizePanels = usePersonalizePanels();
   const [textScale, setTextScale] = useState<DashboardTextScale>(DASHBOARD_TEXT_SCALE_DEFAULT);
 
   useEffect(() => {
@@ -104,14 +121,14 @@ export function DashboardAccountLayout({
   const contaLinks: NavLink[] = [
     {
       id: "overview",
-      label: "Dashboard",
+      label: t("dashboard.layout.nav.dashboard"),
       icon: LayoutDashboard,
       to: "/dashboard",
       active: activeSection === "overview",
     },
     {
       id: "stats",
-      label: "Analytics",
+      label: t("dashboard.layout.nav.analytics"),
       icon: BarChart3,
       to: "/dashboard",
       search: { section: "estatisticas" },
@@ -119,7 +136,7 @@ export function DashboardAccountLayout({
     },
     {
       id: "templates",
-      label: "Templates",
+      label: t("dashboard.layout.nav.templates"),
       icon: LayoutTemplate,
       to: "/dashboard",
       search: { section: "templates" },
@@ -127,7 +144,7 @@ export function DashboardAccountLayout({
     },
     {
       id: "privacidade",
-      label: "Account",
+      label: t("dashboard.layout.nav.account"),
       icon: Shield,
       to: "/dashboard",
       search: { section: "privacidade" },
@@ -144,9 +161,9 @@ export function DashboardAccountLayout({
     const url = profilePublicUrl(profile.username);
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copied!");
+      toast.success(t("dashboard.toasts.linkCopied"));
     } catch {
-      toast.error("Could not copy link");
+      toast.error(t("dashboard.toasts.linkCopyFailed"));
     }
   };
 
@@ -181,7 +198,7 @@ export function DashboardAccountLayout({
           </p>
           <div className="mb-4 space-y-0.5">
             {isPersonalizar ? (
-              PERSONALIZE_PANELS.map((panel) => (
+              personalizePanels.map((panel) => (
                 <SidebarLink
                   key={panel.key}
                   item={{

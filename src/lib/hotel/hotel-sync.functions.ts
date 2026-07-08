@@ -10,6 +10,8 @@ import {
   isHabbletConnected,
 } from "@/lib/hotel/profile-hotel";
 import type { Profile } from "@/lib/profile-storage";
+import { requireAuthenticatedUserId } from "@/lib/require-auth.server";
+import { consumeRateLimit, rateLimitBucket } from "@/lib/rate-limit.server";
 
 const syncInput = z.object({
   profileId: z.string().uuid(),
@@ -32,6 +34,11 @@ type HotelSyncRow = Pick<
 export const syncProfileHotelDataFn = createServerFn({ method: "POST" })
   .inputValidator(syncInput)
   .handler(async ({ data }) => {
+    const userId = await requireAuthenticatedUserId();
+    if (data.profileId !== userId) {
+      return { ok: false as const, error: "forbidden" as const, patch: null };
+    }
+
     const force = data.force === true;
 
     let supabaseAdmin: Awaited<
@@ -41,6 +48,16 @@ export const syncProfileHotelDataFn = createServerFn({ method: "POST" })
       ({ supabaseAdmin } = await import("@/integrations/supabase/client.server"));
     } catch {
       return { ok: false as const, error: "server_misconfigured" as const, patch: null };
+    }
+
+    const allowed = await consumeRateLimit(
+      supabaseAdmin,
+      rateLimitBucket(["hotel-sync", userId]),
+      10,
+      60,
+    );
+    if (!allowed) {
+      return { ok: false as const, error: "rate_limited" as const, patch: null };
     }
 
     const { data: row, error } = await supabaseAdmin

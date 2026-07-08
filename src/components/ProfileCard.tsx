@@ -28,6 +28,7 @@ import { AVATAR_FRAME_SCALE } from "@/lib/avatar-frames";
 import { ProfileRoleBadges } from "@/components/ProfileRoleBadges";
 import { cn } from "@/lib/utils";
 import { getSocialIconsRowStyle, getSocialIconsRowClassName } from "@/lib/social-icons";
+import { imageObjectPosition } from "@/lib/image-position";
 
 /** Altura visível do banner (% do card) — não depende do tamanho do anel */
 const BANNER_VISIBLE_RATIO = 0.34;
@@ -124,7 +125,19 @@ function AvatarBlock({
           ...(ringWidth > 0 ? { boxShadow: `0 0 0 ${ringWidth}px ${ringColor}` } : {}),
         }}
       >
-        {profile.avatar_url ? <AvatarImage src={profile.avatar_url} alt="" className="object-cover" /> : null}
+        {profile.avatar_url ? (
+          <AvatarImage
+            src={profile.avatar_url}
+            alt=""
+            className="object-cover"
+            style={{
+              objectPosition: imageObjectPosition(
+                profile.avatar_pos_x ?? 50,
+                profile.avatar_pos_y ?? 50,
+              ),
+            }}
+          />
+        ) : null}
         <AvatarFallback
           className="text-white/45"
           style={{ backgroundColor: hexToRgba(profile.card_color, Math.min(profile.card_opacity + 0.15, 1)) }}

@@ -37,7 +37,7 @@ export type CreatorAvatar = {
 
 export async function fetchCreatorAvatars(limit = 5): Promise<CreatorAvatar[]> {
   const { data, error } = await supabase
-    .from("profiles")
+    .from("profiles_public")
     .select("username, display_name, avatar_url")
     .not("avatar_url", "is", null)
     .neq("avatar_url", "")
@@ -79,19 +79,10 @@ export async function fetchPlatformStats(): Promise<PlatformStats> {
     console.error("[fetchPlatformStats]", error.message);
   }
 
-  const [{ count }, { data: sums }] = await Promise.all([
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("profiles").select("view_count, link_click_count"),
-  ]);
-
-  const rows = sums ?? [];
-  const realViews = rows.reduce((acc, row) => acc + Number(row.view_count ?? 0), 0);
-  const realClicks = rows.reduce((acc, row) => acc + Number((row as { link_click_count?: number }).link_click_count ?? 0), 0);
-
   return {
-    profileCount: count ?? 0,
-    totalViews: PLATFORM_VIEWS_BASE + realViews,
-    totalClicks: PLATFORM_CLICKS_BASE + realClicks,
+    profileCount: 0,
+    totalViews: PLATFORM_VIEWS_BASE,
+    totalClicks: PLATFORM_CLICKS_BASE,
   };
 }
 
@@ -101,7 +92,7 @@ export async function fetchFeaturedCreators(limit = 24): Promise<FeaturedCreator
   if (error) {
     console.error("[fetchFeaturedCreators]", error.message);
     const { data: fallback } = await supabase
-      .from("profiles")
+      .from("profiles_public")
       .select("username, display_name, avatar_url, view_count")
       .not("avatar_url", "is", null)
       .neq("avatar_url", "")

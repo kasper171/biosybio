@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useI18n } from "@/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -19,6 +20,7 @@ const gradientStyle = {
 export function SiteAuthButtons({ variant = "header", className }: Props) {
   const navigate = useNavigate();
   const { isLoggedIn, loading } = useAuthSession();
+  const { t } = useI18n();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -37,7 +39,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
           className={cn(gradientBtn, "inline-flex px-6 py-3", className)}
           style={gradientStyle}
         >
-          Go to Dashboard <ArrowRight className="h-4 w-4" />
+          {t("nav.goToDashboard")} <ArrowRight className="h-4 w-4" />
         </Link>
       );
     }
@@ -48,7 +50,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
           to="/dashboard"
           className="text-sm text-white/80 transition hover:text-white"
         >
-          Dashboard
+          {t("nav.dashboard")}
         </Link>
         <button
           type="button"
@@ -56,7 +58,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
           className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/90 transition hover:bg-white/10 hover:text-white"
         >
           <LogOut className="h-4 w-4" />
-          Logout
+          {t("nav.logout")}
         </button>
       </div>
     );
@@ -70,7 +72,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
         className={cn(gradientBtn, "inline-flex px-6 py-3", className)}
         style={gradientStyle}
       >
-        Create my profile for free <ArrowRight className="h-4 w-4" />
+        {t("nav.createProfileFree")} <ArrowRight className="h-4 w-4" />
       </Link>
     );
   }
@@ -78,7 +80,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <Link to="/auth" className="hidden text-sm text-white/80 transition hover:text-white sm:block">
-        Sign in
+        {t("nav.signIn")}
       </Link>
       <Link
         to="/auth"
@@ -86,7 +88,7 @@ export function SiteAuthButtons({ variant = "header", className }: Props) {
         className={gradientBtn}
         style={gradientStyle}
       >
-        Create my profile <ArrowRight className="h-4 w-4" />
+        {t("nav.createProfile")} <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
   );

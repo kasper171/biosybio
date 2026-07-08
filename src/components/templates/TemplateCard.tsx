@@ -17,8 +17,12 @@ function buildTemplatePreviewProfile(template: ProfileTemplateWithAuthor): Profi
     bio: "Style preview",
     // mídia (fica vazio no preview)
     avatar_url: null,
+    avatar_pos_x: 50,
+    avatar_pos_y: 50,
     banner_url: null,
     background_url: null,
+    background_pos_x: 50,
+    background_pos_y: 50,
     inner_banner_url: null,
     // socials vazias para não poluir
     socials: {},

@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { MotionConfig } from "motion/react";
 import { HomeHeroEntrance } from "@/components/home/HomeHeroEntrance";
 import { SiteLogo } from "@/components/SiteLogo";
-import { SITE_TAGLINE } from "@/lib/site";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type AuthPageShellProps = {
   mode: "signin" | "signup";
@@ -23,6 +23,8 @@ export function AuthPageShell({
   footer,
   onModeChange,
 }: AuthPageShellProps) {
+  const { t } = useI18n();
+
   return (
     <MotionConfig reducedMotion="never">
       <div className="auth-page">
@@ -37,7 +39,7 @@ export function AuthPageShell({
         <HomeHeroEntrance delay={0} duration={800} variant="fade" className="auth-page__back-wrap">
           <Link to="/" className="auth-page__back">
             <ArrowLeft className="h-4 w-4" />
-            Back to home
+            {t("nav.backToHome")}
           </Link>
         </HomeHeroEntrance>
 
@@ -45,7 +47,7 @@ export function AuthPageShell({
           <HomeHeroEntrance delay={60} duration={950} variant="up">
             <div className="auth-page__brand">
               <SiteLogo size={44} className="mx-auto w-fit" />
-              <p className="auth-page__tagline">{SITE_TAGLINE}</p>
+              <p className="auth-page__tagline">{t("site.tagline")}</p>
             </div>
           </HomeHeroEntrance>
 
@@ -59,7 +61,7 @@ export function AuthPageShell({
           <HomeHeroEntrance delay={260} duration={1000} variant="scale">
             <div className="auth-page__card">
               <div className="auth-page__card-shine" aria-hidden />
-              <div className="auth-page__tabs" role="tablist" aria-label="Authentication mode">
+              <div className="auth-page__tabs" role="tablist" aria-label={t("auth.signIn")}>
                 <button
                   type="button"
                   role="tab"
@@ -68,7 +70,7 @@ export function AuthPageShell({
                   data-active={mode === "signin" ? "" : undefined}
                   onClick={() => onModeChange("signin")}
                 >
-                  Sign in
+                  {t("auth.signIn")}
                 </button>
                 <button
                   type="button"
@@ -78,7 +80,7 @@ export function AuthPageShell({
                   data-active={mode === "signup" ? "" : undefined}
                   onClick={() => onModeChange("signup")}
                 >
-                  Sign up
+                  {t("auth.signUp")}
                 </button>
               </div>
 

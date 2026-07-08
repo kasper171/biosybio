@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthNotice } from "@/lib/auth-errors";
 import { signUpFn } from "@/lib/auth/auth.functions";
-import { PASSWORD_RULES } from "@/lib/auth/password-policy";
+import { getPasswordRules } from "@/lib/auth/password-policy";
 import { profileDisplayPath, SITE_NAME, SITE_PROFILE_PREFIX } from "@/lib/site";
 import {
   cleanUsername,
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Check, X } from "lucide-react";
 import { AuthPageShell } from "@/components/auth/AuthPageShell";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -42,6 +43,7 @@ async function trySignIn(email: string, password: string): Promise<boolean> {
 }
 
 function AuthPage() {
+  const { t, locale } = useI18n();
   const { mode: initialMode, username: initialUsername } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">(initialMode ?? "signin");
@@ -72,20 +74,29 @@ function AuthPage() {
     }
   }, [initialMode, initialUsername]);
 
+  const passwordRules = useMemo(() => getPasswordRules(), [locale]);
   const passwordChecks = useMemo(
-    () => PASSWORD_RULES.map((r) => ({ ...r, ok: r.test(password) })),
-    [password],
+    () => passwordRules.map((r) => ({ ...r, ok: r.test(password) })),
+    [password, passwordRules],
   );
   const passedCount = passwordChecks.filter((c) => c.ok).length;
   const strength =
     passedCount <= 2 ? "weak" : passedCount === 3 || passedCount === 4 ? "medium" : "strong";
+  const strengthLabel =
+    strength === "weak"
+      ? t("auth.strengthWeak")
+      : strength === "medium"
+        ? t("auth.strengthMedium")
+        : strength === "strong"
+          ? t("auth.strengthStrong")
+          : t("auth.strengthFair");
   const strengthColor =
     strength === "weak"
       ? "oklch(0.65 0.25 25)"
       : strength === "medium"
         ? "oklch(0.75 0.18 85)"
         : "oklch(0.72 0.20 145)";
-  const strengthPct = (passedCount / PASSWORD_RULES.length) * 100;
+  const strengthPct = (passedCount / passwordRules.length) * 100;
 
   const notify = (
     notice: { title: string; description?: string },
@@ -115,13 +126,13 @@ function AuthPage() {
         const cleanUser = cleanUsername(username);
         const lengthError = usernameLengthError(cleanUser);
         if (lengthError) {
-          notify({ title: "Invalid username", description: lengthError });
+          notify({ title: t("auth.invalidUsername"), description: lengthError });
           return;
         }
-        if (passedCount < PASSWORD_RULES.length) {
+        if (passedCount < passwordRules.length) {
           notify({
-            title: "Incomplete password",
-            description: "Your password must meet all the requirements below.",
+            title: t("auth.incompletePassword"),
+            description: t("auth.incompletePasswordDesc"),
           });
           return;
         }
@@ -130,15 +141,15 @@ function AuthPage() {
         if (taken) {
           if (await trySignIn(email, password)) {
             notify(
-              { title: "Account found!", description: "Signing in with this email and password..." },
+              { title: t("auth.accountFound"), description: t("auth.signingIn") },
               "success",
             );
             navigate({ to: "/dashboard" });
             return;
           }
           notify({
-            title: "Username already taken",
-            description: `${profileDisplayPath(cleanUser)} is already in use. If you just tried to sign up, use Sign in.`,
+            title: t("auth.usernameTaken"),
+            description: t("auth.usernameTakenDesc", { path: profileDisplayPath(cleanUser) }),
           });
           return;
         }
@@ -150,27 +161,27 @@ function AuthPage() {
         if (!result.ok) {
           if ("tryLogin" in result && result.tryLogin && (await trySignIn(email, password))) {
             notify(
-              { title: "Account found!", description: "Signing in with this email and password..." },
+              { title: t("auth.accountFound"), description: t("auth.signingIn") },
               "success",
             );
             navigate({ to: "/dashboard" });
             return;
           }
-          notify({ title: "Could not create account", description: result.error });
+          notify({ title: t("auth.couldNotCreate"), description: result.error });
           return;
         }
 
         const signedIn = await trySignIn(email, password);
         if (signedIn) {
-          notify({ title: "Account created!", description: "Redirecting to dashboard..." }, "success");
+          notify({ title: t("auth.accountCreated"), description: t("auth.redirecting") }, "success");
           navigate({ to: "/dashboard" });
           return;
         }
 
         notify(
           {
-            title: "Account created",
-            description: "Use Sign in with this email and password to access the dashboard.",
+            title: t("auth.accountCreatedPlain"),
+            description: t("auth.accountCreatedUseSignIn"),
           },
           "success",
         );
@@ -180,7 +191,7 @@ function AuthPage() {
 
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      notify({ title: "Signed in!", description: "Redirecting..." }, "success");
+      notify({ title: t("auth.signedIn"), description: t("auth.redirectingShort") }, "success");
       navigate({ to: "/dashboard" });
     } catch (err) {
       const notice = getAuthNotice(err);
@@ -194,22 +205,20 @@ function AuthPage() {
   return (
     <AuthPageShell
       mode={mode}
-      title={mode === "signin" ? "Welcome back" : "Create your account"}
+      title={mode === "signin" ? t("auth.signInTitle") : t("auth.signUpTitle")}
       subtitle={
-        mode === "signin"
-          ? "Sign in to manage your profile"
-          : "Start building your profile in seconds"
+        mode === "signin" ? t("auth.signInSubtitleShort") : t("auth.signUpSubtitleShort")
       }
       onModeChange={switchMode}
       footer={
         <p className="auth-page__switch">
-          {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
+          {mode === "signin" ? t("auth.noAccount") : t("auth.hasAccount")}{" "}
           <button
             type="button"
             onClick={() => switchMode(mode === "signin" ? "signup" : "signin")}
             className="auth-page__switch-btn"
           >
-            {mode === "signin" ? "Sign up" : "Sign in"}
+            {mode === "signin" ? t("auth.signUp") : t("auth.signIn")}
           </button>
         </p>
       }
@@ -218,7 +227,7 @@ function AuthPage() {
         {mode === "signup" && (
           <div className="auth-page__field">
             <label className="auth-page__label" htmlFor="auth-username">
-              Username
+              {t("auth.username")}
             </label>
             <div className="auth-page__username">
               <span className="auth-page__username-prefix">{SITE_PROFILE_PREFIX}</span>
@@ -227,7 +236,7 @@ function AuthPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(cleanUsername(e.target.value))}
-                placeholder="yourname"
+                placeholder={t("auth.usernamePlaceholder")}
                 required
                 minLength={MIN_USERNAME_LENGTH}
                 maxLength={MAX_USERNAME_LENGTH}
@@ -240,7 +249,7 @@ function AuthPage() {
 
         <div className="auth-page__field">
           <label className="auth-page__label" htmlFor="auth-email">
-            Email
+            {t("auth.email")}
           </label>
           <input
             id="auth-email"
@@ -249,14 +258,14 @@ function AuthPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            placeholder="you@email.com"
+            placeholder={t("auth.emailPlaceholder")}
             className="auth-page__input"
           />
         </div>
 
         <div className="auth-page__field">
           <label className="auth-page__label" htmlFor="auth-password">
-            Password
+            {t("auth.password")}
           </label>
           <input
             id="auth-password"
@@ -278,9 +287,9 @@ function AuthPage() {
                 />
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-white/50">Password strength</span>
+                <span className="text-white/50">{t("auth.passwordStrength")}</span>
                 <span className="font-semibold capitalize" style={{ color: strengthColor }}>
-                  {strength}
+                  {strengthLabel}
                 </span>
               </div>
               <ul className="space-y-1 pt-1">
@@ -300,7 +309,7 @@ function AuthPage() {
         </div>
 
         <button type="submit" disabled={loading} className="auth-page__submit">
-          {loading ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
+          {loading ? t("auth.pleaseWait") : mode === "signin" ? t("auth.signIn") : t("auth.createAccount")}
         </button>
 
         {formNotice && (

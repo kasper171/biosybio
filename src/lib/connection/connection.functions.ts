@@ -5,6 +5,9 @@ import { findConnectionConflict } from "@/lib/connection/connection-linking.serv
 import { linkVerifiedConnection } from "@/lib/connection/connection-linking.server";
 import { verifyHotelOwnershipServer } from "@/lib/connection-verify.server";
 import { requireAuthenticatedUserId } from "@/lib/require-auth.server";
+import { getClientIp } from "@/lib/get-client-ip.server";
+import { consumeRateLimit, rateLimitBucket } from "@/lib/rate-limit.server";
+import { writeAuditLog } from "@/lib/audit-log.server";
 
 const otpFields = {
   otp: z.string().min(8).max(8),
@@ -106,7 +109,22 @@ function mapHotelVerifyError(code: string): string {
 export const verifyHotelMottoFn = createServerFn({ method: "POST" })
   .inputValidator(verifyHotelMottoInput)
   .handler(async ({ data }) => {
-    await requireAuthenticatedUserId();
+    const userId = await requireAuthenticatedUserId();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const allowed = await consumeRateLimit(
+      supabaseAdmin,
+      rateLimitBucket(["hotel-verify", userId, getClientIp()]),
+      15,
+      60,
+    );
+    if (!allowed) {
+      return {
+        ok: false as const,
+        error: "Too many validation attempts. Wait a moment.",
+        code: "rate_limited" as const,
+      };
+    }
 
     const verified = await verifyHotelOwnershipServer(
       data.platform,
@@ -165,6 +183,14 @@ export const linkVerifiedConnectionFn = createServerFn({ method: "POST" })
         error: "Could not save the connection. Try again.",
       };
     }
+
+    await writeAuditLog({
+      action: "connection_linked",
+      actorId: userId,
+      targetType: "profile",
+      targetId: userId,
+      metadata: { type: data.type },
+    });
 
     return { ok: true as const, patch: result.patch };
   });

@@ -36,6 +36,8 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     avatar_border_color: (p.avatar_border_color as string) ?? p.card_border_color ?? "#ff2d7a",
     avatar_border_width: Number(p.avatar_border_width ?? 4),
     avatar_size: Number(p.avatar_size ?? 96),
+    avatar_pos_x: Number(p.avatar_pos_x ?? 50),
+    avatar_pos_y: Number(p.avatar_pos_y ?? 50),
     avatar_frame_id: (() => {
       const frameId = (p.avatar_frame_id as string | null) ?? null;
       const draft = {
@@ -54,6 +56,8 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     inner_banner_pos_y: Number(p.inner_banner_pos_y ?? 50),
     background_blur: Number(p.background_blur ?? 0),
     background_brightness: Number(p.background_brightness ?? 100),
+    background_pos_x: Number(p.background_pos_x ?? 50),
+    background_pos_y: Number(p.background_pos_y ?? 50),
     discord_user_id: (p.discord_user_id as string | null) ?? null,
     discord_card_mode: (p.discord_card_mode as "inside" | "outside") === "outside" ? "outside" : "inside",
     discord_show_badges: p.discord_show_badges !== false,

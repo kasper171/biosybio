@@ -3,10 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useRef, useState } from "react";
 import type { Profile } from "@/lib/profile-storage";
 import {
-  incrementProfileView,
   hasCountedProfileView,
   markProfileViewCounted,
-} from "@/lib/profile-storage";
+  getOrCreateVisitorId,
+} from "@/lib/profile-views";
 import { PublicProfileView } from "@/components/PublicProfileView";
 import {
   SiteStatusOutlineLink,
@@ -80,7 +80,7 @@ function PublicProfile() {
 
     (async () => {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("*")
         .eq("username", username)
         .maybeSingle();
@@ -107,16 +107,14 @@ function PublicProfile() {
         markProfileViewCounted(withRoles.id);
 
         const result = await incrementProfileViewFn({
-          data: { profileId: withRoles.id },
+          data: {
+            profileId: withRoles.id,
+            visitorId: getOrCreateVisitorId(),
+          },
         });
 
         if (result.ok && result.viewCount !== null) {
           finalProfile = { ...withRoles, view_count: result.viewCount };
-        } else {
-          const fallbackCount = await incrementProfileView(withRoles.id);
-          if (fallbackCount !== null) {
-            finalProfile = { ...withRoles, view_count: fallbackCount };
-          }
         }
       }
 

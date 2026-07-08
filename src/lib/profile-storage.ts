@@ -1,9 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import {
-  getOrCreateVisitorId,
-  hasCountedProfileView,
-  markProfileViewCounted,
-} from "@/lib/profile-views";
+import { validateProfileAssetUpload } from "@/lib/profile-upload-validation";
 
 export const DEFAULT_CARD_WIDTH = 600;
 export const DEFAULT_CARD_HEIGHT = 400;
@@ -16,6 +12,8 @@ export type Profile = {
   display_name: string;
   bio: string;
   avatar_url: string | null;
+  avatar_pos_x: number;
+  avatar_pos_y: number;
   avatar_border_color: string;
   avatar_border_width: number;
   avatar_size: number;
@@ -33,6 +31,8 @@ export type Profile = {
   role_badges_mono_color: string;
   banner_url: string | null;
   background_url: string | null;
+  background_pos_x: number;
+  background_pos_y: number;
   background_color: string;
   background_blur: number;
   background_brightness: number;
@@ -183,70 +183,36 @@ export type Profile = {
   accent_color?: string;
 };
 
-export async function incrementProfileView(profileId: string): Promise<number | null> {
-  getOrCreateVisitorId();
-
-  const { error: eventError } = await supabase
-    .from("profile_view_events")
-    .insert({ profile_id: profileId });
-
-  if (!eventError) {
-    const { data, error: readError } = await supabase
-      .from("profiles")
-      .select("view_count")
-      .eq("id", profileId)
-      .maybeSingle();
-    if (!readError && data) {
-      return Number(data.view_count ?? 0);
-    }
-    return null;
-  }
-
-  const { data, error } = await supabase.rpc("increment_profile_view", {
-    target_profile_id: profileId,
+export async function logProfileLinkClick(
+  profileId: string,
+  socialKey: string,
+  visitorId: string,
+): Promise<boolean> {
+  const { incrementProfileLinkClickFn } = await import("@/lib/profile/profile-link-click.functions");
+  const result = await incrementProfileLinkClickFn({
+    data: { profileId, socialKey, visitorId },
   });
-  if (error) {
-    console.error("[incrementProfileView]", eventError.message, error.message);
-    return null;
-  }
-  return typeof data === "number" ? data : Number(data);
-}
-
-export { hasCountedProfileView, markProfileViewCounted };
-
-export async function logProfileLinkClick(profileId: string, socialKey: string): Promise<boolean> {
-  const { error: eventError } = await supabase
-    .from("profile_link_click_events")
-    .insert({ profile_id: profileId, social_key: socialKey });
-
-  if (!eventError) return true;
-
-  const { error: rpcError } = await supabase.rpc("increment_profile_link_click", {
-    target_profile_id: profileId,
-  });
-
-  if (rpcError) {
-    console.error("[logProfileLinkClick]", eventError.message, rpcError.message);
-    return false;
-  }
-
-  return true;
+  return result.ok;
 }
 
 const BUCKET = "profile-assets";
-// 100 years signed URL
-const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 100;
+// 30 days signed URL
+const SIGNED_URL_TTL = 60 * 60 * 24 * 30;
 
 export async function uploadProfileAsset(
   userId: string,
   kind: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art" | "share_embed",
   file: File,
 ): Promise<string> {
-  const ext = file.name.split(".").pop() || "png";
-  const path = `${userId}/${kind}-${Date.now()}.${ext}`;
+  const validation = validateProfileAssetUpload(kind, file);
+  if (!validation.ok) {
+    throw new Error(validation.error);
+  }
+
+  const path = `${userId}/${kind}-${Date.now()}.${validation.ext}`;
   const { error: upErr } = await supabase.storage
     .from(BUCKET)
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType: validation.contentType });
   if (upErr) throw upErr;
   const { data, error } = await supabase.storage
     .from(BUCKET)

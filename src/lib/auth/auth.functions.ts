@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { passwordPolicyError } from "@/lib/auth/password-policy";
 import { cleanUsername, usernameLengthError } from "@/lib/username";
+import { getClientIp } from "@/lib/get-client-ip.server";
+import { consumeRateLimit, rateLimitBucket } from "@/lib/rate-limit.server";
+import { writeAuditLog } from "@/lib/audit-log.server";
 
 const signUpInput = z.object({
   email: z.string().email().max(255),
@@ -22,6 +25,7 @@ export const signUpFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const email = data.email.trim().toLowerCase();
     const cleanUser = cleanUsername(data.username);
+    const clientIp = getClientIp();
 
     const lengthError = usernameLengthError(cleanUser);
     if (lengthError) {
@@ -43,6 +47,24 @@ export const signUpFn = createServerFn({ method: "POST" })
         ok: false as const,
         error: "Sign-up server is not configured. Try again in a moment.",
         code: "server_misconfigured" as const,
+      };
+    }
+
+    const ipAllowed = await consumeRateLimit(
+      supabaseAdmin,
+      rateLimitBucket(["signup", "ip", clientIp]),
+      5,
+      3600,
+    );
+    if (!ipAllowed) {
+      await writeAuditLog({
+        action: "signup_rate_limited",
+        metadata: { email, username: cleanUser },
+      });
+      return {
+        ok: false as const,
+        error: "Too many sign-up attempts. Try again later.",
+        code: "signup_failed" as const,
       };
     }
 
@@ -97,6 +119,12 @@ export const signUpFn = createServerFn({ method: "POST" })
         code: "signup_failed" as const,
       };
     }
+
+    await writeAuditLog({
+      action: "signup_success",
+      actorId: created.user?.id ?? null,
+      metadata: { username: cleanUser },
+    });
 
     return {
       ok: true as const,

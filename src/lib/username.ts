@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { translate } from "@/i18n/LocaleProvider";
 
 export const MIN_USERNAME_LENGTH = 2;
 export const MAX_USERNAME_LENGTH = 30;
@@ -20,25 +21,23 @@ export function isValidUsernameLength(username: string): boolean {
 export function usernameLengthError(username: string): string | null {
   const clean = cleanUsername(username);
   if (clean.length < MIN_USERNAME_LENGTH) {
-    return `Use at least ${MIN_USERNAME_LENGTH} letters or numbers.`;
+    return translate("lib.usernameMin", { min: MIN_USERNAME_LENGTH });
   }
   if (clean.length > MAX_USERNAME_LENGTH) {
-    return `Use at most ${MAX_USERNAME_LENGTH} characters.`;
+    return translate("lib.usernameMax", { max: MAX_USERNAME_LENGTH });
   }
   if (!USERNAME_PATTERN.test(clean)) {
-    return "Use only lowercase letters and numbers (no symbols).";
+    return translate("lib.usernameChars");
   }
   return null;
 }
 
 export async function isUsernameTaken(username: string) {
   const clean = cleanUsername(username);
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("username")
-    .eq("username", clean)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("is_username_taken", {
+    p_username: clean,
+  });
 
   if (error) throw error;
-  return { clean, taken: Boolean(data) };
+  return { clean, taken: data === true };
 }

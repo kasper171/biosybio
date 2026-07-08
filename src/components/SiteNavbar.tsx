@@ -4,6 +4,7 @@ import { SiteAuthButtons } from "@/components/SiteAuthButtons";
 import { SiteLogo } from "@/components/SiteLogo";
 import { HomeHeroEntrance } from "@/components/home/HomeHeroEntrance";
 import { ENTRANCE_EASE } from "@/components/home/home-entrance-motion";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const SCROLL_THRESHOLD = 28;
 
@@ -81,7 +82,9 @@ export function SiteNavbar({ children }: SiteNavbarProps) {
             initial={{ opacity: 0, x: 20, filter: "blur(8px)" }}
             animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.85, delay: 0.12, ease: ENTRANCE_EASE }}
+            className="flex items-center gap-2 sm:gap-3"
           >
+            <LanguageSwitcher compact className="hidden sm:block" />
             <SiteAuthButtons className="site-navbar__actions" />
           </motion.div>
         </motion.div>

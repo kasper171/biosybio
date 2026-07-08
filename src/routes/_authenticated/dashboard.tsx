@@ -34,9 +34,10 @@ import {
 import { syncLivePublicTemplate, ensureLivePublicTemplateIfEnabled } from "@/lib/profile-template";
 import {
   DashboardAccountLayout,
-  PERSONALIZE_PANELS,
+  usePersonalizePanels,
   type PersonalizePanelKey,
 } from "@/components/dashboard/DashboardAccountLayout";
+import { useI18n } from "@/i18n/LocaleProvider";
 import { normalizeProfile } from "@/lib/normalize-profile";
 import { getMusicCardWidthPct } from "@/lib/profile-music";
 import {
@@ -114,12 +115,12 @@ function isPanelKey(value: unknown): value is PanelKey {
   );
 }
 
-const PERSONALIZE_PANELS_NAV = PERSONALIZE_PANELS;
-
 const TOOLS_PANEL_WIDTH = 360;
 const TOOLS_OPEN_STORAGE_KEY = "biosy-editor-tools-open";
 
 function Dashboard() {
+  const { t } = useI18n();
+  const personalizePanels = usePersonalizePanels();
   const { view, panel: panelFromSearch, section } = Route.useSearch();
   const isPersonalizar = view === "personalizar";
   const [userId, setUserId] = useState<string | null>(null);
@@ -265,15 +266,19 @@ function Dashboard() {
               [field]: url,
               ...(kind === "inner_banner"
                 ? { inner_banner_pos_x: 50, inner_banner_pos_y: 50 }
-                : kind === "music"
-                  ? {
-                      music_title: file.name.replace(/\.[a-z0-9]+$/i, ""),
-                      music_start_sec: 0,
-                      music_end_sec: null,
-                      tap_to_reveal_enabled: true,
-                      music_card_enabled: true,
-                    }
-                : {}),
+                : kind === "avatar"
+                  ? { avatar_pos_x: 50, avatar_pos_y: 50 }
+                  : kind === "background"
+                    ? { background_pos_x: 50, background_pos_y: 50 }
+                    : kind === "music"
+                      ? {
+                          music_title: file.name.replace(/\.[a-z0-9]+$/i, ""),
+                          music_start_sec: 0,
+                          music_end_sec: null,
+                          tap_to_reveal_enabled: true,
+                          music_card_enabled: true,
+                        }
+                      : {}),
             }
           : p,
       );
@@ -291,8 +296,10 @@ function Dashboard() {
   ) => {
     setProfile((p) => {
       if (!p) return p;
-      if (kind === "avatar") return { ...p, avatar_url: null };
-      if (kind === "background") return { ...p, background_url: null };
+      if (kind === "avatar") return { ...p, avatar_url: null, avatar_pos_x: 50, avatar_pos_y: 50 };
+      if (kind === "background") {
+        return { ...p, background_url: null, background_pos_x: 50, background_pos_y: 50 };
+      }
       if (kind === "music_art") return { ...p, music_card_art_url: null };
       if (kind === "music") {
         return {
@@ -329,6 +336,8 @@ function Dashboard() {
         display_name: profile.display_name,
         bio: profile.bio,
         avatar_url: profile.avatar_url,
+        avatar_pos_x: profile.avatar_pos_x ?? 50,
+        avatar_pos_y: profile.avatar_pos_y ?? 50,
         avatar_border_color: profile.avatar_border_color ?? profile.card_border_color,
         avatar_border_width: profile.avatar_border_width ?? 4,
         avatar_size: profile.avatar_size ?? 96,
@@ -340,6 +349,8 @@ function Dashboard() {
         role_badges_mono_color: profile.role_badges_mono_color ?? "#ffffff",
         banner_url: profile.banner_url,
         background_url: profile.background_url,
+        background_pos_x: profile.background_pos_x ?? 50,
+        background_pos_y: profile.background_pos_y ?? 50,
         background_color: profile.background_color,
         background_blur: profile.background_blur ?? 0,
         background_brightness: profile.background_brightness ?? 100,
@@ -369,26 +380,9 @@ function Dashboard() {
         social_icon_bloom_color: profile.social_icon_bloom_color ?? null,
         show_social_titles: profile.show_social_titles === true,
         card_border_style: profile.card_border_style,
-        discord_user_id: profile.discord_user_id,
         discord_card_mode: profile.discord_card_mode ?? "inside",
         discord_show_badges: profile.discord_show_badges !== false,
         discord_inside_scale: profile.discord_inside_scale ?? 100,
-        hotel_platform: profile.hotel_platform ?? null,
-        hotel_username: profile.hotel_username ?? null,
-        hotel_domain: profile.hotel_domain ?? null,
-        hotel_figure: profile.hotel_figure ?? null,
-        hotel_motto: profile.hotel_motto ?? null,
-        hotel_level: profile.hotel_level ?? null,
-        hotel_achievement_points: profile.hotel_achievement_points ?? null,
-        habbo_username: profile.habbo_username,
-        habbo_domain: profile.habbo_domain,
-        habbo_figure: profile.habbo_figure,
-        habbo_motto: profile.habbo_motto,
-        habbo_level: profile.habbo_level,
-        habblet_username: profile.habblet_username,
-        habblet_figure: profile.habblet_figure,
-        habblet_motto: profile.habblet_motto,
-        habblet_achievement_points: profile.habblet_achievement_points,
         hotel_card_placement: profile.hotel_card_placement ?? "inside",
         hotel_card_row: profile.hotel_card_row ?? "separate_row",
         hotel_card_shape: profile.hotel_card_shape ?? "rectangle",
@@ -451,13 +445,19 @@ function Dashboard() {
     }
     setProfile((p) => (p ? { ...p, card_height: savedCardHeight } : p));
     setSaving(false);
-    toast.success("Profile saved!");
+    toast.success(t("dashboard.toasts.profileSaved"));
   };
 
   const panelLabel =
-    PERSONALIZE_PANELS_NAV.find((p) => p.key === openPanel)?.label ?? "Customize";
+    personalizePanels.find((p) => p.key === openPanel)?.label ?? t("dashboard.common.customize");
 
-  if (!profile) return <div className="grid min-h-screen place-items-center text-white/60">Loading...</div>;
+  if (!profile) {
+    return (
+      <div className="grid min-h-screen place-items-center text-white/60">
+        {t("dashboard.common.loading")}
+      </div>
+    );
+  }
 
   if (!isPersonalizar) {
     if (section === "estatisticas") {
@@ -520,10 +520,10 @@ function Dashboard() {
             type="button"
             onClick={() => setToolsPanelOpen(false)}
             className="flex shrink-0 items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5 text-xs font-medium text-white/55 transition hover:bg-white/[0.06] hover:text-white"
-            title="Minimize tools"
+            title={t("dashboard.editor.minimizeTools")}
           >
             <PanelLeftClose className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Minimize</span>
+            <span className="hidden sm:inline">{t("dashboard.editor.minimize")}</span>
           </button>
         </div>
         <div className="biosy-scrollbar min-h-0 flex-1 overflow-y-auto p-4">
@@ -585,14 +585,9 @@ function Dashboard() {
         <button
           type="button"
           onClick={() => setToolsPanelOpen(true)}
-          className="biosy-tools-reveal-tab group fixed z-30"
-          style={{
-            left: "var(--dash-sidebar-w)",
-            top: "calc(50% + 48px)",
-            transform: "translateY(-50%)",
-          }}
-          title="Open tools"
-          aria-label="Open tools"
+          className="biosy-tools-reveal-tab group"
+          title={t("dashboard.editor.openTools")}
+          aria-label={t("dashboard.editor.openTools")}
         >
           <span className="biosy-tools-reveal-glow" aria-hidden />
           <span className="biosy-tools-reveal-ring" aria-hidden />
@@ -616,13 +611,13 @@ function Dashboard() {
             type="button"
             onClick={() => setToolsPanelOpen(!toolsOpen)}
             className="biosy-dashboard-shell flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-2 text-xs font-medium text-white/70 transition hover:bg-white/[0.04] hover:text-white"
-            title={toolsOpen ? "Minimize tools" : "Open tools"}
-            aria-label={toolsOpen ? "Minimize tools" : "Open tools"}
+            title={toolsOpen ? t("dashboard.editor.minimizeTools") : t("dashboard.editor.openTools")}
+            aria-label={toolsOpen ? t("dashboard.editor.minimizeTools") : t("dashboard.editor.openTools")}
           >
             {toolsOpen ? (
               <>
                 <PanelLeftClose className="h-3.5 w-3.5" />
-                <span>Hide panel</span>
+                <span>{t("dashboard.editor.hidePanel")}</span>
               </>
             ) : (
               <ChevronRight className="h-4 w-4" />
@@ -868,6 +863,18 @@ function MidiaPanel({
         onRemove={() => handleRemove("avatar")}
         shape="circle"
       />
+      {profile.avatar_url && (
+        <BannerPositionEditor
+          variant="avatar"
+          url={profile.avatar_url}
+          posX={profile.avatar_pos_x ?? 50}
+          posY={profile.avatar_pos_y ?? 50}
+          onChange={(x, y) => {
+            update("avatar_pos_x", x);
+            update("avatar_pos_y", y);
+          }}
+        />
+      )}
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Avatar ring</p>
         <ColorField
@@ -901,6 +908,18 @@ function MidiaPanel({
         onRemove={() => handleRemove("background")}
         shape="wide"
       />
+      {profile.background_url && (
+        <BannerPositionEditor
+          variant="wallpaper"
+          url={profile.background_url}
+          posX={profile.background_pos_x ?? 50}
+          posY={profile.background_pos_y ?? 50}
+          onChange={(x, y) => {
+            update("background_pos_x", x);
+            update("background_pos_y", y);
+          }}
+        />
+      )}
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Wallpaper</p>
         <SliderField

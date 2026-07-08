@@ -14,12 +14,13 @@ import { ErrorFace404 } from "@/components/errors/ErrorFace404";
 import { SiteStatusPage } from "@/components/errors/SiteStatusPage";
 import { reportClientError } from "../lib/report-client-error";
 import { SITE_NAME, SITE_ORIGIN, SITE_TITLE } from "@/lib/site";
+import { LocaleProvider, translate } from "@/i18n/LocaleProvider";
 
 function NotFoundComponent() {
   return (
     <SiteStatusPage
-      title="Page not found"
-      description="The page you're looking for doesn't exist or has been moved."
+      title={translate("errors.notFoundTitle")}
+      description={translate("errors.notFoundDesc")}
       actions={
         <Link
           to="/"
@@ -28,7 +29,7 @@ function NotFoundComponent() {
             background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))",
           }}
         >
-          Go home
+          {translate("common.goHome")}
         </Link>
       }
     />
@@ -109,9 +110,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Toaster theme="dark" richColors position="top-center" closeButton />
+      <LocaleProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <Toaster theme="dark" richColors position="top-center" closeButton />
+      </LocaleProvider>
     </QueryClientProvider>
   );
 }

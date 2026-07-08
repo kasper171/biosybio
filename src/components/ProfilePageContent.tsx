@@ -1,8 +1,9 @@
 import {
   DEFAULT_CARD_LAYOUT,
-  logProfileLinkClick,
   type Profile,
 } from "@/lib/profile-storage";
+import { incrementProfileLinkClickFn } from "@/lib/profile/profile-link-click.functions";
+import { getOrCreateVisitorId } from "@/lib/profile-views";
 import { ProfileCard } from "@/components/ProfileCard";
 import { DiscordPresenceCard } from "@/components/DiscordPresenceCard";
 import { HotelProfileCard } from "@/components/HotelProfileCard";
@@ -26,6 +27,7 @@ import { ProfileSocialIconLink } from "@/components/ProfileSocialIconLink";
 import { FaGlobe } from "react-icons/fa";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
+import { ProfileWallpaperLayer } from "@/components/ProfileWallpaperLayer";
 
 type Props = {
   profile: Profile;
@@ -232,7 +234,13 @@ export function ProfilePageContent({
                   href={url}
                   onNavigate={(e) => {
                     e.preventDefault();
-                    void logProfileLinkClick(profile.id, key).finally(() => {
+                    void incrementProfileLinkClickFn({
+                      data: {
+                        profileId: profile.id,
+                        socialKey: key,
+                        visitorId: getOrCreateVisitorId(),
+                      },
+                    }).finally(() => {
                       window.open(url, "_blank", "noopener,noreferrer");
                     });
                   }}
@@ -474,16 +482,13 @@ export function ProfilePageContent({
 
   return (
     <div className="relative min-h-screen w-full overflow-x-auto overflow-y-visible">
-      <div
-        aria-hidden
-        className={`pointer-events-none z-0 ${isEditor ? "absolute inset-0" : "fixed inset-0"}`}
-        style={{
-          background: profile.background_url
-            ? `url(${profile.background_url}) center/cover no-repeat`
-            : profile.background_color,
-          filter: `blur(${bgBlur}px) brightness(${bgBrightness}%)`,
-          transform: bgBlur > 0 ? "scale(1.08)" : undefined,
-        }}
+      <ProfileWallpaperLayer
+        url={profile.background_url}
+        fallbackColor={profile.background_color}
+        posX={profile.background_pos_x ?? 50}
+        posY={profile.background_pos_y ?? 50}
+        blur={bgBlur}
+        brightness={bgBrightness}
       />
       <div className="relative z-10 flex min-h-screen w-full items-center justify-center bg-black/40 px-4 py-10">
         <div

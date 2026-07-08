@@ -223,11 +223,13 @@ export type Database = {
           id: number
           profile_id: string
           viewed_at: string
+          visitor_id: string | null
         }
         Insert: {
           id?: never
           profile_id: string
           viewed_at?: string
+          visitor_id?: string | null
         }
         Update: {
           id?: never
@@ -244,6 +246,78 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          id: number
+          actor_id: string | null
+          action: string
+          target_type: string | null
+          target_id: string | null
+          metadata: Json
+          client_ip: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: never
+          actor_id?: string | null
+          action: string
+          target_type?: string | null
+          target_id?: string | null
+          metadata?: Json
+          client_ip?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: never
+          actor_id?: string | null
+          action?: string
+          target_type?: string | null
+          target_id?: string | null
+          metadata?: Json
+          client_ip?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      profile_view_dedup: {
+        Row: {
+          profile_id: string
+          visitor_id: string
+          counted_at: string
+        }
+        Insert: {
+          profile_id: string
+          visitor_id: string
+          counted_at?: string
+        }
+        Update: {
+          profile_id?: string
+          visitor_id?: string
+          counted_at?: string
+        }
+        Relationships: []
+      }
+      profile_link_click_dedup: {
+        Row: {
+          profile_id: string
+          visitor_id: string
+          social_key: string
+          clicked_at: string
+        }
+        Insert: {
+          profile_id: string
+          visitor_id: string
+          social_key: string
+          clicked_at?: string
+        }
+        Update: {
+          profile_id?: string
+          visitor_id?: string
+          social_key?: string
+          clicked_at?: string
+        }
+        Relationships: []
+      }
       profile_comments: {
         Row: {
           id: number
@@ -259,7 +333,7 @@ export type Database = {
           id?: never
           profile_id: string
           author_id: string
-          author_name: string
+          author_name?: string
           author_avatar_url?: string | null
           content: string
           is_visible?: boolean
@@ -287,12 +361,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: Database["public"]["Tables"]["profiles"]["Row"]
+        Insert: never
+        Update: never
+        Relationships: []
+      }
     }
     Functions: {
+      consume_rate_limit: {
+        Args: {
+          p_bucket: string
+          p_max_hits: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
+      increment_profile_link_click: {
+        Args: { target_profile_id: string }
+        Returns: number
+      }
       increment_profile_view: {
         Args: { target_profile_id: string }
         Returns: number
+      }
+      is_username_taken: {
+        Args: { p_username: string }
+        Returns: boolean
       }
     }
     Enums: {

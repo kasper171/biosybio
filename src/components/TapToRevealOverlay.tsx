@@ -1,6 +1,9 @@
 import { User } from "lucide-react";
 import type { Profile } from "@/lib/profile-storage";
 import { AvatarWithFrame } from "@/components/AvatarWithFrame";
+import { ProfileWallpaperLayer } from "@/components/ProfileWallpaperLayer";
+import { imageObjectPosition } from "@/lib/image-position";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   profile: Profile;
@@ -9,10 +12,11 @@ type Props = {
 };
 
 export function TapToRevealOverlay({ profile, onReveal, zIndex = 50 }: Props) {
+  const { t } = useI18n();
   const blur = profile.tap_reveal_blur ?? 20;
   const brightness = profile.tap_reveal_brightness ?? 55;
   const mode = profile.tap_reveal_mode ?? "avatar_text";
-  const text = profile.tap_reveal_text?.trim() || "Tap to reveal";
+  const text = profile.tap_reveal_text?.trim() || t("profile.tapToReveal");
 
   return (
     <button
@@ -20,18 +24,15 @@ export function TapToRevealOverlay({ profile, onReveal, zIndex = 50 }: Props) {
       onClick={onReveal}
       className="fixed inset-0 flex cursor-pointer items-center justify-center border-0 bg-transparent p-6 transition-opacity duration-300"
       style={{ zIndex }}
-      aria-label="Reveal profile"
+      aria-label={t("profile.revealAria")}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background: profile.background_url
-            ? `url(${profile.background_url}) center/cover no-repeat`
-            : profile.background_color,
-          filter: `blur(${blur}px) brightness(${brightness}%)`,
-          transform: blur > 0 ? "scale(1.08)" : undefined,
-        }}
+      <ProfileWallpaperLayer
+        url={profile.background_url}
+        fallbackColor={profile.background_color}
+        posX={profile.background_pos_x ?? 50}
+        posY={profile.background_pos_y ?? 50}
+        blur={blur}
+        brightness={brightness}
       />
       <div aria-hidden className="pointer-events-none fixed inset-0 bg-black/45" />
 
@@ -44,6 +45,12 @@ export function TapToRevealOverlay({ profile, onReveal, zIndex = 50 }: Props) {
                   src={profile.avatar_url}
                   alt=""
                   className="h-full w-full object-cover"
+                  style={{
+                    objectPosition: imageObjectPosition(
+                      profile.avatar_pos_x ?? 50,
+                      profile.avatar_pos_y ?? 50,
+                    ),
+                  }}
                 />
               ) : (
                 <div className="grid h-full w-full place-items-center text-white/40">
@@ -56,7 +63,7 @@ export function TapToRevealOverlay({ profile, onReveal, zIndex = 50 }: Props) {
         <p className="text-lg font-semibold tracking-wide text-white drop-shadow-md sm:text-xl">
           {text}
         </p>
-        <p className="text-xs text-white/50">Click or tap to continue</p>
+        <p className="text-xs text-white/50">{t("profile.tapContinue")}</p>
       </div>
     </button>
   );

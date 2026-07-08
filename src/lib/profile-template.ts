@@ -216,7 +216,7 @@ function mapTemplateRow(
 async function fetchAuthors(userIds: string[]) {
   if (userIds.length === 0) return new Map<string, { username: string; display_name: string; avatar_url: string | null }>();
   const { data } = await supabase
-    .from("profiles")
+    .from("profiles_public")
     .select("id, username, display_name, avatar_url")
     .in("id", userIds);
   const map = new Map<string, { username: string; display_name: string; avatar_url: string | null }>();

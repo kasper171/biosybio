@@ -33,11 +33,17 @@ export async function requireAuthenticatedUserId(): Promise<string> {
   const request = getRequest();
   const authHeader = request?.headers?.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
+    void import("@/lib/audit-log.server").then(({ writeAuditLog }) =>
+      writeAuditLog({ action: "auth_missing_token" }),
+    );
     throw new Error("Unauthorized.");
   }
 
   const token = authHeader.replace("Bearer ", "").trim();
   if (!token || token.split(".").length !== 3) {
+    void import("@/lib/audit-log.server").then(({ writeAuditLog }) =>
+      writeAuditLog({ action: "auth_invalid_token" }),
+    );
     throw new Error("Unauthorized.");
   }
 
@@ -51,6 +57,9 @@ export async function requireAuthenticatedUserId(): Promise<string> {
 
   const { data, error } = await supabase.auth.getClaims(token);
   if (error || !data?.claims?.sub) {
+    void import("@/lib/audit-log.server").then(({ writeAuditLog }) =>
+      writeAuditLog({ action: "auth_claims_failed", metadata: { reason: error?.message ?? "no_sub" } }),
+    );
     throw new Error("Unauthorized.");
   }
 

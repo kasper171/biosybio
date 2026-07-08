@@ -109,8 +109,6 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
       .insert({
         profile_id: profileId,
         author_id: currentUserId,
-        author_name: authorName,
-        author_avatar_url: authorAvatar,
         content: text,
       });
     if (!error) {
