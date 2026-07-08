@@ -11,7 +11,7 @@ import { ProfileCommentsSection } from "@/components/ProfileCommentsSection";
 import { ProfileBlocksSection } from "@/components/blocks/ProfileBlocksSection";
 import { MusicPlayerCard } from "@/components/MusicPlayerCard";
 import { splitBlocksByPlacement, type ProfileBlock } from "@/lib/profile-blocks";
-import { getSecondaryRevealDelayMs, normalizeCardRevealEffect } from "@/lib/card-reveal";
+import { normalizeCardRevealEffect } from "@/lib/card-reveal";
 import { getMusicCardWidthPct } from "@/lib/profile-music";
 import {
   getHotelCardLayoutFromProfile,
@@ -54,7 +54,6 @@ export function ProfilePageContent({
   const bgBlur = profile.background_blur ?? 0;
   const bgBrightness = profile.background_brightness ?? 100;
   const revealEffect = normalizeCardRevealEffect(profile.card_reveal_effect);
-  const discordOutside = Boolean(profile.discord_user_id && discordMode === "outside");
   const cardInitial =
     revealEffect === "scale"
       ? { scale: 0.86 }
@@ -80,23 +79,15 @@ export function ProfilePageContent({
             y: { type: "spring", visualDuration: 0.62, bounce: 0.1 },
             scale: { type: "spring", visualDuration: 0.62, bounce: 0.08 },
           };
-  /** No efeito Lento, cards secundários ficam invisíveis até a vez deles (principal primeiro). */
-  const secondaryInitial =
-    revealEffect === "fade" ? { ...cardInitial, opacity: 0 } : cardInitial;
-  const secondaryAnimate =
-    revealEffect === "fade" ? { ...cardAnimate, opacity: 1 } : cardAnimate;
-  const secondaryTransition =
-    revealEffect === "fade"
-      ? {
-          ...cardTransition,
-          opacity: { type: "spring", visualDuration: 0.62, bounce: 0.08 },
-        }
-      : cardTransition;
-
-  /** Cards com backdrop-filter (hotel) não podem animar opacity no pai — quebra o blur. */
-  const hotelRevealInitial = cardInitial;
-  const hotelRevealAnimate = cardAnimate;
-  const hotelRevealTransition = cardTransition;
+  /**
+   * Cards com backdrop-filter (Discord, música, hotel, blocos) não podem animar opacity no
+   * wrapper pai — o blur e a borda só “aparecem” quando opacity chega a 1. Usamos o mesmo
+   * reveal do card principal (só transform) e delay 0 para tudo entrar junto.
+   */
+  const sharedRevealInitial = cardInitial;
+  const sharedRevealAnimate = cardAnimate;
+  const sharedRevealTransition = cardTransition;
+  const sharedRevealDelaySec = 0;
 
   const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const { inside: insideBlocks, outside: outsideBlocks } = splitBlocksByPlacement(blocks);
@@ -262,92 +253,8 @@ export function ProfilePageContent({
 
   const mainCardBesideClass = hotelOutsideBeside ? "w-full min-w-0 shrink-0" : "w-full";
   const mainCardBesideStyle = hotelOutsideBeside
-    ? { maxWidth: mainCardDims.width, willChange: "transform" as const }
-    : { willChange: "transform" as const };
-
-  const mainCardWrapped = animate ? (
-    <motion.div
-      key={`main-${animKey}`}
-      initial={cardInitial}
-      animate={cardAnimate}
-      transition={{ ...cardTransition, delay: 0 }}
-      className={`relative ${mainCardBesideClass}`}
-      style={mainCardBesideStyle}
-    >
-      {mainCard}
-    </motion.div>
-  ) : (
-    <div
-      className={mainCardBesideClass}
-      style={hotelOutsideBeside ? { maxWidth: mainCardDims.width } : undefined}
-    >
-      {mainCard}
-    </div>
-  );
-
-  const showMusicCard = Boolean(profile.music_url) && profile.music_card_enabled !== false;
-
-  /**
-   * Sequência do efeito "Lento" (fade):
-   * - 0ms: card principal
-   * - 1000ms: Discord (se separado)
-   * - 1500ms: Habbo/Habblet (se separado)
-   * - +500ms por grupo extra (música, blocos, etc.)
-   */
-  const FADE_SECONDARY_START_MS = 1000;
-  const FADE_GROUP_STEP_MS = 500;
-  const FADE_GROUP_STAGGER_MS = 80;
-
-  const hasHotelOutsideGroup = (hotelOutsideBeside || hotelOutsideBelow) && hotelConnections.length > 0;
-
-  const nextSecondaryGroupDelay = (() => {
-    if (revealEffect !== "fade") {
-      let secondaryRevealOrder = 0;
-      return () => getSecondaryRevealDelayMs(revealEffect, secondaryRevealOrder++);
-    }
-    let groupIndex = 0;
-    return () => FADE_SECONDARY_START_MS + groupIndex++ * FADE_GROUP_STEP_MS;
-  })();
-
-  // Ordem: Discord separado -> Hotel (Habbo/Habblet) -> Música -> Blocos externos
-  // Para cards externos com blur (Discord/Música), um delay na animação faz o blur “aparecer atrasado”.
-  // Mantemos o reveal gradual para outros grupos, mas deixamos esses dois instantâneos no modo fade.
-  const discordOutsideRevealDelay =
-    discordOutside ? (revealEffect === "fade" ? 0 : nextSecondaryGroupDelay()) : 0;
-  const hotelGroupDelay = hasHotelOutsideGroup ? nextSecondaryGroupDelay() : 0;
-  const musicCardDelay = showMusicCard ? (revealEffect === "fade" ? 0 : nextSecondaryGroupDelay()) : 0;
-  const outsideBlockDelay = outsideBlocks.length > 0 ? nextSecondaryGroupDelay() : 0;
-
-  const hotelBesideRevealDelays = hotelOutsideBeside
-    ? hotelConnections.map((_, index) => hotelGroupDelay + index * FADE_GROUP_STAGGER_MS)
-    : [];
-  const hotelBelowRevealDelays = hotelOutsideBelow
-    ? hotelConnections.map((_, index) => hotelGroupDelay + index * FADE_GROUP_STAGGER_MS)
-    : [];
-  const musicCardWidthPct = getMusicCardWidthPct(profile.music_card_width_pct);
-
-  const musicCardInner = showMusicCard ? (
-    <div className="mt-4 flex w-full justify-center">
-      <div className="w-full" style={{ maxWidth: `${musicCardWidthPct}%` }}>
-        {animate ? (
-          <motion.div
-            key={`music-card-${animKey}`}
-            initial={secondaryInitial}
-            animate={secondaryAnimate}
-            transition={{ ...secondaryTransition, delay: musicCardDelay / 1000 }}
-            className="relative mx-auto w-full"
-            style={{ willChange: "transform" }}
-          >
-            <MusicPlayerCard profile={profile} />
-          </motion.div>
-        ) : (
-          <div className="mx-auto w-full">
-            <MusicPlayerCard profile={profile} />
-          </div>
-        )}
-      </div>
-    </div>
-  ) : null;
+    ? { maxWidth: mainCardDims.width }
+    : undefined;
 
   const mainCardWidth = mainCardDims.width;
   const mainSlotStyle: CSSProperties = {
@@ -362,34 +269,57 @@ export function ProfilePageContent({
     flexShrink: 0,
   };
 
-  const outsideDiscordInner =
-    profile.discord_user_id && discordMode === "outside" ? (
-      <DiscordPresenceCard
-        userId={profile.discord_user_id}
-        variant="outside"
-        profileTheme={profile}
-        showBadges={profile.discord_show_badges !== false}
-      />
-    ) : null;
+  const showMusicCard = Boolean(profile.music_url) && profile.music_card_enabled !== false;
+  const musicCardWidthPct = getMusicCardWidthPct(profile.music_card_width_pct);
 
-  const outsideDiscordWrapped = outsideDiscordInner ? (
-    <div className="mt-4 w-full min-w-0 max-w-full">
-      {animate && discordOutside ? (
-        <motion.div
-          key={`discord-${animKey}`}
-          initial={secondaryInitial}
-          animate={secondaryAnimate}
-          transition={{ ...secondaryTransition, delay: discordOutsideRevealDelay / 1000 }}
-          className="relative w-full min-w-0 max-w-full"
-          style={{ willChange: "transform" }}
-        >
-          {outsideDiscordInner}
-        </motion.div>
-      ) : (
-        <div className="w-full min-w-0 max-w-full">{outsideDiscordInner}</div>
-      )}
+  const musicCardInner = showMusicCard ? (
+    <div className="mt-4 flex w-full justify-center">
+      <div className="w-full" style={{ maxWidth: `${musicCardWidthPct}%` }}>
+        <div className="relative mx-auto w-full">
+          <MusicPlayerCard profile={profile} />
+        </div>
+      </div>
     </div>
   ) : null;
+
+  const outsideDiscordInner =
+    profile.discord_user_id && discordMode === "outside" ? (
+      <div className="mt-4 w-full min-w-0 max-w-full">
+        <DiscordPresenceCard
+          userId={profile.discord_user_id}
+          variant="outside"
+          profileTheme={profile}
+          showBadges={profile.discord_show_badges !== false}
+        />
+      </div>
+    ) : null;
+
+  const mainColumnBody = (
+    <>
+      <div className={mainCardBesideClass} style={mainCardBesideStyle}>
+        {mainCard}
+      </div>
+      {musicCardInner}
+      {outsideDiscordInner}
+    </>
+  );
+
+  const mainColumnAnimated = animate ? (
+    <motion.div
+      key={`main-col-${animKey}`}
+      initial={sharedRevealInitial}
+      animate={sharedRevealAnimate}
+      transition={{ ...sharedRevealTransition, delay: sharedRevealDelaySec }}
+      className="flex min-w-0 shrink-0 flex-col"
+      style={{ ...mainProfileColumnStyle, willChange: "transform" }}
+    >
+      {mainColumnBody}
+    </motion.div>
+  ) : (
+    <div className="flex min-w-0 shrink-0 flex-col" style={mainProfileColumnStyle}>
+      {mainColumnBody}
+    </div>
+  );
 
   const hotelBesideSlotBase = hotelOutsideBeside
     ? {
@@ -416,12 +346,9 @@ export function ProfilePageContent({
           ? hotelCardsOutside.map((card, index) => (
               <motion.div
                 key={`hotel-beside-${animKey}-${index}`}
-                initial={hotelRevealInitial}
-                animate={hotelRevealAnimate}
-                transition={{
-                  ...hotelRevealTransition,
-                  delay: (hotelBesideRevealDelays[index] ?? 0) / 1000,
-                }}
+                initial={sharedRevealInitial}
+                animate={sharedRevealAnimate}
+                transition={{ ...sharedRevealTransition, delay: sharedRevealDelaySec }}
                 className="relative flex min-h-0 w-full flex-1 flex-col"
                 style={{
                   willChange: "transform",
@@ -456,14 +383,6 @@ export function ProfilePageContent({
     ) : null;
 
   /** Coluna principal: card + música + Discord — largura fixa; hotel ao lado só acompanha a altura do card */
-  const mainProfileColumn = (
-    <div className="flex min-w-0 shrink-0 flex-col" style={mainProfileColumnStyle}>
-      {mainCardWrapped}
-      {musicCardInner}
-      {outsideDiscordWrapped}
-    </div>
-  );
-
   const profileContent = hotelOutsideBeside ? (
     <div
       className={
@@ -472,14 +391,12 @@ export function ProfilePageContent({
           : "flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:justify-center"
       }
     >
-      {mainProfileColumn}
+      {mainColumnAnimated}
       {hotelBesideColumn}
     </div>
   ) : (
     <div className="mx-auto w-full" style={mainSlotStyle}>
-      {mainCardWrapped}
-      {musicCardInner}
-      {outsideDiscordWrapped}
+      {mainColumnAnimated}
     </div>
   );
 
@@ -518,12 +435,9 @@ export function ProfilePageContent({
                 ? hotelCardsOutside.map((card, index) => (
                     <motion.div
                       key={`hotel-below-${animKey}-${index}`}
-                      initial={hotelRevealInitial}
-                      animate={hotelRevealAnimate}
-                      transition={{
-                        ...hotelRevealTransition,
-                        delay: (hotelBelowRevealDelays[index] ?? 0) / 1000,
-                      }}
+                      initial={sharedRevealInitial}
+                      animate={sharedRevealAnimate}
+                      transition={{ ...sharedRevealTransition, delay: sharedRevealDelaySec }}
                       className="relative min-w-0 flex-1"
                       style={{ willChange: "transform" }}
                     >
@@ -545,10 +459,10 @@ export function ProfilePageContent({
               placement="outside"
               animate={animate}
               animKey={animKey}
-              cardInitial={secondaryInitial}
-              cardAnimate={secondaryAnimate}
-              cardTransition={secondaryTransition}
-              revealDelayMs={outsideBlockDelay}
+              cardInitial={sharedRevealInitial}
+              cardAnimate={sharedRevealAnimate}
+              cardTransition={sharedRevealTransition}
+              revealDelayMs={0}
             />
           )}
           <ProfileCommentsSection

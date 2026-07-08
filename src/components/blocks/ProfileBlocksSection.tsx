@@ -73,7 +73,7 @@ export function ProfileBlocksSection({
           return <div key={rowKey}>{node}</div>;
         }
 
-        const delay = (revealDelayMs + index * 80) / 1000;
+        const delay = revealDelayMs / 1000;
 
         return (
           <motion.div
