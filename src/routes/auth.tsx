@@ -13,18 +13,26 @@ import {
   usernameLengthError,
 } from "@/lib/username";
 import { toast } from "sonner";
-import { z } from "zod";
 import { Check, X } from "lucide-react";
 import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { useI18n } from "@/i18n/LocaleProvider";
 
-const searchSchema = z.object({
-  mode: z.enum(["signin", "signup"]).optional(),
-  username: z.string().optional(),
-});
+type AuthSearch = {
+  mode?: "signin" | "signup";
+  username?: string;
+};
+
+function parseAuthSearch(search: Record<string, unknown>): AuthSearch {
+  const mode = search.mode === "signin" || search.mode === "signup" ? search.mode : undefined;
+  const username =
+    typeof search.username === "string" && search.username.length > 0
+      ? search.username.slice(0, 64)
+      : undefined;
+  return { mode, username };
+}
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s) => searchSchema.parse(s),
+  validateSearch: parseAuthSearch,
   head: () => ({
     meta: [
       { title: `Sign in — ${SITE_NAME}` },

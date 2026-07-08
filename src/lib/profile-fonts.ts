@@ -150,6 +150,7 @@ export function loadGoogleFont(family: string | null | undefined) {
   const link = document.createElement("link");
   link.id = id;
   link.rel = "stylesheet";
+  link.crossOrigin = "anonymous";
   link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}&display=swap`;
   document.head.appendChild(link);
 }
@@ -172,6 +173,7 @@ export function preloadGoogleFonts(families: string[]) {
     const link = document.createElement("link");
     link.id = id;
     link.rel = "stylesheet";
+    link.crossOrigin = "anonymous";
     link.href = `https://fonts.googleapis.com/css2?${query}&display=swap`;
     document.head.appendChild(link);
   }

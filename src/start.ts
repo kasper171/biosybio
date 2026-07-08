@@ -3,13 +3,23 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 import { renderErrorPage } from "./lib/error-page";
 import { ensureNodeWebSocket } from "./lib/ensure-node-websocket";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { applySecurityToResponse, applySecurityToHtmlResponse } from "@/lib/security/apply-security-response.server";
+import { corsPreflightResponse } from "@/lib/security/cors.server";
 
 const nodeWebSocketMiddleware = createMiddleware().server(async ({ next }) => {
   await ensureNodeWebSocket();
   return next();
 });
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
+const securityHeadersMiddleware = createMiddleware().server(async ({ request, next }) => {
+  const preflight = corsPreflightResponse(request);
+  if (preflight) return preflight;
+
+  const response = await next();
+  return applySecurityToResponse(request, response);
+});
+
+const errorMiddleware = createMiddleware().server(async ({ request, next }) => {
   try {
     return await next();
   } catch (error) {
@@ -17,14 +27,11 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
       throw error;
     }
     console.error(error);
-    return new Response(renderErrorPage(), {
-      status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
+    return applySecurityToHtmlResponse(request, renderErrorPage(), { status: 500 });
   }
 });
 
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [nodeWebSocketMiddleware, errorMiddleware],
+  requestMiddleware: [nodeWebSocketMiddleware, securityHeadersMiddleware, errorMiddleware],
 }));
