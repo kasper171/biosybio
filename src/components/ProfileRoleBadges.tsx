@@ -37,24 +37,27 @@ function BadgeHoverShell({
   tooltip,
   size,
   marginLeft,
+  imageFilter,
   children,
 }: {
   tooltip: string;
   size: number;
   marginLeft: number;
+  imageFilter?: string;
   children: ReactNode;
 }) {
   return (
     <span
-      className="group/badge relative inline-flex shrink-0 cursor-default isolation-isolate overflow-visible"
+      className="group/badge relative inline-flex shrink-0 cursor-default"
       style={{ width: size, height: size, marginLeft }}
       aria-label={tooltip}
     >
       <span
         className={cn(
-          "flex h-full w-full items-center justify-center overflow-hidden transition-[transform,filter] duration-200",
-          "group-hover/badge:scale-110 group-hover/badge:drop-shadow-[0_0_7px_rgba(255,255,255,0.65)]",
+          "flex h-full w-full items-center justify-center overflow-hidden rounded-sm transition-transform duration-200",
+          "group-hover/badge:scale-110",
         )}
+        style={{ filter: imageFilter }}
       >
         {children}
       </span>
@@ -99,22 +102,18 @@ function RoleBadgeIcon({
   });
 
   return (
-    <BadgeHoverShell tooltip={tooltip} size={size} marginLeft={marginLeft}>
+    <BadgeHoverShell
+      tooltip={tooltip}
+      size={size}
+      marginLeft={marginLeft}
+      imageFilter={imageFilter}
+    >
       <img
         src={src}
         alt=""
         draggable={false}
         onError={onError}
-        className="block h-full w-full object-cover object-center"
-        style={{
-          width: size,
-          height: size,
-          minWidth: size,
-          minHeight: size,
-          transform: "scale(1.22)",
-          transformOrigin: "center",
-          filter: imageFilter,
-        }}
+        className="block h-full w-full object-contain object-center"
         loading="lazy"
       />
     </BadgeHoverShell>
@@ -156,9 +155,7 @@ export function ProfileRoleBadges({
           size={badgeSize}
           bloom={bloom}
           bloomColor={bloomColor}
-          marginLeft={
-            index > 0 ? badgeGap - ROLE_BADGE_OVERLAP_PX : 0
-          }
+          marginLeft={index > 0 ? badgeGap - ROLE_BADGE_OVERLAP_PX : 0}
         />
       ))}
     </div>

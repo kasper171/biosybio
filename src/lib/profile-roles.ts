@@ -26,10 +26,10 @@ export const FULL_ACCESS_ROLE_IDS: ReadonlySet<ProfileRoleId> = new Set([
 
 const ROLE_ICON_BASE = "/badges";
 
-/** Área quadrada uniforme — badges de cargo no perfil (sempre 48px, não afeta Discord) */
-export const ROLE_BADGE_DISPLAY_PX = 48;
+/** Área quadrada uniforme — badges de cargo no perfil (sempre 20px, não afeta Discord) */
+export const ROLE_BADGE_DISPLAY_PX = 20;
 /** Compensa padding transparente nos PNGs para badges ficarem próximas com gap 0 */
-export const ROLE_BADGE_OVERLAP_PX = 14;
+export const ROLE_BADGE_OVERLAP_PX = 6;
 export const ROLE_BADGE_GAP_MIN = 0;
 export const ROLE_BADGE_GAP_MAX = 20;
 export const ROLE_BADGE_GAP_DEFAULT = 0;
