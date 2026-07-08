@@ -1,3 +1,5 @@
+import '@tanstack/react-start/server-only';
+
 import { randomBytes } from "node:crypto";
 
 export function createCspNonce(): string {

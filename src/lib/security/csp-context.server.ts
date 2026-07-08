@@ -1,3 +1,5 @@
+import '@tanstack/react-start/server-only';
+
 import { AsyncLocalStorage } from "node:async_hooks";
 
 import { createCspNonce } from "@/lib/security/csp.server";

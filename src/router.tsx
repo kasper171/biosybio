@@ -1,19 +1,26 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
-import { getCspNonce } from "@/lib/security/csp-context.server";
+import { readSsrCspNonce } from "@/lib/security/read-ssr-csp-nonce";
 
-export const getRouter = () => {
+export type CreateAppRouterOptions = {
+  cspNonce?: string;
+};
+
+/** Client-safe router factory — pass CSP nonce only during SSR. */
+export function createAppRouter(options?: CreateAppRouterOptions) {
   const queryClient = new QueryClient();
-  const nonce = typeof window === "undefined" ? getCspNonce() : undefined;
 
-  const router = createRouter({
+  return createRouter({
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
-    ...(nonce ? { ssr: { nonce } } : {}),
+    ...(options?.cspNonce ? { ssr: { nonce: options.cspNonce } } : {}),
   });
+}
 
-  return router;
+export const getRouter = async () => {
+  const cspNonce = await readSsrCspNonce();
+  return createAppRouter(cspNonce ? { cspNonce } : undefined);
 };
