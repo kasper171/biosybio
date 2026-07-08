@@ -253,21 +253,22 @@ export function HomeHeroOrbit() {
               <div className="home-orbit__phone-float">
                 <div className="home-orbit__phone">
                   <div className="home-orbit__phone-glass">
-                  <div className="home-phone-card-3d home-orbit__phone-card">
-                    <div className="home-phone-card-clip">
-                      <div className="home-phone-top-border home-phone-neon-bright" />
-                      <div className="home-phone-shot-wrap">
-                        <img
-                          src={profilePreview}
-                          alt="Biosy profile preview"
-                          className="home-phone-shot"
-                          draggable={false}
-                        />
+                    <div className="home-phone-card-3d home-orbit__phone-card">
+                      <div className="home-phone-card-clip">
+                        <div className="home-phone-top-border home-phone-neon-bright" />
+                        <div className="home-phone-shot-wrap">
+                          <img
+                            src={profilePreview}
+                            alt="Biosy profile preview"
+                            className="home-phone-shot"
+                            draggable={false}
+                          />
+                        </div>
                       </div>
+                      <div aria-hidden className="home-phone-cut-seal" />
+                      <div aria-hidden className="home-phone-cut-feather" />
+                      <div aria-hidden className="home-phone-cut-blur" />
                     </div>
-                    <div aria-hidden className="home-phone-cut-seal" />
-                    <div aria-hidden className="home-phone-cut-feather" />
-                    <div aria-hidden className="home-phone-cut-blur" />
                   </div>
                 </div>
               </div>
