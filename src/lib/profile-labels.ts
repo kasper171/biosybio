@@ -126,11 +126,11 @@ export function getEnabledProfileLabels(state: ProfileLabelsState): ProfileLabel
     .filter((def): def is ProfileLabelDef => Boolean(def));
 }
 
-/** Espelha ProfileLabelsRow: mt-2, gap-1.5, pill ~22px de altura. */
-const LABEL_ROW_HEIGHT = 22;
+/** Espelha ProfileLabelsRow: mt-2, gap-1.5, pill ~20px de altura. */
+const LABEL_ROW_HEIGHT = 20;
 const LABEL_ROW_GAP = 6;
 const LABEL_BLOCK_MARGIN_TOP = 8;
-const LABEL_CHAR_WIDTH = 6.5;
+const LABEL_CHAR_WIDTH = 5.8;
 
 /** Comprimentos aproximados (pt/en) para quebra de linha no card. */
 const LABEL_TEXT_LENGTH: Record<ProfileLabelId, number> = {
@@ -170,7 +170,7 @@ const LABEL_TEXT_LENGTH: Record<ProfileLabelId, number> = {
 
 function estimateLabelChipWidth(def: ProfileLabelDef, showEmoji: boolean): number {
   const textLen = LABEL_TEXT_LENGTH[def.id] ?? def.id.length + 4;
-  return Math.ceil(20 + (showEmoji ? 18 : 0) + textLen * LABEL_CHAR_WIDTH);
+  return Math.ceil(16 + (showEmoji ? 16 : 0) + textLen * LABEL_CHAR_WIDTH);
 }
 
 /** Altura estimada da faixa de etiquetas (entre bio e redes sociais). */
@@ -183,19 +183,16 @@ export function estimateProfileLabelsHeight(
   if (!labels.length) return 0;
 
   const width = contentWidth ?? Math.max(120, (Number(profile.card_width) || 600) - 48);
-  let rows = 1;
-  let rowUsed = 0;
-
-  for (const def of labels) {
-    const chipW = Math.min(estimateLabelChipWidth(def, state.show_emoji), width);
-    const gap = rowUsed > 0 ? LABEL_ROW_GAP : 0;
-    if (rowUsed > 0 && rowUsed + gap + chipW > width) {
-      rows += 1;
-      rowUsed = chipW;
-    } else {
-      rowUsed += gap + chipW;
-    }
-  }
+  const chipWidths = labels.map((def) =>
+    Math.min(estimateLabelChipWidth(def, state.show_emoji), width),
+  );
+  const avgChipW =
+    chipWidths.reduce((sum, w) => sum + w, 0) / Math.max(1, chipWidths.length);
+  const itemsPerRow = Math.max(
+    1,
+    Math.floor((width + LABEL_ROW_GAP) / (avgChipW + LABEL_ROW_GAP)),
+  );
+  const rows = Math.ceil(labels.length / itemsPerRow);
 
   return (
     LABEL_BLOCK_MARGIN_TOP +

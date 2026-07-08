@@ -5,6 +5,7 @@ import {
   buildRoleBadgeImageFilter,
   getRoleBadgeGapPx,
   getRoleBadgeSizePx,
+  getRoleBadgeVisualScale,
   getRoleIconFallbackUrls,
   getRoleIconUrl,
   isRoleBadgeSvg,
@@ -56,7 +57,7 @@ function BadgeHoverShell({
     >
       <span
         className={cn(
-          "flex h-full w-full items-center justify-center overflow-hidden transition-transform duration-200",
+          "flex h-full w-full items-center justify-center overflow-visible transition-transform duration-200",
           "group-hover/badge:scale-110",
         )}
       >
@@ -95,6 +96,7 @@ function RoleBadgeIcon({
 }) {
   const { src, onError } = useBadgeSrc(role.icon_file);
   const tooltip = getRoleTooltip(role);
+  const visualScale = getRoleBadgeVisualScale(role.icon_file);
   const monoFilter = monochrome ? badgeMonochromeCssFilter(monoColor) : undefined;
   const imageFilter = buildRoleBadgeImageFilter(size, {
     monochromeFilter: monoFilter,
@@ -104,11 +106,12 @@ function RoleBadgeIcon({
   const isSvg = isRoleBadgeSvg(src);
   const supersample = isSvg ? 1 : ROLE_BADGE_SUPERSAMPLE;
   const renderSize = size * supersample;
+  const imgSize = renderSize * visualScale;
 
   return (
     <BadgeHoverShell tooltip={tooltip} size={size} marginLeft={marginLeft}>
       <span
-        className="flex items-center justify-center"
+        className="relative flex items-center justify-center overflow-visible"
         style={{
           width: renderSize,
           height: renderSize,
@@ -122,11 +125,15 @@ function RoleBadgeIcon({
           alt=""
           draggable={false}
           onError={onError}
-          width={renderSize}
-          height={renderSize}
+          width={imgSize}
+          height={imgSize}
           decoding="async"
-          className="block h-full w-full object-contain object-center"
-          style={{ imageRendering: "auto" }}
+          className="block max-w-none object-contain object-center"
+          style={{
+            width: imgSize,
+            height: imgSize,
+            imageRendering: "auto",
+          }}
           loading="lazy"
         />
       </span>

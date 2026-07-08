@@ -79,7 +79,7 @@ function estimateFooterHeight(profile: Profile): number {
   if (!discordH && !hotelH) return 0;
 
   const inner = discordH && hotelH ? discordH + 12 + hotelH : discordH || hotelH;
-  return inner + 32;
+  return inner + 20;
 }
 
 function socialItemFootprint(profile: Profile, compact: boolean): number {
@@ -169,7 +169,7 @@ function estimateCenteredBody(profile: Profile, opts?: { blocks?: ProfileBlock[]
   body += (bio ? 8 : 0) + bioLines * 18;
   body += estimateProfileLabelsHeight(profile, cardWidth - 48);
   body += estimateSocialRowsHeight(profile, cardWidth);
-  body += 16;
+  body += 8;
   body += estimateInsideBlocksHeight(opts?.blocks, "centered");
   body += estimateFooterHeight(profile);
 
@@ -205,7 +205,7 @@ function estimateDefaultBody(profile: Profile, opts?: { blocks?: ProfileBlock[] 
   body += (bio ? 8 : 0) + bioLines * 18;
   body += estimateProfileLabelsHeight(profile, cardWidth - 48);
   body += estimateSocialRowsHeight(profile, cardWidth);
-  body += 16;
+  body += 8;
   body += estimateInsideBlocksHeight(opts?.blocks, "default");
   body += estimateFooterHeight(profile);
 

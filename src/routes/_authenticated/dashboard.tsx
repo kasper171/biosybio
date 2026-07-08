@@ -160,12 +160,12 @@ function Dashboard() {
   );
 
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || !isPersonalizar) return;
     const current = profile.card_height ?? DEFAULT_CARD_HEIGHT;
     if (current < minCardHeight) {
       setProfile((prev) => (prev ? { ...prev, card_height: minCardHeight } : prev));
     }
-  }, [minCardHeight, profile?.card_height, profile?.id]);
+  }, [minCardHeight, profile?.card_height, profile?.id, isPersonalizar]);
 
   useEffect(() => {
     setTextScale(getDashboardTextScale());

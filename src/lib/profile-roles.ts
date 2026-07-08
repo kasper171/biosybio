@@ -36,6 +36,50 @@ export function isRoleBadgeSvg(iconFileOrUrl: string): boolean {
   return /\.svg(\?|$)/i.test(iconFileOrUrl);
 }
 
+/** Bounding box da arte dentro do viewBox — premium é a referência visual. */
+const ROLE_BADGE_ART_BBOX: Record<
+  string,
+  { minX: number; minY: number; maxX: number; maxY: number; vb: number }
+> = {
+  premium: { minX: 40, minY: 30, maxX: 160, maxY: 175, vb: 200 },
+  staffdev: { minX: 25, minY: 45, maxX: 175, maxY: 155, vb: 200 },
+  gifter: { minX: 35, minY: 20, maxX: 165, maxY: 185, vb: 200 },
+  donator: { minX: 196, minY: 281, maxX: 828, maxY: 762, vb: 1024 },
+  staff: { minX: 18, minY: 12, maxX: 182, maxY: 188, vb: 200 },
+};
+
+function badgeMaxFillRatio(bbox: (typeof ROLE_BADGE_ART_BBOX)[string]): number {
+  const w = (bbox.maxX - bbox.minX) / bbox.vb;
+  const h = (bbox.maxY - bbox.minY) / bbox.vb;
+  return Math.max(w, h);
+}
+
+function badgeHeightFillRatio(bbox: (typeof ROLE_BADGE_ART_BBOX)[string]): number {
+  return (bbox.maxY - bbox.minY) / bbox.vb;
+}
+
+/**
+ * Escala para todas as badges ocuparem o mesmo slot visual que premium.svg.
+ * Donator usa altura (arte mais “solta” dentro do bbox largo).
+ */
+export function getRoleBadgeVisualScale(iconFile: string): number {
+  const id = normalizeBadgeBase(iconFile);
+  const art = ROLE_BADGE_ART_BBOX[id];
+  if (!art) return 1;
+
+  const ref = ROLE_BADGE_ART_BBOX.premium;
+  const refMax = badgeMaxFillRatio(ref);
+  const refHeight = badgeHeightFillRatio(ref);
+
+  if (id === "donator") {
+    const artHeight = badgeHeightFillRatio(art);
+    return artHeight > 0 ? refHeight / artHeight : 1;
+  }
+
+  const artMax = badgeMaxFillRatio(art);
+  return artMax > 0 ? refMax / artMax : 1;
+}
+
 /**
  * Referência visual das badges no card Discord (19.2 * scale 100% → 19px).
  * Badges de cargo usam o mesmo slot — sem sincronizar configurações do Discord.
