@@ -459,7 +459,7 @@ function CardLayoutContent({
             </div>
             {socialIcons && (
               <div
-                className={getSocialIconsRowClassName("aligned")}
+                className={cn("col-span-2", getSocialIconsRowClassName("aligned"))}
                 style={getSocialIconsRowStyle(profile)}
               >
                 {socialIcons}
@@ -469,7 +469,7 @@ function CardLayoutContent({
               profile={profile}
               placement={badgePlacement}
               roleBadgeAlign={roleBadgeAlign}
-              className={cn("col-span-2", getSocialIconsRowClassName("aligned"))}
+              className="col-span-2 w-full"
             />
           </div>
           {children && <div className="shrink-0 px-6 pb-2 text-left">{children}</div>}
