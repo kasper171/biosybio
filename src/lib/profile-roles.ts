@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/profile-storage";
+import { buildLogoGlowFilter } from "@/lib/logo-glow-filter";
 import badgeManifest from "@/generated/badges.manifest.json";
 
 export type ProfileRoleId = "staff" | "staff_dev" | "premium" | "donator" | "gifter";
@@ -25,8 +26,45 @@ export const FULL_ACCESS_ROLE_IDS: ReadonlySet<ProfileRoleId> = new Set([
 
 const ROLE_ICON_BASE = "/badges";
 
-/** Área quadrada uniforme na UI (Discord ~19px; cargo um pouco maior e padronizado) */
+/** Área quadrada uniforme na UI */
 export const ROLE_BADGE_DISPLAY_PX = 32;
+export const ROLE_BADGE_SIZE_MIN = 20;
+export const ROLE_BADGE_SIZE_MAX = 44;
+
+export function getRoleBadgeSizePx(
+  profile: Pick<Profile, "role_badges_size_px">,
+): number {
+  const raw = Number(profile.role_badges_size_px ?? ROLE_BADGE_DISPLAY_PX);
+  if (!Number.isFinite(raw)) return ROLE_BADGE_DISPLAY_PX;
+  return Math.min(
+    ROLE_BADGE_SIZE_MAX,
+    Math.max(ROLE_BADGE_SIZE_MIN, Math.round(raw)),
+  );
+}
+
+export function resolveRoleBadgeBloomColor(
+  profile: Pick<Profile, "role_badges_bloom_color" | "role_badges_mono_color" | "icon_color">,
+): string {
+  const custom = profile.role_badges_bloom_color?.trim();
+  if (custom) return custom;
+  return profile.role_badges_mono_color?.trim() || profile.icon_color?.trim() || "#ffffff";
+}
+
+export function buildRoleBadgeImageFilter(
+  size: number,
+  options: {
+    monochromeFilter?: string;
+    bloom?: boolean;
+    bloomColor?: string;
+  },
+): string | undefined {
+  const parts: string[] = [];
+  if (options.monochromeFilter) parts.push(options.monochromeFilter);
+  if (options.bloom && options.bloomColor) {
+    parts.push(buildLogoGlowFilter(options.bloomColor, size));
+  }
+  return parts.length > 0 ? parts.join(" ") : undefined;
+}
 
 export function getRoleIconUrl(iconFile: string): string {
   const base = iconFile.replace(/\.(png|svg|webp)$/i, "");

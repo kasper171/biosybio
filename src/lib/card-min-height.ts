@@ -4,6 +4,7 @@ import { getHotelCardFrameStyle, getHotelCardLayoutFromProfile } from "@/lib/hot
 import { listHotelConnections } from "@/lib/hotel/profile-hotel";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 import { DEFAULT_CARD_HEIGHT, type Profile } from "@/lib/profile-storage";
+import { getRoleBadgeSizePx } from "@/lib/profile-roles";
 import { getSocialIconDimensions, getSocialIconGapPx } from "@/lib/social-icons";
 
 /** Mesmo limite visual do card (`line-clamp-3` na bio). */
@@ -129,12 +130,13 @@ function estimateAlignedBody(profile: Profile, opts?: { blocks?: ProfileBlock[] 
   const bio = profile.bio ?? "";
   const showUsername = profile.show_username !== false;
   const showBadges = profile.show_role_badges !== false;
+  const badgeRowH = showBadges ? getRoleBadgeSizePx(profile) + 4 : 0;
 
   const textWidth = Math.max(120, cardWidth - 48 - avatarSize - 16);
   const bioLines = estimateTextLines(bio, textWidth, 7);
 
   let textCol = 26;
-  if (showBadges) textCol += 26;
+  if (showBadges) textCol += badgeRowH;
   if (showUsername) textCol += 18;
   textCol += (bio ? 8 : 0) + bioLines * 16;
 
@@ -154,12 +156,13 @@ function estimateCenteredBody(profile: Profile, opts?: { blocks?: ProfileBlock[]
   const bio = profile.bio ?? "";
   const showUsername = profile.show_username !== false;
   const showBadges = profile.show_role_badges !== false;
+  const badgeRowH = showBadges ? getRoleBadgeSizePx(profile) + 4 : 0;
 
   const bioLines = estimateTextLines(bio, cardWidth - 48, 7.5);
 
   let body = (hasBanner ? 20 : 16) + avatar + 12;
   body += 26;
-  if (showBadges) body += 26;
+  if (showBadges) body += badgeRowH;
   if (showUsername) body += 18;
   body += (bio ? 8 : 0) + bioLines * 18;
   body += estimateSocialRowsHeight(profile, cardWidth);
@@ -188,12 +191,13 @@ function estimateDefaultBody(profile: Profile, opts?: { blocks?: ProfileBlock[] 
   const bio = profile.bio ?? "";
   const showUsername = profile.show_username !== false;
   const showBadges = profile.show_role_badges !== false;
+  const badgeRowH = showBadges ? getRoleBadgeSizePx(profile) + 4 : 0;
 
   const bioLines = estimateTextLines(bio, cardWidth - 48, 7.5);
 
   let body = (hasBanner ? 20 : 24) + 8 + avatarSize + 12;
   body += 24;
-  if (showBadges) body += 26;
+  if (showBadges) body += badgeRowH;
   if (showUsername) body += 18;
   body += (bio ? 8 : 0) + bioLines * 18;
   body += estimateSocialRowsHeight(profile, cardWidth);

@@ -2,10 +2,12 @@ import { useState, type ReactNode } from "react";
 import type { Profile } from "@/lib/profile-storage";
 import {
   badgeMonochromeCssFilter,
+  buildRoleBadgeImageFilter,
+  getRoleBadgeSizePx,
   getRoleIconFallbackUrl,
   getRoleIconUrl,
   getRoleTooltip,
-  ROLE_BADGE_DISPLAY_PX,
+  resolveRoleBadgeBloomColor,
   sortProfileRoles,
   type ProfileRoleAssignment,
 } from "@/lib/profile-roles";
@@ -72,15 +74,24 @@ function RoleBadgeIcon({
   monochrome,
   monoColor,
   size,
+  bloom,
+  bloomColor,
 }: {
   role: ProfileRoleAssignment;
   monochrome: boolean;
   monoColor: string;
   size: number;
+  bloom: boolean;
+  bloomColor: string;
 }) {
   const { src, onError } = useBadgeSrc(role.icon_file);
   const tooltip = getRoleTooltip(role);
   const monoFilter = monochrome ? badgeMonochromeCssFilter(monoColor) : undefined;
+  const imageFilter = buildRoleBadgeImageFilter(size, {
+    monochromeFilter: monoFilter,
+    bloom,
+    bloomColor,
+  });
 
   return (
     <BadgeHoverShell tooltip={tooltip} size={size}>
@@ -90,7 +101,14 @@ function RoleBadgeIcon({
         draggable={false}
         onError={onError}
         className="block h-full w-full object-contain object-center"
-        style={monoFilter ? { filter: monoFilter } : undefined}
+        style={{
+          width: size,
+          height: size,
+          minWidth: size,
+          minHeight: size,
+          overflow: "visible",
+          filter: imageFilter,
+        }}
         loading="lazy"
       />
     </BadgeHoverShell>
@@ -101,15 +119,18 @@ export function ProfileRoleBadges({
   profile,
   className,
   align = "center",
-  size = ROLE_BADGE_DISPLAY_PX,
+  size,
 }: Props) {
   if (profile.show_role_badges === false) return null;
 
   const roles = sortProfileRoles(profile.roles ?? []);
   if (roles.length === 0) return null;
 
+  const badgeSize = size ?? getRoleBadgeSizePx(profile);
   const monochrome = profile.role_badges_monochrome === true;
   const monoColor = profile.role_badges_mono_color ?? "#ffffff";
+  const bloom = profile.role_badges_bloom === true;
+  const bloomColor = resolveRoleBadgeBloomColor(profile);
 
   return (
     <div
@@ -126,7 +147,9 @@ export function ProfileRoleBadges({
           role={role}
           monochrome={monochrome}
           monoColor={monoColor}
-          size={size}
+          size={badgeSize}
+          bloom={bloom}
+          bloomColor={bloomColor}
         />
       ))}
     </div>

@@ -93,6 +93,12 @@ export const esDashboard: MessageTree = {
     roleBadges: {
       section: "Insignias de rol",
       showOnProfile: "Mostrar insignias en el perfil",
+      size: "Tamaño de insignias",
+      sizeHint: "Tamaño uniforme para todas las insignias. Rango: {{min}}–{{max}} px.",
+      bloom: "Brillo en insignias",
+      bloomHint: "Brillo suave en cada insignia individualmente (sigue la forma de la insignia).",
+      bloomColor: "Color del brillo",
+      bloomColorHint: "Solo el color del brillo — no cambia la imagen de la insignia.",
       monochrome: "Color monocromático",
       badgeColor: "Color de insignia",
     },
@@ -219,7 +225,19 @@ export const esDashboard: MessageTree = {
     iconStyle: { section: "Estilo de iconos", boxed: "Con caja", logoOnly: "Solo logo" },
   },
   conexoes: {
-    discord: { section: "Discord", generateCode: "Generar código", validate: "Validar", disconnect: "Desconectar" },
+    discord: {
+      section: "Discord",
+      generateCode: "Generar código",
+      validate: "Validar",
+      disconnect: "Desconectar",
+      lanyardModal: {
+        title: "Opss… usuario no encontrado",
+        body: "Opss… parece que tu usuario no fue encontrado. Asegúrate de estar en el servidor de Lanyard para vincular tu Discord.",
+        bodyWait: "Si ya entraste, espera unos minutinhos e inténtalo de nuevo.",
+        joinServer: "Entrar al servidor",
+        close: "Cerrar",
+      },
+    },
     hotel: { section: "Habbo & Habblet", connect: "Conectar {{platform}}", disconnect: "Desconectar {{platform}}" },
   },
   comentarios: {
@@ -288,7 +306,6 @@ export const esDashboard: MessageTree = {
     subtitle: "Título de la pestaña, icono de la página y embed para compartir tu perfil público.",
     pageTab: {
       title: "Pestaña de la página",
-      description: "Solo aplica a tu página pública ({{url}}). El panel siempre usa el icono predeterminado de {{siteName}}.",
       previewLabel: "Vista previa de la pestaña",
       pageTitle: "Título de la pestaña",
       pageTitleHint: "{{count}}/{{max}} caracteres · Predeterminado: {{defaultTitle}}",
@@ -306,8 +323,6 @@ export const esDashboard: MessageTree = {
     },
     embed: {
       title: "Embed para compartir",
-      description:
-        "Personaliza cómo aparece tu enlace en Discord, WhatsApp, Twitter y otras apps. Solo aplica a {{url}}. Los campos vacíos usan los valores predeterminados de {{siteName}}.",
       previewLabel: "Vista previa (Discord)",
       embedTitle: "Título del embed",
       embedDescription: "Descripción del embed",

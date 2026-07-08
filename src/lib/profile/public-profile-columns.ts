@@ -26,6 +26,9 @@ export const PUBLIC_PROFILE_SELECT = [
   "show_role_badges",
   "role_badges_monochrome",
   "role_badges_mono_color",
+  "role_badges_size_px",
+  "role_badges_bloom",
+  "role_badges_bloom_color",
 
   // Banner / wallpaper
   "banner_url",

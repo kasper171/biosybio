@@ -29,6 +29,11 @@ export type Profile = {
   role_badges_monochrome: boolean;
   /** Cor do filtro monocromático dos badges */
   role_badges_mono_color: string;
+  /** Tamanho uniforme das badges de cargo (px) */
+  role_badges_size_px: number;
+  /** Bloom individual em cada badge (mesmo método das logos sociais) */
+  role_badges_bloom: boolean;
+  role_badges_bloom_color: string | null;
   banner_url: string | null;
   background_url: string | null;
   background_pos_x: number;

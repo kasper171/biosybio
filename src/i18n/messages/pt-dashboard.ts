@@ -93,6 +93,12 @@ export const ptDashboard: MessageTree = {
     roleBadges: {
       section: "Badges de cargo",
       showOnProfile: "Mostrar badges no perfil",
+      size: "Tamanho das badges",
+      sizeHint: "Tamanho uniforme para todas as badges. Intervalo: {{min}}–{{max}} px.",
+      bloom: "Brilho nas badges",
+      bloomHint: "Brilho suave em cada badge individualmente (segue o formato da badge).",
+      bloomColor: "Cor do brilho",
+      bloomColorHint: "Só a cor do brilho — não altera a imagem da badge.",
       monochrome: "Cor monocromática",
       badgeColor: "Cor do badge",
     },
@@ -219,7 +225,19 @@ export const ptDashboard: MessageTree = {
     iconStyle: { section: "Estilo dos ícones", boxed: "Com caixa", logoOnly: "Só logo" },
   },
   conexoes: {
-    discord: { section: "Discord", generateCode: "Gerar código", validate: "Validar", disconnect: "Desconectar" },
+    discord: {
+      section: "Discord",
+      generateCode: "Gerar código",
+      validate: "Validar",
+      disconnect: "Desconectar",
+      lanyardModal: {
+        title: "Opss… usuário não encontrado",
+        body: "Opss… parece que seu usuário não foi encontrado. Garanta que você está no servidor do Lanyard para poder vincular o seu Discord.",
+        bodyWait: "Se você já entrou, espere alguns minutinhos e tente novamente.",
+        joinServer: "Entrar no servidor",
+        close: "Fechar",
+      },
+    },
     hotel: { section: "Habbo & Habblet", connect: "Conectar {{platform}}", disconnect: "Desconectar {{platform}}" },
   },
   comentarios: {
@@ -288,7 +306,6 @@ export const ptDashboard: MessageTree = {
     subtitle: "Título da aba, ícone da página e embed de compartilhamento do seu perfil público.",
     pageTab: {
       title: "Aba da página",
-      description: "Aplica-se apenas à sua página pública ({{url}}). O dashboard sempre usa o ícone padrão do {{siteName}}.",
       previewLabel: "Prévia da aba",
       pageTitle: "Título da aba",
       pageTitleHint: "{{count}}/{{max}} caracteres · Padrão: {{defaultTitle}}",
@@ -306,8 +323,6 @@ export const ptDashboard: MessageTree = {
     },
     embed: {
       title: "Embed de compartilhamento",
-      description:
-        "Personalize como seu link aparece no Discord, WhatsApp, Twitter e outros apps. Aplica-se apenas a {{url}}. Campos vazios usam o padrão do {{siteName}}.",
       previewLabel: "Prévia (Discord)",
       embedTitle: "Título do embed",
       embedDescription: "Descrição do embed",

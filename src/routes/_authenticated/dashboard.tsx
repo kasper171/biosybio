@@ -54,6 +54,7 @@ import {
 } from "@/lib/dashboard-text-scale";
 import { BannerPositionEditor } from "@/components/BannerPositionEditor";
 import { DiscordConnectedCard } from "@/components/dashboard/DiscordConnectedCard";
+import { LanyardNotFoundModal } from "@/components/dashboard/LanyardNotFoundModal";
 import { HotelConnectionPanel } from "@/components/dashboard/HotelConnectionPanel";
 import { MoldurasPanel } from "@/components/dashboard/MoldurasPanel";
 import { SOCIALS, SOCIAL_MAP, normalizeHandle } from "@/lib/socials";
@@ -68,12 +69,18 @@ import {
   DISCORD_OTP_VALIDATE_WINDOW_MS,
   DISCORD_VERIFY_MESSAGES,
   LANYARD_INVITE_URL,
+  checkLanyardUser,
   generateDiscordOtp,
 } from "@/lib/discord-verify";
 import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
 import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions";
 import { formatSocialIconSizeLabel } from "@/lib/social-icons";
-import { cleanUsername } from "@/lib/username";
+import {
+  getRoleBadgeSizePx,
+  ROLE_BADGE_DISPLAY_PX,
+  ROLE_BADGE_SIZE_MAX,
+  ROLE_BADGE_SIZE_MIN,
+} from "@/lib/profile-roles";
 
 type PanelKey = PersonalizePanelKey;
 
@@ -350,6 +357,9 @@ function Dashboard() {
         show_role_badges: profile.show_role_badges !== false,
         role_badges_monochrome: profile.role_badges_monochrome === true,
         role_badges_mono_color: profile.role_badges_mono_color ?? "#ffffff",
+        role_badges_size_px: getRoleBadgeSizePx(profile),
+        role_badges_bloom: profile.role_badges_bloom === true,
+        role_badges_bloom_color: profile.role_badges_bloom_color ?? null,
         banner_url: profile.banner_url,
         background_url: profile.background_url,
         background_pos_x: profile.background_pos_x ?? 50,
@@ -682,6 +692,7 @@ function Dashboard() {
 /* ===================== PANELS ===================== */
 
 function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends keyof Profile>(k: K, v: Profile[K]) => void }) {
+  const { t } = useI18n();
   const effectiveTapEnabled = profile.music_url ? true : profile.tap_to_reveal_enabled === true;
   return (
     <div className="space-y-4">
@@ -703,19 +714,61 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
       </Field>
 
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Role badges</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.perfil.roleBadges.section")}
+        </p>
         <ToggleField
-          label="Show badges on profile"
+          label={t("dashboard.perfil.roleBadges.showOnProfile")}
           checked={profile.show_role_badges !== false}
           onChange={(v) => update("show_role_badges", v)}
         />
+        <SliderField
+          label={t("dashboard.perfil.roleBadges.size")}
+          min={ROLE_BADGE_SIZE_MIN}
+          max={ROLE_BADGE_SIZE_MAX}
+          step={1}
+          value={profile.role_badges_size_px ?? ROLE_BADGE_DISPLAY_PX}
+          onChange={(v) => update("role_badges_size_px", v)}
+          display={`${getRoleBadgeSizePx(profile)}px`}
+        />
+        <p className="text-[11px] leading-relaxed text-white/40">
+          {t("dashboard.perfil.roleBadges.sizeHint", {
+            min: ROLE_BADGE_SIZE_MIN,
+            max: ROLE_BADGE_SIZE_MAX,
+          })}
+        </p>
         <ToggleField
-          label="Monochrome color"
+          label={t("dashboard.perfil.roleBadges.bloom")}
+          checked={profile.role_badges_bloom === true}
+          onChange={(v) => update("role_badges_bloom", v)}
+        />
+        <p className="text-[11px] leading-relaxed text-white/40">
+          {t("dashboard.perfil.roleBadges.bloomHint")}
+        </p>
+        {profile.role_badges_bloom === true && (
+          <div>
+            <ColorField
+              label={t("dashboard.perfil.roleBadges.bloomColor")}
+              value={
+                profile.role_badges_bloom_color ??
+                profile.role_badges_mono_color ??
+                profile.icon_color ??
+                "#ffffff"
+              }
+              onChange={(v) => update("role_badges_bloom_color", v)}
+            />
+            <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+              {t("dashboard.perfil.roleBadges.bloomColorHint")}
+            </p>
+          </div>
+        )}
+        <ToggleField
+          label={t("dashboard.perfil.roleBadges.monochrome")}
           checked={profile.role_badges_monochrome === true}
           onChange={(v) => update("role_badges_monochrome", v)}
         />
         {profile.role_badges_monochrome && (
-          <Field label="Badge color">
+          <Field label={t("dashboard.perfil.roleBadges.badgeColor")}>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -1874,6 +1927,7 @@ function ComentariosPanel({
 function ConexoesPanel({ profile, update }: { profile: Profile; update: <K extends keyof Profile>(k: K, v: Profile[K]) => void }) {
   const [discordInput, setDiscordInput] = useState(profile.discord_user_id ?? "");
   const [discordLoading, setDiscordLoading] = useState(false);
+  const [lanyardModalOpen, setLanyardModalOpen] = useState(false);
   const [otp, setOtp] = useState<string | null>(null);
   const [validateUnlockAt, setValidateUnlockAt] = useState<number | null>(null);
   const [otpExpiresAt, setOtpExpiresAt] = useState<number | null>(null);
@@ -1911,19 +1965,29 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
     return () => clearInterval(timer);
   }, [validateUnlockAt, otpExpiresAt]);
 
-  const startVerification = () => {
+  const startVerification = async () => {
     const userId = discordInput.trim();
     if (!/^\d{15,22}$/.test(userId)) {
       toast.error(DISCORD_VERIFY_MESSAGES.invalid_id);
       return;
     }
-    const code = generateDiscordOtp();
-    const now = Date.now();
-    setOtp(code);
-    setValidateUnlockAt(now + DISCORD_OTP_WAIT_MS);
-    setOtpExpiresAt(now + DISCORD_OTP_WAIT_MS + DISCORD_OTP_VALIDATE_WINDOW_MS);
-    setTransferPending(false);
-    toast.success("Code generated — add it to your Discord bio");
+    setDiscordLoading(true);
+    try {
+      const inLanyard = await checkLanyardUser(userId);
+      if (!inLanyard) {
+        setLanyardModalOpen(true);
+        return;
+      }
+      const code = generateDiscordOtp();
+      const now = Date.now();
+      setOtp(code);
+      setValidateUnlockAt(now + DISCORD_OTP_WAIT_MS);
+      setOtpExpiresAt(now + DISCORD_OTP_WAIT_MS + DISCORD_OTP_VALIDATE_WINDOW_MS);
+      setTransferPending(false);
+      toast.success("Code generated — add it to your Discord bio");
+    } finally {
+      setDiscordLoading(false);
+    }
   };
 
   const runDiscordLink = async (forceTransfer: boolean) => {
@@ -1960,6 +2024,10 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
       }
       if (result.needsTransfer) {
         setTransferPending(true);
+        return;
+      }
+      if (result.code === "not_in_lanyard") {
+        setLanyardModalOpen(true);
         return;
       }
       toast.error(result.error ?? "Validation failed.");
@@ -2032,8 +2100,8 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
               />
               <button
                 type="button"
-                onClick={startVerification}
-                disabled={!discordInput.trim() || verificationPending}
+                onClick={() => void startVerification()}
+                disabled={!discordInput.trim() || verificationPending || discordLoading}
                 className="shrink-0 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Generate code
@@ -2144,6 +2212,8 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
       )}
 
       <HotelConnectionPanel profile={profile} update={update} onBatchUpdate={applyPatch} />
+
+      <LanyardNotFoundModal open={lanyardModalOpen} onClose={() => setLanyardModalOpen(false)} />
     </div>
   );
 }

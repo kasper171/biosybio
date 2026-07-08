@@ -183,13 +183,6 @@ export function ContaMiscellaneousPanel({ profile, onProfileChange }: Props) {
         </div>
 
         <DashCard title={t("dashboard.miscellaneous.pageTab.title")}>
-          <p className="mb-4 text-xs leading-relaxed text-white/45">
-            {t("dashboard.miscellaneous.pageTab.description", {
-              url: previewUrl,
-              siteName: SITE_NAME,
-            })}
-          </p>
-
           <div className="mb-5 flex items-center gap-3 rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3">
             <img
               src={previewFavicon}
@@ -299,10 +292,6 @@ export function ContaMiscellaneousPanel({ profile, onProfileChange }: Props) {
         </DashCard>
 
         <DashCard title={t("dashboard.miscellaneous.embed.title")}>
-          <p className="mb-4 text-xs leading-relaxed text-white/45">
-            {t("dashboard.miscellaneous.embed.description", { siteName: SITE_NAME, url: previewUrl })}
-          </p>
-
           <div className="mb-5 overflow-hidden rounded-xl border border-[#1e1f22] bg-[#2b2d31]">
             <div className="border-b border-[#1e1f22] px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-[#949ba4]">
               {t("dashboard.miscellaneous.embed.previewLabel")}

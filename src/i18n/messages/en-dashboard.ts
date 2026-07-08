@@ -94,6 +94,12 @@ export const enDashboard: MessageTree = {
     roleBadges: {
       section: "Role badges",
       showOnProfile: "Show badges on profile",
+      size: "Badge size",
+      sizeHint: "Uniform size for all badges. Range: {{min}}–{{max}} px.",
+      bloom: "Bloom around badges",
+      bloomHint: "Soft glow around each badge individually (follows the badge shape).",
+      bloomColor: "Glow color",
+      bloomColorHint: "Glow color only — does not change the badge image.",
       monochrome: "Monochrome color",
       badgeColor: "Badge color",
     },
@@ -220,7 +226,19 @@ export const enDashboard: MessageTree = {
     iconStyle: { section: "Icon style", boxed: "Boxed", logoOnly: "Logo only" },
   },
   conexoes: {
-    discord: { section: "Discord", generateCode: "Generate code", validate: "Validate", disconnect: "Disconnect" },
+    discord: {
+      section: "Discord",
+      generateCode: "Generate code",
+      validate: "Validate",
+      disconnect: "Disconnect",
+      lanyardModal: {
+        title: "Opss… user not found",
+        body: "Opss… it looks like your user was not found. Make sure you are in the Lanyard server to link your Discord.",
+        bodyWait: "If you already joined, wait a few minutes and try again.",
+        joinServer: "Join server",
+        close: "Close",
+      },
+    },
     hotel: { section: "Habbo & Habblet", connect: "Connect {{platform}}", disconnect: "Disconnect {{platform}}" },
   },
   comentarios: {
@@ -289,7 +307,6 @@ export const enDashboard: MessageTree = {
     subtitle: "Browser tab title, page icon, and share embed for your public page.",
     pageTab: {
       title: "Page tab",
-      description: "Applies only to your public page ({{url}}). The dashboard always uses the default {{siteName}} icon.",
       previewLabel: "Tab preview",
       pageTitle: "Tab title",
       pageTitleHint: "{{count}}/{{max}} characters · Default: {{defaultTitle}}",
@@ -307,8 +324,6 @@ export const enDashboard: MessageTree = {
     },
     embed: {
       title: "Share embed",
-      description:
-        "Customize how your link appears on Discord, WhatsApp, Twitter, and other apps. Applies only to {{url}}. Empty fields use {{siteName}} defaults.",
       previewLabel: "Preview (Discord)",
       embedTitle: "Embed title",
       embedDescription: "Embed description",
