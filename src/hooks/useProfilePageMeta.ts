@@ -9,6 +9,11 @@ type ProfilePageMetaSource = Pick<
 
 const FAVICON_SELECTOR = 'link[data-biosy-favicon="true"]';
 
+/** Velocidade média — legível sem ficar lento demais. */
+const TAB_TITLE_TYPE_MS = 520;
+const TAB_TITLE_DELETE_MS = 380;
+const TAB_TITLE_HOLD_MS = 2600;
+
 function ensureFaviconLink(): HTMLLinkElement {
   let link = document.querySelector<HTMLLinkElement>(FAVICON_SELECTOR);
   if (!link) {
@@ -50,31 +55,59 @@ export function useProfilePageMeta(
     }
 
     if (!fullTitle) {
-      document.title = "";
+      document.title = fullTitle;
       return;
     }
 
-    let index = 0;
+    let cancelled = false;
     const timers: number[] = [];
 
-    const restart = () => {
-      index = 0;
-      document.title = "";
-      for (let i = 1; i <= fullTitle.length; i += 1) {
-        const timer = window.setTimeout(() => {
-          document.title = fullTitle.slice(0, i);
-          if (i === fullTitle.length) {
-            const pause = window.setTimeout(restart, 2200);
-            timers.push(pause);
-          }
-        }, 72 * i);
-        timers.push(timer);
-      }
+    const schedule = (fn: () => void, delayMs: number) => {
+      const id = window.setTimeout(() => {
+        if (!cancelled) fn();
+      }, delayMs);
+      timers.push(id);
     };
 
-    restart();
+    const setTitleSafe = (text: string) => {
+      // Nunca deixar vazio — o navegador mostra a URL (ex.: byosy.bio/user) na aba.
+      document.title = text.length > 0 ? text : fullTitle.slice(0, 1);
+    };
+
+    const typeForward = (nextLen: number) => {
+      if (cancelled) return;
+
+      if (nextLen > fullTitle.length) {
+        if (fullTitle.length <= 1) {
+          schedule(() => typeForward(1), TAB_TITLE_HOLD_MS);
+          return;
+        }
+        schedule(() => deleteBackward(fullTitle.length - 1), TAB_TITLE_HOLD_MS);
+        return;
+      }
+
+      setTitleSafe(fullTitle.slice(0, nextLen));
+      schedule(() => typeForward(nextLen + 1), TAB_TITLE_TYPE_MS);
+    };
+
+    const deleteBackward = (len: number) => {
+      if (cancelled) return;
+
+      if (len <= 1) {
+        setTitleSafe(fullTitle.slice(0, 1));
+        schedule(() => typeForward(2), TAB_TITLE_TYPE_MS);
+        return;
+      }
+
+      setTitleSafe(fullTitle.slice(0, len));
+      schedule(() => deleteBackward(len - 1), TAB_TITLE_DELETE_MS);
+    };
+
+    setTitleSafe(fullTitle.slice(0, 1));
+    schedule(() => typeForward(2), TAB_TITLE_TYPE_MS);
 
     return () => {
+      cancelled = true;
       timers.forEach((id) => window.clearTimeout(id));
       document.title = fullTitle;
     };
