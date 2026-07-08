@@ -3,7 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { ensureNodeWebSocket } from "./lib/ensure-node-websocket";
-import { applySecurityToHtmlResponse } from "./lib/security/apply-security-response.server";
+import { applySecurityToHtmlResponse, applySecurityToResponse } from "./lib/security/apply-security-response.server";
 import { corsPreflightResponse } from "./lib/security/cors.server";
 
 type ServerEntry = {
@@ -49,7 +49,8 @@ export default {
       await ensureNodeWebSocket();
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(request, response);
+      const normalized = await normalizeCatastrophicSsrResponse(request, response);
+      return applySecurityToResponse(request, normalized);
     } catch (error) {
       console.error(error);
       return applySecurityToHtmlResponse(request, renderErrorPage(), { status: 500 });

@@ -1,37 +1,25 @@
 import { applyCorsHeaders } from "@/lib/security/cors.server";
-import {
-  buildContentSecurityPolicy,
-  createCspNonce,
-  injectNonceIntoHtml,
-} from "@/lib/security/csp.server";
 import { applyStaticSecurityHeaders } from "@/lib/security/security-headers";
 
+/**
+ * Applies security headers without replacing the response body.
+ * TanStack Start SSR streams HTML; `new Response(response.body)` or `response.text()`
+ * can yield an empty body (white screen).
+ * CSP is set at the Vercel edge (vercel.json).
+ */
 export async function applySecurityToResponse(
   request: Request,
   response: Response,
 ): Promise<Response> {
-  const headers = new Headers(response.headers);
-  applyStaticSecurityHeaders(headers);
-  applyCorsHeaders(request, headers);
+  if (!(response instanceof Response)) return response;
 
-  const contentType = headers.get("content-type") ?? "";
-  if (!contentType.includes("text/html")) {
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
+  const headerBag = response.headers;
+  if (headerBag && typeof headerBag.set === "function") {
+    applyStaticSecurityHeaders(headerBag);
+    applyCorsHeaders(request, headerBag);
   }
 
-  const nonce = createCspNonce();
-  const html = injectNonceIntoHtml(await response.text(), nonce);
-  headers.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
-
-  return new Response(html, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
+  return response;
 }
 
 export function applySecurityToHtmlResponse(
@@ -47,10 +35,7 @@ export function applySecurityToHtmlResponse(
   applyStaticSecurityHeaders(headers);
   applyCorsHeaders(request, headers);
 
-  const nonce = createCspNonce();
-  headers.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
-
-  return new Response(injectNonceIntoHtml(html, nonce), {
+  return new Response(html, {
     ...init,
     headers,
   });
