@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { checkUsernameTakenFn } from "@/lib/auth/auth.functions";
 import { translate } from "@/i18n/LocaleProvider";
 
 export const MIN_USERNAME_LENGTH = 2;
@@ -30,14 +30,4 @@ export function usernameLengthError(username: string): string | null {
     return translate("lib.usernameChars");
   }
   return null;
-}
-
-export async function isUsernameTaken(username: string) {
-  const clean = cleanUsername(username);
-  const { data, error } = await supabase.rpc("is_username_taken", {
-    p_username: clean,
-  });
-
-  if (error) throw error;
-  return { clean, taken: data === true };
 }

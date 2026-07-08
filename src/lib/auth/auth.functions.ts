@@ -12,6 +12,10 @@ const signUpInput = z.object({
   username: z.string().min(2).max(64),
 });
 
+const usernameCheckInput = z.object({
+  username: z.string().min(1).max(64),
+});
+
 export type SignUpErrorCode =
   | "invalid_username"
   | "weak_password"
@@ -19,6 +23,71 @@ export type SignUpErrorCode =
   | "email_exists"
   | "signup_failed"
   | "server_misconfigured";
+
+/** Verifica disponibilidade de username no servidor (sem RPC exposta ao client). */
+export const checkUsernameTakenFn = createServerFn({ method: "POST" })
+  .inputValidator(usernameCheckInput)
+  .handler(async ({ data }) => {
+    const cleanUser = cleanUsername(data.username);
+    const clientIp = getClientIp();
+
+    const lengthError = usernameLengthError(cleanUser);
+    if (lengthError) {
+      return {
+        ok: false as const,
+        error: lengthError,
+        code: "invalid_username" as const,
+      };
+    }
+
+    let supabaseAdmin: Awaited<
+      typeof import("@/integrations/supabase/client.server")
+    >["supabaseAdmin"];
+    try {
+      ({ supabaseAdmin } = await import("@/integrations/supabase/client.server"));
+    } catch {
+      return {
+        ok: false as const,
+        error: "Server unavailable. Try again in a moment.",
+        code: "server_misconfigured" as const,
+      };
+    }
+
+    const ipAllowed = await consumeRateLimit(
+      supabaseAdmin,
+      rateLimitBucket(["username_check", "ip", clientIp]),
+      40,
+      60,
+    );
+    if (!ipAllowed) {
+      return {
+        ok: false as const,
+        error: "Too many requests. Try again in a moment.",
+        code: "rate_limited" as const,
+      };
+    }
+
+    const { data: existingProfile, error } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("username", cleanUser)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[checkUsernameTakenFn]", error.message);
+      return {
+        ok: false as const,
+        error: "Could not check username. Try again in a moment.",
+        code: "server_misconfigured" as const,
+      };
+    }
+
+    return {
+      ok: true as const,
+      clean: cleanUser,
+      taken: Boolean(existingProfile),
+    };
+  });
 
 export const signUpFn = createServerFn({ method: "POST" })
   .inputValidator(signUpInput)

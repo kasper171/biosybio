@@ -7,11 +7,11 @@ import { getPasswordRules } from "@/lib/auth/password-policy";
 import { profileDisplayPath, SITE_NAME, SITE_PROFILE_PREFIX } from "@/lib/site";
 import {
   cleanUsername,
-  isUsernameTaken,
   MIN_USERNAME_LENGTH,
   MAX_USERNAME_LENGTH,
   usernameLengthError,
 } from "@/lib/username";
+import { isUsernameTaken } from "@/lib/username-availability";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
 import { AuthPageShell } from "@/components/auth/AuthPageShell";

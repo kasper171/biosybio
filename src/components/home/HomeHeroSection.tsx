@@ -11,10 +11,10 @@ import { useI18n } from "@/i18n/LocaleProvider";
 import { profileDisplayPath, SITE_PROFILE_PREFIX } from "@/lib/site";
 import {
   cleanUsername,
-  isUsernameTaken,
   MAX_USERNAME_LENGTH,
   usernameLengthError,
 } from "@/lib/username";
+import { isUsernameTaken } from "@/lib/username-availability";
 
 type Parallax = { x: number; y: number };
 
