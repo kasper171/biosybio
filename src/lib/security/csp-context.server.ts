@@ -17,20 +17,15 @@ if (!globalObj[GLOBAL_CSP_NONCE_KEY]) {
 
 const cspNonceStore = globalObj[GLOBAL_CSP_NONCE_KEY]!;
 
+type CspNonceCallback<T> = (nonce: string) => T | Promise<T>;
+
 /** Runs a request handler with a per-request CSP nonce available to SSR. */
-export function runWithCspNonce<T>(fn: () => T): T;
-export function runWithCspNonce<T>(fn: () => Promise<T>): Promise<T>;
-export function runWithCspNonce<T>(fn: () => T | Promise<T>): T | Promise<T> {
+export function runWithCspNonce<T>(fn: CspNonceCallback<T>): T | Promise<T> {
   const nonce = createCspNonce();
-  return cspNonceStore.run(nonce, fn);
+  return cspNonceStore.run(nonce, () => fn(nonce));
 }
 
 /** Nonce for the current request (server only). */
 export function getCspNonce(): string | undefined {
   return cspNonceStore.getStore();
-}
-
-/** Creates a nonce and runs fn without AsyncLocalStorage (for error paths). */
-export function withFreshCspNonce<T>(fn: (nonce: string) => T): T {
-  return fn(createCspNonce());
 }
