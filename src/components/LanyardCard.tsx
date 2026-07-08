@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
-
-type Badge = {
-  id: string;
-  description: string;
-  icon: string;
-  link?: string;
-};
+import { getDiscordDcdnProfileFn } from "@/lib/discord/discord.functions";
+import type { DiscordBadge } from "@/lib/discord/discord-payload";
 
 type ProfileData = {
   user: {
@@ -14,7 +9,7 @@ type ProfileData = {
     global_name?: string | null;
     avatar?: string | null;
   };
-  badges: Badge[];
+  badges: DiscordBadge[];
 };
 
 export function LanyardCard({ userId, role }: { userId: string; role: string }) {
@@ -22,12 +17,14 @@ export function LanyardCard({ userId, role }: { userId: string; role: string }) 
 
   useEffect(() => {
     let active = true;
-    fetch(`https://dcdn.dstn.to/profile/${userId}`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (active) setData(json);
+    void getDiscordDcdnProfileFn({ data: { userId } })
+      .then((profile) => {
+        if (!active || !profile) return;
+        setData({ user: profile.user, badges: profile.badges });
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.warn("[LanyardCard] profile fetch", error);
+      });
     return () => {
       active = false;
     };

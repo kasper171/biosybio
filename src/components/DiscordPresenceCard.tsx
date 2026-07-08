@@ -13,56 +13,23 @@ import {
   hexToRgba,
 } from "@/lib/profile-colors";
 import { cn } from "@/lib/utils";
+import type {
+  DiscordBadge,
+  DiscordPresenceSlice,
+  DiscordUser,
+  LanyardActivity,
+} from "@/lib/discord/discord-payload";
+import { getDiscordDcdnProfileFn } from "@/lib/discord/discord.functions";
+import { useDiscordPresenceRelay } from "@/lib/discord/use-discord-presence-relay";
 
 /** Abaixo desta largura, a atividade (Spotify etc.) encolhe para não sobrepor o perfil */
 const ACTIVITY_COMPACT_WIDTH_PX = 400;
-
-type DiscordUser = {
-  id: string;
-  username: string;
-  global_name?: string | null;
-  avatar?: string | null;
-  discriminator?: string;
-};
-
-type LanyardActivity = {
-  name: string;
-  details?: string | null;
-  state?: string | null;
-  application_id?: string | null;
-  assets?: {
-    large_image?: string | null;
-    large_text?: string | null;
-  };
-};
-
-type LanyardData = {
-  discord_user: DiscordUser;
-  activities: LanyardActivity[];
-  spotify?: {
-    track_id?: string | null;
-    timestamps?: {
-      start: number;
-      end: number;
-    };
-    song: string;
-    artist: string;
-    album: string;
-    album_art_url: string;
-  } | null;
-};
-
-type DiscordBadge = {
-  id: string;
-  description: string;
-  icon: string;
-};
 
 type DiscordPresenceData = {
   user: DiscordUser;
   badges: DiscordBadge[];
   activities: LanyardActivity[];
-  spotify: LanyardData["spotify"] | null;
+  spotify: DiscordPresenceSlice["spotify"];
 };
 
 const DISCORD_CACHE_TTL_MS = 1000 * 60 * 10;
@@ -121,38 +88,6 @@ function formatMs(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function parseDcdnPayload(payload: any, userId: string): DiscordPresenceData | null {
-  const root = payload?.data ?? payload;
-  const user =
-    root?.user ??
-    root?.discord_user ??
-    null;
-
-  if (!user?.id) return null;
-
-  const badges = Array.isArray(root?.badges) ? root.badges : [];
-
-  return {
-    user: {
-      id: user.id ?? userId,
-      username: user.username ?? "discord",
-      global_name: user.global_name ?? null,
-      avatar: user.avatar ?? null,
-      discriminator: user.discriminator,
-    },
-    badges,
-    activities: [],
-    spotify: null,
-  };
-}
-
-function parseLanyardPayload(payload: any): Pick<DiscordPresenceData, "activities" | "spotify"> {
-  const root = payload?.data ?? payload;
-  const activities = Array.isArray(root?.activities) ? root.activities : [];
-  const spotify = root?.spotify ?? null;
-  return { activities, spotify };
-}
-
 export function DiscordPresenceCard({
   userId,
   variant = "inside",
@@ -175,52 +110,46 @@ export function DiscordPresenceCard({
     const cached = readCachedPresence(userId);
     if (cached) setData(cached);
 
-    const load = async () => {
-      try {
-        const [dcdnRes, lanyardRes] = await Promise.allSettled([
-          fetch(`https://dcdn.dstn.to/profile/${userId}`, { cache: "no-store" }),
-          fetch(`https://api.lanyard.rest/v1/users/${userId}`, { cache: "no-store" }),
-        ]);
-
-        const next: DiscordPresenceData = {
-          user: { id: userId, username: "discord", global_name: null, avatar: null },
-          badges: [],
-          activities: [],
-          spotify: null,
-        };
-
-        if (dcdnRes.status === "fulfilled") {
-          const dcdnJson = await dcdnRes.value.json();
-          const parsedDcdn = parseDcdnPayload(dcdnJson, userId);
-          if (parsedDcdn) {
-            next.user = parsedDcdn.user;
-            next.badges = parsedDcdn.badges;
-          }
-        }
-
-        if (lanyardRes.status === "fulfilled") {
-          const lanyardJson = await lanyardRes.value.json();
-          const parsedLanyard = parseLanyardPayload(lanyardJson);
-          next.activities = parsedLanyard.activities;
-          next.spotify = parsedLanyard.spotify;
-        }
-
-        if (active) {
-          setData(next);
+    void getDiscordDcdnProfileFn({ data: { userId } })
+      .then((profile) => {
+        if (!active || !profile) return;
+        setData((prev) => {
+          const next: DiscordPresenceData = {
+            user: profile.user,
+            badges: profile.badges,
+            activities: prev?.activities ?? [],
+            spotify: prev?.spotify ?? null,
+          };
           writeCachedPresence(userId, next);
-        }
-      } catch {
-        // ignora erro silenciosamente para não quebrar o card público
-      }
-    };
+          return next;
+        });
+      })
+      .catch((error) => {
+        console.warn("[DiscordPresenceCard] dcdn profile fetch", error);
+      });
 
-    load();
-    const timer = setInterval(load, 5000);
     return () => {
       active = false;
-      clearInterval(timer);
     };
   }, [userId]);
+
+  useDiscordPresenceRelay(userId, (presence) => {
+    setData((prev) => {
+      const base: DiscordPresenceData = prev ?? {
+        user: { id: userId, username: "discord", global_name: null, avatar: null },
+        badges: [],
+        activities: [],
+        spotify: null,
+      };
+      const next = {
+        ...base,
+        activities: presence.activities,
+        spotify: presence.spotify,
+      };
+      writeCachedPresence(userId, next);
+      return next;
+    });
+  });
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);

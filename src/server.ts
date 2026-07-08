@@ -3,6 +3,8 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { ensureNodeWebSocket } from "./lib/ensure-node-websocket";
+import { ensureDiscordServicesStarted } from "./lib/discord/discord-services.server";
+import { createPresenceSseResponse } from "./lib/discord/presence-stream.server";
 import {
   applySecurityToHtmlResponse,
   applySecurityToResponse,
@@ -52,6 +54,18 @@ export default {
         if (preflight) return preflight;
 
         await ensureNodeWebSocket();
+        ensureDiscordServicesStarted();
+
+        const url = new URL(request.url);
+        if (url.pathname === "/api/discord/presence-stream") {
+          const userId = url.searchParams.get("userId")?.trim() ?? "";
+          if (!/^\d{15,22}$/.test(userId)) {
+            return new Response("Invalid userId", { status: 400 });
+          }
+          const streamResponse = createPresenceSseResponse(userId);
+          return applySecurityToResponse(request, streamResponse, cspNonce);
+        }
+
         const handler = await getServerEntry();
         const response = await handler.fetch(request, env, ctx);
         const normalized = await normalizeCatastrophicSsrResponse(request, response);
