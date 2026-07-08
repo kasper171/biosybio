@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Check, X } from "lucide-react";
 import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { useI18n } from "@/i18n/LocaleProvider";
+import { markOnboardingPending } from "@/lib/onboarding-storage";
 
 type AuthSearch = {
   mode?: "signin" | "signup";
@@ -178,6 +179,8 @@ function AuthPage() {
           notify({ title: t("auth.couldNotCreate"), description: result.error });
           return;
         }
+
+        markOnboardingPending();
 
         const signedIn = await trySignIn(email, password);
         if (signedIn) {

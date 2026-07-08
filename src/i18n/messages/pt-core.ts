@@ -300,4 +300,11 @@ export const ptCore: MessageTree = {
       "Este usuário já está vinculado. Se continuar, será desvinculado do outro perfil.",
     firstCreator: "Seja o primeiro criador no {{siteName}}",
   },
+
+  onboarding: {
+    title: "Bem-vindo ao {{siteName}}",
+    languageQuestion: "Para uma melhor experiência, qual idioma você prefere?",
+    languageHint: "Você pode alterar isso a qualquer momento no menu do site.",
+    continue: "Avançar",
+  },
 };

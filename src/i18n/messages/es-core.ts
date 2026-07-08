@@ -300,4 +300,11 @@ export const esCore: MessageTree = {
       "Este usuario ya está vinculado. Si continúas, se desvinculará del otro perfil.",
     firstCreator: "Sé el primer creador en {{siteName}}",
   },
+
+  onboarding: {
+    title: "Bienvenido a {{siteName}}",
+    languageQuestion: "Para una mejor experiencia, ¿qué idioma prefieres?",
+    languageHint: "Puedes cambiarlo en cualquier momento desde el menú del sitio.",
+    continue: "Continuar",
+  },
 };

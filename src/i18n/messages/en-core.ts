@@ -308,4 +308,11 @@ export const enCore: MessageTree = {
     connectionLinked: "This user is already linked. If you continue, they will be unlinked from the other profile.",
     firstCreator: "Be the first creator on {{siteName}}",
   },
+
+  onboarding: {
+    title: "Welcome to {{siteName}}",
+    languageQuestion: "For a better experience, which language do you prefer?",
+    languageHint: "You can change this anytime from the site menu.",
+    continue: "Continue",
+  },
 };

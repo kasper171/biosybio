@@ -24,6 +24,13 @@ import { useDiscordPresenceRelay } from "@/lib/discord/use-discord-presence-rela
 
 /** Abaixo desta largura, a atividade (Spotify etc.) encolhe para não sobrepor o perfil */
 const ACTIVITY_COMPACT_WIDTH_PX = 400;
+const SPOTIFY_ACTIVITY_SUBTITLE_MAX = 52;
+
+function limitActivityText(text: string, max = SPOTIFY_ACTIVITY_SUBTITLE_MAX): string {
+  const trimmed = text.trim();
+  if (!trimmed || trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max - 1).trimEnd()}…`;
+}
 
 type DiscordPresenceData = {
   user: DiscordUser;
@@ -173,9 +180,12 @@ export function DiscordPresenceCard({
   const badges = data?.badges ?? [];
 
   const activityTitle = spotify?.song ?? richActivity?.details ?? richActivity?.name ?? "";
-  const activitySubtitle = spotify
+  const activitySubtitleRaw = spotify
     ? `${spotify.artist} — ${spotify.album}`
     : (richActivity?.state ?? "");
+  const activitySubtitle = limitActivityText(activitySubtitleRaw);
+  const activitySubtitleTitle =
+    activitySubtitleRaw.length > activitySubtitle.length ? activitySubtitleRaw : undefined;
   const activityArt = spotify?.album_art_url ?? (richActivity ? getActivityArt(richActivity) : null);
 
   const layoutRef = useRef<HTMLDivElement>(null);
@@ -381,9 +391,10 @@ export function DiscordPresenceCard({
               >
                 {activityTitle}
               </p>
-              {showActivitySubtitle && (
+              {showActivitySubtitle && activitySubtitle && (
                 <p
                   className="truncate leading-tight"
+                  title={activitySubtitleTitle}
                   style={{ ...mutedFallback, ...discordMutedGlow, fontSize: effActivitySubPx }}
                 >
                   {activitySubtitle}
