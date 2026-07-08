@@ -13,8 +13,10 @@ import {
 } from "@/components/errors/SiteStatusPage";
 import { normalizeProfile } from "@/lib/normalize-profile";
 import { attachProfileRoles } from "@/lib/profile-roles";
+import { ensureProfileFontsLoaded } from "@/lib/profile-fonts";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
 import { fetchPublicProfileByUsernameFn } from "@/lib/profile/profile-public.functions";
+import { warmupProfileTapVisuals } from "@/lib/profile/profile-visual-preload";
 import { buildProfileShareMeta, resolveShareEmbedTitle } from "@/lib/share-embed";
 import { SITE_TITLE } from "@/lib/site";
 
@@ -60,6 +62,27 @@ export const Route = createFileRoute("/$username")({
   ),
 });
 
+function scheduleProfileViewIncrement(
+  profile: Profile,
+  onViewCount: (count: number) => void,
+): void {
+  if (profile.show_view_count === false) return;
+  if (hasCountedProfileView(profile.id)) return;
+
+  markProfileViewCounted(profile.id);
+
+  void incrementProfileViewFn({
+    data: {
+      profileId: profile.id,
+      visitorId: getOrCreateVisitorId(),
+    },
+  }).then((result) => {
+    if (result.ok && result.viewCount !== null) {
+      onViewCount(result.viewCount);
+    }
+  });
+}
+
 function PublicProfile() {
   const { username } = Route.useParams();
   const shareEmbed = Route.useLoaderData();
@@ -90,35 +113,29 @@ function PublicProfile() {
       }
 
       const profileData = normalizeProfile(data as Record<string, unknown>);
-      const withRoles = await attachProfileRoles(profileData);
+
+      const [withRoles] = await Promise.all([
+        attachProfileRoles(profileData),
+        warmupProfileTapVisuals(profileData),
+      ]);
       if (cancelled) return;
 
-      const shouldCount =
-        withRoles.show_view_count !== false &&
-        !viewTrackedRef.current &&
-        !hasCountedProfileView(withRoles.id);
-
-      let finalProfile = withRoles;
-
-      if (shouldCount) {
-        viewTrackedRef.current = true;
-        markProfileViewCounted(withRoles.id);
-
-        const result = await incrementProfileViewFn({
-          data: {
-            profileId: withRoles.id,
-            visitorId: getOrCreateVisitorId(),
-          },
-        });
-
-        if (result.ok && result.viewCount !== null) {
-          finalProfile = { ...withRoles, view_count: result.viewCount };
-        }
-      }
-
-      setProfile(finalProfile);
+      setProfile(withRoles);
       setLoading(false);
-      document.title = resolveShareEmbedTitle(finalProfile);
+      document.title = resolveShareEmbedTitle(withRoles);
+
+      void ensureProfileFontsLoaded(
+        withRoles.page_font_family ?? "",
+        withRoles.name_font_family ?? "inherit",
+      );
+
+      if (!viewTrackedRef.current) {
+        viewTrackedRef.current = true;
+        scheduleProfileViewIncrement(withRoles, (viewCount) => {
+          if (cancelled) return;
+          setProfile((prev) => (prev ? { ...prev, view_count: viewCount } : prev));
+        });
+      }
     })();
 
     return () => {
