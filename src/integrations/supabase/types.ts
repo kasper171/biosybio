@@ -312,6 +312,24 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_view_ip_dedup: {
+        Row: {
+          profile_id: string
+          ip_hash: string
+          counted_at: string
+        }
+        Insert: {
+          profile_id: string
+          ip_hash: string
+          counted_at?: string
+        }
+        Update: {
+          profile_id?: string
+          ip_hash?: string
+          counted_at?: string
+        }
+        Relationships: []
+      }
       profile_link_click_dedup: {
         Row: {
           profile_id: string

@@ -4,14 +4,17 @@ export function getClientIp(): string {
   const request = getRequest();
   if (!request) return "unknown";
 
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    const first = forwarded.split(",")[0]?.trim();
-    if (first) return first.slice(0, 64);
-  }
+  const candidates = [
+    request.headers.get("cf-connecting-ip"),
+    request.headers.get("x-real-ip"),
+    request.headers.get("x-vercel-forwarded-for"),
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim(),
+  ];
 
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  if (realIp) return realIp.slice(0, 64);
+  for (const raw of candidates) {
+    const ip = raw?.trim();
+    if (ip) return ip.slice(0, 64);
+  }
 
   return "unknown";
 }

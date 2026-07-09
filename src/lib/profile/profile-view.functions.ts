@@ -2,11 +2,27 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getClientIp } from "@/lib/get-client-ip.server";
 import { consumeRateLimit, rateLimitBucket } from "@/lib/rate-limit.server";
+import {
+  hashProfileViewClientIp,
+  profileViewDedupCutoffIso,
+} from "@/lib/profile-view-dedup.server";
 
 const profileViewInput = z.object({
   profileId: z.string().uuid(),
   visitorId: z.string().uuid(),
 });
+
+async function readViewCount(
+  admin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"],
+  profileId: string,
+): Promise<number | null> {
+  const { data: row } = await admin
+    .from("profiles")
+    .select("view_count")
+    .eq("id", profileId)
+    .maybeSingle();
+  return row ? Number(row.view_count ?? 0) : null;
+}
 
 export const incrementProfileViewFn = createServerFn({ method: "POST" })
   .inputValidator(profileViewInput)
@@ -16,21 +32,47 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
     >["supabaseAdmin"];
     try {
       ({ supabaseAdmin } = await import("@/integrations/supabase/client.server"));
-    } catch {
-      console.error("[incrementProfileViewFn] Supabase server env missing.");
-      return { ok: false as const, viewCount: null };
+    } catch (error) {
+      console.error("[incrementProfileViewFn] Supabase server env missing.", error);
+      return { ok: false as const, viewCount: null, reason: "env" as const };
     }
 
+    const dedupSince = profileViewDedupCutoffIso();
     const clientIp = getClientIp();
+    const ipHash = hashProfileViewClientIp(clientIp);
 
-    const ipAllowed = await consumeRateLimit(
-      supabaseAdmin,
-      rateLimitBucket(["view", "ip", clientIp]),
-      60,
-      60,
-    );
+    const [{ data: recentVisitor }, { data: recentIp }] = await Promise.all([
+      supabaseAdmin
+        .from("profile_view_dedup")
+        .select("profile_id")
+        .eq("profile_id", data.profileId)
+        .eq("visitor_id", data.visitorId)
+        .gte("counted_at", dedupSince)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("profile_view_ip_dedup")
+        .select("profile_id")
+        .eq("profile_id", data.profileId)
+        .eq("ip_hash", ipHash)
+        .gte("counted_at", dedupSince)
+        .maybeSingle(),
+    ]);
+
+    if (recentVisitor || recentIp) {
+      return {
+        ok: true as const,
+        viewCount: await readViewCount(supabaseAdmin, data.profileId),
+        skipped: true as const,
+        reason: recentIp ? ("ip_24h" as const) : ("visitor_24h" as const),
+      };
+    }
+
+    const ipBucket = rateLimitBucket(["view", "ip", clientIp]);
+    const ipMaxHits = clientIp === "unknown" ? 30 : 60;
+
+    const ipAllowed = await consumeRateLimit(supabaseAdmin, ipBucket, ipMaxHits, 60);
     if (ipAllowed.kind === "denied") {
-      return { ok: false as const, viewCount: null, rateLimited: true as const };
+      return { ok: false as const, viewCount: null, rateLimited: true as const, reason: "ip" as const };
     }
     if (ipAllowed.kind === "unavailable") {
       console.warn("[incrementProfileViewFn] IP rate limit unavailable:", ipAllowed.reason);
@@ -43,52 +85,45 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
       60,
     );
     if (profileAllowed.kind === "denied") {
-      return { ok: false as const, viewCount: null, rateLimited: true as const };
+      return { ok: false as const, viewCount: null, rateLimited: true as const, reason: "profile" as const };
     }
     if (profileAllowed.kind === "unavailable") {
       console.warn("[incrementProfileViewFn] profile rate limit unavailable:", profileAllowed.reason);
     }
 
-    const { data: existingDedup } = await supabaseAdmin
-      .from("profile_view_dedup")
-      .select("profile_id")
-      .eq("profile_id", data.profileId)
-      .eq("visitor_id", data.visitorId)
-      .maybeSingle();
+    const countedAt = new Date().toISOString();
 
-    if (existingDedup) {
-      const { data: row } = await supabaseAdmin
-        .from("profiles")
-        .select("view_count")
-        .eq("id", data.profileId)
-        .maybeSingle();
-      return {
-        ok: true as const,
-        viewCount: row ? Number(row.view_count ?? 0) : null,
-        skipped: true as const,
-      };
+    const { error: visitorDedupError } = await supabaseAdmin.from("profile_view_dedup").upsert(
+      {
+        profile_id: data.profileId,
+        visitor_id: data.visitorId,
+        counted_at: countedAt,
+      },
+      { onConflict: "profile_id,visitor_id" },
+    );
+
+    if (visitorDedupError) {
+      console.error("[incrementProfileViewFn] visitor dedup", visitorDedupError.message);
+      return { ok: false as const, viewCount: null, reason: "dedup" as const };
     }
 
-    const { error: dedupError } = await supabaseAdmin.from("profile_view_dedup").insert({
-      profile_id: data.profileId,
-      visitor_id: data.visitorId,
-    });
+    const { error: ipDedupError } = await supabaseAdmin.from("profile_view_ip_dedup").upsert(
+      {
+        profile_id: data.profileId,
+        ip_hash: ipHash,
+        counted_at: countedAt,
+      },
+      { onConflict: "profile_id,ip_hash" },
+    );
 
-    if (dedupError) {
-      if (dedupError.code === "23505") {
-        const { data: row } = await supabaseAdmin
-          .from("profiles")
-          .select("view_count")
-          .eq("id", data.profileId)
-          .maybeSingle();
-        return {
-          ok: true as const,
-          viewCount: row ? Number(row.view_count ?? 0) : null,
-          skipped: true as const,
-        };
-      }
-      console.error("[incrementProfileViewFn] dedup", dedupError.message);
-      return { ok: false as const, viewCount: null };
+    if (ipDedupError) {
+      console.error("[incrementProfileViewFn] ip dedup", ipDedupError.message);
+      await supabaseAdmin
+        .from("profile_view_dedup")
+        .delete()
+        .eq("profile_id", data.profileId)
+        .eq("visitor_id", data.visitorId);
+      return { ok: false as const, viewCount: null, reason: "dedup" as const };
     }
 
     const { data: rpcData, error: rpcError } = await supabaseAdmin.rpc("increment_profile_view", {
@@ -102,7 +137,12 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
         .delete()
         .eq("profile_id", data.profileId)
         .eq("visitor_id", data.visitorId);
-      return { ok: false as const, viewCount: null };
+      await supabaseAdmin
+        .from("profile_view_ip_dedup")
+        .delete()
+        .eq("profile_id", data.profileId)
+        .eq("ip_hash", ipHash);
+      return { ok: false as const, viewCount: null, reason: "rpc" as const };
     }
 
     const { error: eventError } = await supabaseAdmin.from("profile_view_events").insert({

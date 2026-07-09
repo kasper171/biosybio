@@ -82,13 +82,22 @@ function scheduleProfileViewIncrement(
       profileId: profile.id,
       visitorId: getOrCreateVisitorId(),
     },
-  }).then((result) => {
-    if (!result.ok) return;
-    markProfileViewCounted(profile.id);
-    if (result.viewCount !== null) {
-      onViewCount(result.viewCount);
-    }
-  });
+  })
+    .then((result) => {
+      if (!result?.ok) return;
+      if (result.skipped) {
+        markProfileViewCounted(profile.id);
+        if (result.viewCount !== null) onViewCount(result.viewCount);
+        return;
+      }
+      markProfileViewCounted(profile.id);
+      if (result.viewCount !== null) {
+        onViewCount(result.viewCount);
+      }
+    })
+    .catch((error) => {
+      console.warn("[scheduleProfileViewIncrement]", error);
+    });
 }
 
 function PublicProfile() {

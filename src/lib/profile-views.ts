@@ -1,6 +1,9 @@
 const VISITOR_ID_KEY = "biosy_visitor_id";
 const VIEW_FLAG_PREFIX = "biosy_view_";
 
+/** Mesma janela do servidor — 1 view por perfil a cada 24h neste navegador. */
+const VIEW_DEDUP_TTL_MS = 24 * 60 * 60 * 1000;
+
 let ephemeralVisitorId: string | null = null;
 
 function canUseStorage(): boolean {
@@ -30,14 +33,18 @@ export function getOrCreateVisitorId(): string {
   return id;
 }
 
-/** Já contou visualização deste perfil neste navegador? */
+/** Já contou visualização deste perfil neste navegador nas últimas 24h? */
 export function hasCountedProfileView(profileId: string): boolean {
   if (!canUseStorage()) return false;
-  return localStorage.getItem(`${VIEW_FLAG_PREFIX}${profileId}`) === "1";
+  const raw = localStorage.getItem(`${VIEW_FLAG_PREFIX}${profileId}`);
+  if (!raw) return false;
+  const ts = Number(raw);
+  if (!Number.isFinite(ts)) return raw === "1";
+  return Date.now() - ts < VIEW_DEDUP_TTL_MS;
 }
 
-/** Marca que este visitante já viu o perfil (F5 não conta de novo). */
+/** Marca que este visitante já viu o perfil (evita chamadas repetidas ao servidor). */
 export function markProfileViewCounted(profileId: string): void {
   if (!canUseStorage()) return;
-  localStorage.setItem(`${VIEW_FLAG_PREFIX}${profileId}`, "1");
+  localStorage.setItem(`${VIEW_FLAG_PREFIX}${profileId}`, String(Date.now()));
 }
