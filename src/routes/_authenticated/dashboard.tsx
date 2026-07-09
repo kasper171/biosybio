@@ -91,6 +91,7 @@ import {
 import { normalizeProfileLabels } from "@/lib/profile-labels";
 import {
   normalizeOverlayColor,
+  normalizeOverlayColorCustom,
   normalizeOverlayOpacity,
   normalizeOverlaySpacing,
 } from "@/lib/overlays/profile-overlays";
@@ -476,6 +477,7 @@ function Dashboard() {
         overlay_type: profile.overlay_type ?? null,
         overlay_opacity: normalizeOverlayOpacity(profile.overlay_opacity),
         overlay_color: normalizeOverlayColor(profile.overlay_color),
+        overlay_color_custom: normalizeOverlayColorCustom(profile.overlay_color_custom),
         overlay_spacing: normalizeOverlaySpacing(profile.overlay_spacing),
       })
       .eq("id", profile.id);

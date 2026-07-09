@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import {
   AtSign,
   BarChart3,
@@ -34,6 +35,7 @@ import {
 } from "@/lib/dashboard-text-scale";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/LocaleProvider";
+import { cn } from "@/lib/utils";
 
 export type AccountSection =
   | "overview"
@@ -130,48 +132,56 @@ export function DashboardAccountLayout({
 
   const displayName = profile.display_name || profile.username;
   const isPersonalizar = activeSection === "personalizar";
+  /** No studio: Painel vira pai e demais itens ficam como sub-opções compactas. */
+  const isStudioCompact = isPersonalizar || overlay;
 
-  const contaLinks: NavLink[] = [
-    {
-      id: "overview",
-      label: t("dashboard.layout.nav.dashboard"),
-      icon: LayoutDashboard,
-      to: "/dashboard",
-      active: activeSection === "overview",
-    },
-    {
-      id: "stats",
-      label: t("dashboard.layout.nav.analytics"),
-      icon: BarChart3,
-      to: "/dashboard",
-      search: { section: "estatisticas" },
-      active: activeSection === "estatisticas",
-    },
-    {
-      id: "templates",
-      label: t("dashboard.layout.nav.templates"),
-      icon: LayoutTemplate,
-      to: "/dashboard",
-      search: { section: "templates" },
-      active: activeSection === "templates",
-    },
-    {
-      id: "privacidade",
-      label: t("dashboard.layout.nav.account"),
-      icon: Shield,
-      to: "/dashboard",
-      search: { section: "privacidade" },
-      active: activeSection === "privacidade",
-    },
-    {
-      id: "miscellaneous",
-      label: t("dashboard.layout.nav.miscellaneous"),
-      icon: Sparkles,
-      to: "/dashboard",
-      search: { section: "miscellaneous" },
-      active: activeSection === "miscellaneous",
-    },
-  ];
+  const contaLinks: NavLink[] = useMemo(
+    () => [
+      {
+        id: "overview",
+        label: t("dashboard.layout.nav.dashboard"),
+        icon: LayoutDashboard,
+        to: "/dashboard",
+        active: activeSection === "overview",
+      },
+      {
+        id: "stats",
+        label: t("dashboard.layout.nav.analytics"),
+        icon: BarChart3,
+        to: "/dashboard",
+        search: { section: "estatisticas" },
+        active: activeSection === "estatisticas",
+      },
+      {
+        id: "templates",
+        label: t("dashboard.layout.nav.templates"),
+        icon: LayoutTemplate,
+        to: "/dashboard",
+        search: { section: "templates" },
+        active: activeSection === "templates",
+      },
+      {
+        id: "privacidade",
+        label: t("dashboard.layout.nav.account"),
+        icon: Shield,
+        to: "/dashboard",
+        search: { section: "privacidade" },
+        active: activeSection === "privacidade",
+      },
+      {
+        id: "miscellaneous",
+        label: t("dashboard.layout.nav.miscellaneous"),
+        icon: Sparkles,
+        to: "/dashboard",
+        search: { section: "miscellaneous" },
+        active: activeSection === "miscellaneous",
+      },
+    ],
+    [activeSection, t],
+  );
+
+  const painelLink = contaLinks[0]!;
+  const painelSubLinks = contaLinks.slice(1);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -206,16 +216,59 @@ export function DashboardAccountLayout({
 
         <nav className="biosy-nav-no-scrollbar min-h-0 flex-1 px-3 py-4">
           <p className="dash-t-section mb-2 px-3 font-semibold uppercase tracking-wider text-white/30">
-            Navigation
+            {t("dashboard.layout.navigation")}
           </p>
-          <div className="mb-6 space-y-0.5">
-            {contaLinks.map((item) => (
-              <SidebarLink key={item.id} item={item} compact={overlay} />
-            ))}
-          </div>
+          <LayoutGroup id="dashboard-sidebar-nav">
+            <div className="mb-6 space-y-0.5">
+              <AnimatePresence mode="popLayout" initial={false}>
+                {isStudioCompact ? (
+                  <motion.div
+                    key="nav-studio-compact"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="space-y-0.5"
+                  >
+                    <SidebarLink item={painelLink} compact={overlay} />
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div
+                        className="relative ml-[1.125rem] border-l border-white/12 py-0.5 pl-2.5"
+                        aria-label={t("dashboard.layout.nav.dashboard")}
+                      >
+                        {painelSubLinks.map((item) => (
+                          <SidebarLink key={item.id} item={item} variant="sub" />
+                        ))}
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="nav-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="space-y-0.5"
+                  >
+                    {contaLinks.map((item) => (
+                      <SidebarLink key={item.id} item={item} compact={overlay} />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </LayoutGroup>
 
           <p className="dash-t-section mb-2 px-3 font-semibold uppercase tracking-wider text-white/30">
-            Studio
+            {t("dashboard.layout.studio")}
           </p>
           <div className="mb-4 space-y-0.5">
             {isPersonalizar ? (
@@ -238,7 +291,7 @@ export function DashboardAccountLayout({
                 compact={overlay}
                 item={{
                   id: "personalizar",
-                  label: "Open editor",
+                  label: t("dashboard.layout.nav.openEditor"),
                   icon: Palette,
                   to: "/dashboard",
                   search: { view: "personalizar", panel: "perfil" },
@@ -318,31 +371,59 @@ export function DashboardAccountLayout({
   );
 }
 
-function SidebarLink({ item, compact = false }: { item: NavLink; compact?: boolean }) {
+const NAV_LAYOUT_TRANSITION = { duration: 0.34, ease: [0.22, 1, 0.36, 1] as const };
+
+function SidebarLink({
+  item,
+  compact = false,
+  variant = "full",
+}: {
+  item: NavLink;
+  compact?: boolean;
+  variant?: "full" | "sub";
+}) {
   const Icon = item.icon;
+  const isSub = variant === "sub";
 
-  const className = `relative flex items-center gap-2.5 rounded-lg px-3 dash-t-body transition ${
-    compact ? "py-1.5" : "py-2"
-  } ${
+  const className = cn(
+    "relative flex w-full min-w-0 items-center rounded-lg transition",
+    isSub
+      ? "gap-1.5 py-1 pl-1 pr-2 text-[11px] leading-snug"
+      : cn("gap-2.5 px-3 dash-t-body", compact ? "py-1.5" : "py-2"),
     item.active
-      ? "bg-white/[0.05] font-medium text-white before:absolute before:inset-y-2 before:left-0 before:w-[2px] before:rounded-full before:bg-white/50"
-      : "text-white/50 hover:bg-white/[0.03] hover:text-white/85"
-  }`;
+      ? isSub
+        ? "font-medium text-white/90"
+        : "bg-white/[0.05] font-medium text-white before:absolute before:inset-y-2 before:left-0 before:w-[2px] before:rounded-full before:bg-white/50"
+      : isSub
+        ? "text-white/40 hover:bg-white/[0.03] hover:text-white/75"
+        : "text-white/50 hover:bg-white/[0.03] hover:text-white/85",
+  );
 
-  if (item.search) {
-    return (
-      <Link to={item.to} search={item.search} className={className}>
-        <Icon className="dash-icon-md shrink-0" />
-        {item.label}
-      </Link>
-    );
-  }
+  const linkContent = (
+    <>
+      <Icon className={cn("shrink-0", isSub ? "h-3 w-3" : "dash-icon-md")} />
+      <span className="truncate">{item.label}</span>
+    </>
+  );
+
+  const linkEl = item.search ? (
+    <Link to={item.to} search={item.search} className={className}>
+      {linkContent}
+    </Link>
+  ) : (
+    <Link to={item.to} className={className}>
+      {linkContent}
+    </Link>
+  );
 
   return (
-    <Link to={item.to} className={className}>
-      <Icon className="dash-icon-md shrink-0" />
-      {item.label}
-    </Link>
+    <motion.div
+      layout
+      layoutId={`dash-nav-${item.id}`}
+      transition={NAV_LAYOUT_TRANSITION}
+    >
+      {linkEl}
+    </motion.div>
   );
 }
 

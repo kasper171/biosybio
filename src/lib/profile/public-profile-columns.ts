@@ -136,6 +136,7 @@ export const PUBLIC_PROFILE_SELECT = [
   "overlay_type",
   "overlay_opacity",
   "overlay_color",
+  "overlay_color_custom",
   "overlay_spacing",
 
   // Music

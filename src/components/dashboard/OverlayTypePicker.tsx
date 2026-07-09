@@ -4,16 +4,9 @@ import {
   isStaticOverlayType,
   type ProfileOverlayType,
 } from "@/lib/overlays/types";
-import { DenseNoiseFrameCycler } from "@/lib/overlays/dense-noise-frame-cache";
-import {
-  applyStaticTextureStyles,
-} from "@/lib/overlays/static-texture-styles";
-import {
-  drawGrain,
-  drawScanlines,
-  drawSparse,
-  scanlineOffsetFromTime,
-} from "@/lib/overlays/overlay-draw";
+import { DenseNoiseFrameCycler, SparseNoiseFrameCycler } from "@/lib/overlays/noise-frame-cache";
+import { applyStaticTextureStyles } from "@/lib/overlays/static-texture-styles";
+import { drawScanlines, scanlineOffsetFromTime } from "@/lib/overlays/overlay-draw";
 import {
   OVERLAY_COLOR_DEFAULT,
   OVERLAY_SPACING_DEFAULT,
@@ -21,27 +14,30 @@ import {
 import { cn } from "@/lib/utils";
 
 const PREVIEW_SIZE = 72;
-const PREVIEW_INTERVAL_MS = 50;
+const PREVIEW_INTERVAL_MS = 120;
+
+type NoiseCyclers = {
+  dense: DenseNoiseFrameCycler;
+  sparse: SparseNoiseFrameCycler;
+};
 
 function renderAnimatedPreview(
   ctx: CanvasRenderingContext2D,
   type: ProfileOverlayType,
   size: number,
   timestamp: number,
-  denseCycler?: DenseNoiseFrameCycler,
+  color: string,
+  cyclers: NoiseCyclers,
 ): void {
   switch (type) {
     case "noise-denso":
-      denseCycler?.draw(ctx, size, size);
+      cyclers.dense.draw(ctx, size, size);
       break;
     case "noise-esparso":
-      drawSparse(ctx, size, size, 0.04);
+      cyclers.sparse.draw(ctx, size, size);
       break;
     case "scanlines":
-      drawScanlines(ctx, size, size, scanlineOffsetFromTime(timestamp));
-      break;
-    case "film-grain":
-      drawGrain(ctx, size, size, 0.08);
+      drawScanlines(ctx, size, size, scanlineOffsetFromTime(timestamp), color);
       break;
     default:
       break;
@@ -87,13 +83,16 @@ export function OverlayPreviewCanvas({
   type,
   className,
   opacity = 0.35,
-  color,
+  color = OVERLAY_COLOR_DEFAULT,
   spacing,
 }: PreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number | null>(null);
-  const lastFrameRef = useRef(0);
-  const denseCyclerRef = useRef(new DenseNoiseFrameCycler());
+  const cyclersRef = useRef<NoiseCyclers>({
+    dense: new DenseNoiseFrameCycler(),
+    sparse: new SparseNoiseFrameCycler(),
+  });
 
   useEffect(() => {
     if (isStaticOverlayType(type)) return;
@@ -105,24 +104,45 @@ export function OverlayPreviewCanvas({
 
     canvas.width = PREVIEW_SIZE;
     canvas.height = PREVIEW_SIZE;
-    denseCyclerRef.current.reset();
+    cyclersRef.current.dense.reset();
+    cyclersRef.current.sparse.reset();
+    cyclersRef.current.dense.setColor(color);
+    cyclersRef.current.sparse.setColor(color);
 
-    const tick = (timestamp: number) => {
-      if (timestamp - lastFrameRef.current >= PREVIEW_INTERVAL_MS) {
-        renderAnimatedPreview(ctx, type, PREVIEW_SIZE, timestamp, denseCyclerRef.current);
-        lastFrameRef.current = timestamp;
-      }
-      rafRef.current = window.requestAnimationFrame(tick);
+    const cyclers = cyclersRef.current;
+    const isScanlines = type === "scanlines";
+
+    const draw = (timestamp: number) => {
+      renderAnimatedPreview(ctx, type, PREVIEW_SIZE, timestamp, color, cyclers);
     };
 
-    renderAnimatedPreview(ctx, type, PREVIEW_SIZE, performance.now(), denseCyclerRef.current);
-    rafRef.current = window.requestAnimationFrame(tick);
+    draw(performance.now());
+
+    if (isScanlines) {
+      let lastFrame = 0;
+      const tick = (timestamp: number) => {
+        if (timestamp - lastFrame >= 50) {
+          draw(timestamp);
+          lastFrame = timestamp;
+        }
+        rafRef.current = window.requestAnimationFrame(tick);
+      };
+      rafRef.current = window.requestAnimationFrame(tick);
+    } else {
+      const tick = () => {
+        draw(performance.now());
+        timerRef.current = window.setTimeout(tick, PREVIEW_INTERVAL_MS);
+      };
+      timerRef.current = window.setTimeout(tick, PREVIEW_INTERVAL_MS);
+    }
 
     return () => {
       if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
-      denseCyclerRef.current.reset();
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+      cyclersRef.current.dense.reset();
+      cyclersRef.current.sparse.reset();
     };
-  }, [type]);
+  }, [type, color]);
 
   if (isStaticOverlayType(type)) {
     return (
@@ -160,7 +180,7 @@ export function OverlayTypePicker({
   previewSpacing,
 }: PickerProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
       {PROFILE_OVERLAY_TYPES.map((type) => {
         const selected = activeType === type;
         return (

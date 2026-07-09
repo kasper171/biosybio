@@ -3,7 +3,6 @@ export const PROFILE_OVERLAY_TYPES = [
   "noise-denso",
   "noise-esparso",
   "scanlines",
-  "film-grain",
   "diagonal-stripes",
   "cyber-grid",
   "dot-pattern",

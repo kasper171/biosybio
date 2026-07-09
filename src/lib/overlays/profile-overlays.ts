@@ -12,6 +12,10 @@ export const OVERLAY_SPACING_MIN = 4;
 export const OVERLAY_SPACING_MAX = 48;
 export const OVERLAY_SPACING_DEFAULT = 10;
 
+export function normalizeOverlayColorCustom(raw: unknown): boolean {
+  return raw === true;
+}
+
 export function normalizeOverlayOpacity(raw: unknown): number {
   const n = Number(raw ?? OVERLAY_OPACITY_DEFAULT);
   if (!Number.isFinite(n)) return OVERLAY_OPACITY_DEFAULT;
@@ -38,6 +42,7 @@ export function overlayCssOpacity(percent: number): number {
 }
 
 export function normalizeOverlayType(raw: unknown): ProfileOverlayType | null {
+  if (raw === "film-grain") return null;
   if (typeof raw === "string" && PROFILE_OVERLAY_TYPES.includes(raw as ProfileOverlayType)) {
     return raw as ProfileOverlayType;
   }
@@ -63,11 +68,20 @@ export function resolveActiveProfileOverlay(
   );
 }
 
+export function resolveOverlayColor(
+  profile: Pick<Profile, "overlay_color" | "overlay_color_custom">,
+): string {
+  if (!normalizeOverlayColorCustom(profile.overlay_color_custom)) {
+    return OVERLAY_COLOR_DEFAULT;
+  }
+  return normalizeOverlayColor(profile.overlay_color);
+}
+
 export function getOverlayRuntimeOptions(
-  profile: Pick<Profile, "overlay_color" | "overlay_spacing">,
+  profile: Pick<Profile, "overlay_color" | "overlay_color_custom" | "overlay_spacing">,
 ) {
   return {
-    color: normalizeOverlayColor(profile.overlay_color),
+    color: resolveOverlayColor(profile),
     spacing: normalizeOverlaySpacing(profile.overlay_spacing),
   };
 }

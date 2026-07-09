@@ -12,6 +12,7 @@ import { getRoleBadgeGapPx, normalizeRoleBadgesHidden, normalizeRoleBadgesPlacem
 import { normalizeProfileLabels } from "@/lib/profile-labels";
 import {
   normalizeOverlayColor,
+  normalizeOverlayColorCustom,
   normalizeOverlayOpacity,
   normalizeOverlaySpacing,
   normalizeProfileOverlayType,
@@ -182,6 +183,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     ),
     overlay_opacity: normalizeOverlayOpacity(p.overlay_opacity ?? p.overlay_noise_opacity),
     overlay_color: normalizeOverlayColor(p.overlay_color),
+    overlay_color_custom: normalizeOverlayColorCustom(p.overlay_color_custom),
     overlay_spacing: normalizeOverlaySpacing(p.overlay_spacing),
   };
 }

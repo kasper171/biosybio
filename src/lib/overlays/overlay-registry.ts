@@ -1,6 +1,5 @@
 import {
   DenseNoiseOverlayController,
-  FilmGrainOverlayController,
   ScanlinesOverlayController,
   SparseNoiseOverlayController,
 } from "@/lib/overlays/overlay-controllers";
@@ -8,10 +7,9 @@ import { StaticTextureOverlayController } from "@/lib/overlays/static-texture-ov
 import type { OverlayController, OverlayControllerFactory, ProfileOverlayType } from "@/lib/overlays/types";
 
 export const OVERLAY_REGISTRY: Record<ProfileOverlayType, OverlayControllerFactory> = {
-  "noise-denso": () => new DenseNoiseOverlayController(),
-  "noise-esparso": () => new SparseNoiseOverlayController(),
-  scanlines: () => new ScanlinesOverlayController(),
-  "film-grain": () => new FilmGrainOverlayController(),
+  "noise-denso": (opts) => new DenseNoiseOverlayController(opts),
+  "noise-esparso": (opts) => new SparseNoiseOverlayController(opts),
+  scanlines: (opts) => new ScanlinesOverlayController(opts),
   "diagonal-stripes": (opts) => new StaticTextureOverlayController("diagonal-stripes", opts),
   "cyber-grid": (opts) => new StaticTextureOverlayController("cyber-grid", opts),
   "dot-pattern": (opts) => new StaticTextureOverlayController("dot-pattern", opts),
