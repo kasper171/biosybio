@@ -47,7 +47,6 @@ import { normalizeProfile } from "@/lib/normalize-profile";
 import { getMusicCardWidthPct } from "@/lib/profile-music";
 import {
   TEXT_GLOW_MAX_PX,
-  TEXT_GLOW_SCOPE_LABELS,
   normalizeTextGlowScope,
   type TextGlowScope,
 } from "@/lib/profile-colors";
@@ -65,7 +64,7 @@ import { EtiquetasPanel } from "@/components/dashboard/EtiquetasPanel";
 import { OverlaysPanel } from "@/components/dashboard/OverlaysPanel";
 import { RoleBadgesVisibilityPicker } from "@/components/dashboard/RoleBadgesVisibilityPicker";
 import { SOCIALS, SOCIAL_MAP, normalizeHandle } from "@/lib/socials";
-import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
+import { type CardRevealEffect } from "@/lib/card-reveal";
 import { BiosyToggle } from "@/components/ui/BiosyToggle";
 import { cn } from "@/lib/utils";
 import { SITE_NAME, profilePublicUrl } from "@/lib/site";
@@ -75,12 +74,11 @@ import { attachProfileRoles } from "@/lib/profile-roles";
 import {
   DISCORD_OTP_WAIT_MS,
   DISCORD_OTP_VALIDATE_WINDOW_MS,
-  DISCORD_VERIFY_MESSAGES,
   LANYARD_INVITE_URL,
   checkLanyardUser,
   generateDiscordOtp,
+  type DiscordVerifyError,
 } from "@/lib/discord-verify";
-import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
 import { linkVerifiedConnectionFn } from "@/lib/connection/connection.functions";
 import { formatSocialIconSizeLabel } from "@/lib/social-icons";
 import {
@@ -262,7 +260,7 @@ function Dashboard() {
         if (fetchErr) toast.error(fetchErr.message);
         else if (created) await applyProfile(created as Record<string, unknown>);
         else if (upsertErr) toast.error(upsertErr.message);
-        else toast.error("Could not load your profile. Reload the page.");
+        else toast.error(t("dashboard.toasts.profileLoadFailed"));
       }
     })();
   }, []);
@@ -285,13 +283,13 @@ function Dashboard() {
       toast.loading(
         kind === "music"
           ? isMusicVideo
-            ? "Uploading video..."
-            : "Uploading audio..."
+            ? t("dashboard.toasts.upload.video")
+            : t("dashboard.toasts.upload.audio")
           : kind === "music_art"
-            ? "Uploading cover..."
+            ? t("dashboard.toasts.upload.cover")
             : isBgVideo
-              ? "Uploading video wallpaper..."
-              : "Uploading image...",
+              ? t("dashboard.toasts.upload.videoWallpaper")
+              : t("dashboard.toasts.upload.image"),
         { id: kind },
       );
       const url = await uploadProfileAsset(userId, kind, file, {
@@ -330,17 +328,17 @@ function Dashboard() {
       toast.success(
         kind === "music"
           ? isMusicVideo
-            ? "Video uploaded"
-            : "Music uploaded"
+            ? t("dashboard.toasts.upload.videoUploaded")
+            : t("dashboard.toasts.upload.musicUploaded")
           : kind === "music_art"
-            ? "Cover uploaded"
+            ? t("dashboard.toasts.upload.coverUploaded")
             : isBgVideo
-              ? "Video wallpaper uploaded"
-              : "Image uploaded",
+              ? t("dashboard.toasts.upload.videoWallpaperUploaded")
+              : t("dashboard.toasts.upload.imageUploaded"),
         { id: kind },
       );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed", { id: kind });
+      toast.error(e instanceof Error ? e.message : t("dashboard.toasts.upload.failed"), { id: kind });
     }
   };
 
@@ -374,7 +372,11 @@ function Dashboard() {
       };
     });
     toast.success(
-      kind === "music" ? "Music removed" : kind === "music_art" ? "Cover removed" : "Image removed",
+      kind === "music"
+        ? t("dashboard.toasts.upload.musicRemoved")
+        : kind === "music_art"
+          ? t("dashboard.toasts.upload.coverRemoved")
+          : t("dashboard.toasts.upload.imageRemoved"),
     );
   };
 
@@ -465,7 +467,7 @@ function Dashboard() {
         tap_reveal_blur: profile.tap_reveal_blur ?? 20,
         tap_reveal_brightness: profile.tap_reveal_brightness ?? 55,
         tap_reveal_mode: profile.tap_reveal_mode ?? "avatar_text",
-        tap_reveal_text: profile.tap_reveal_text ?? "Tap to reveal",
+        tap_reveal_text: profile.tap_reveal_text ?? t("dashboard.common.defaultTapReveal"),
         card_reveal_effect: profile.card_reveal_effect ?? "fade",
         text_typing_effect: profile.text_typing_effect !== false,
         text_typing_name_effect: profile.text_typing_name_effect !== false,
@@ -754,14 +756,14 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
   const effectiveTapEnabled = profile.music_url ? true : profile.tap_to_reveal_enabled === true;
   return (
     <div className="space-y-4">
-      <Field label="Display name">
+      <Field label={t("dashboard.perfil.displayName")}>
         <input
           value={profile.display_name}
           onChange={(e) => update("display_name", e.target.value)}
           className={panelInputClass}
         />
       </Field>
-      <Field label="Description / Bio">
+      <Field label={t("dashboard.perfil.bio")}>
         <textarea
           value={profile.bio}
           onChange={(e) => update("bio", e.target.value)}
@@ -868,9 +870,6 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
                 className={panelInputClass}
               />
             </div>
-            <p className="mt-1.5 text-[11px] text-white/40">
-              Automatically applies dark and light tones to preserve each badge's relief.
-            </p>
           </Field>
         )}
         {(profile.roles?.length ?? 0) > 0 && (
@@ -882,14 +881,16 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
       </div>
 
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Tap to reveal</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.perfil.tapToReveal.section")}
+        </p>
         <ToggleField
-          label="Enable tap screen"
+          label={t("dashboard.perfil.tapToReveal.enable")}
           checked={effectiveTapEnabled}
           disabled={Boolean(profile.music_url)}
           onChange={(v) => {
             if (profile.music_url) {
-              toast.error("Remove the music to disable tap to reveal");
+              toast.error(t("dashboard.perfil.tapToReveal.removeMusicToDisable"));
               return;
             }
             update("tap_to_reveal_enabled", v);
@@ -897,13 +898,13 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
         />
         {profile.music_url && (
           <p className="text-[11px] text-amber-300/80">
-            With music active, tap to reveal is required for autoplay.
+            {t("dashboard.perfil.tapToReveal.musicRequired")}
           </p>
         )}
         {effectiveTapEnabled && (
           <>
             <SliderField
-              label="Background blur"
+              label={t("dashboard.perfil.tapToReveal.backgroundBlur")}
               min={0}
               max={40}
               step={1}
@@ -912,7 +913,7 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
               display={`${profile.tap_reveal_blur ?? 20}px`}
             />
             <SliderField
-              label="Background brightness"
+              label={t("dashboard.perfil.tapToReveal.backgroundBrightness")}
               min={20}
               max={120}
               step={5}
@@ -920,17 +921,19 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
               onChange={(v) => update("tap_reveal_brightness", v)}
               display={`${profile.tap_reveal_brightness ?? 55}%`}
             />
-            <Field label="Screen text">
+            <Field label={t("dashboard.perfil.tapToReveal.screenText")}>
               <input
-                value={profile.tap_reveal_text ?? "Tap to reveal"}
+                value={profile.tap_reveal_text ?? t("dashboard.common.defaultTapReveal")}
                 onChange={(e) => update("tap_reveal_text", e.target.value)}
                 maxLength={80}
-                placeholder="Tap to reveal"
+                placeholder={t("dashboard.common.defaultTapReveal")}
                 className={panelInputClass}
               />
             </Field>
-            <p className="text-[11px] text-white/45">Shown below the avatar or alone, depending on the mode.</p>
-            <p className="text-xs font-semibold uppercase tracking-wider text-white/50">Display mode</p>
+            <p className="text-[11px] text-white/45">{t("dashboard.perfil.tapToReveal.screenTextHint")}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
+              {t("dashboard.perfil.tapToReveal.displayMode")}
+            </p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -941,7 +944,7 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
                     : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
                 }`}
               >
-                Avatar + text
+                {t("dashboard.perfil.tapToReveal.avatarText")}
               </button>
               <button
                 type="button"
@@ -952,7 +955,7 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
                     : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
                 }`}
               >
-                Text only
+                {t("dashboard.perfil.tapToReveal.textOnly")}
               </button>
             </div>
           </>
@@ -960,12 +963,20 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
       </div>
 
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Card entrance</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.perfil.cardEntrance.section")}
+        </p>
         <p className="text-[11px] leading-relaxed text-white/45">
-          How the profile appears after tapping or on load. With Discord separate, the main card enters first.
+          {t("dashboard.perfil.cardEntrance.description")}
         </p>
         <div className="grid grid-cols-3 gap-2">
-          {CARD_REVEAL_OPTIONS.map(({ key, label, hint }) => (
+          {(
+            [
+              ["fade", "fade"],
+              ["slide_up", "slideUp"],
+              ["scale", "scale"],
+            ] as const satisfies ReadonlyArray<[CardRevealEffect, "fade" | "slideUp" | "scale"]>
+          ).map(([key, i18nKey]) => (
             <button
               key={key}
               type="button"
@@ -976,8 +987,12 @@ function PerfilPanel({ profile, update }: { profile: Profile; update: <K extends
                   : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
               }`}
             >
-              <span className="block text-xs font-semibold">{label}</span>
-              <span className="mt-0.5 block text-[9px] leading-tight opacity-70">{hint}</span>
+              <span className="block text-xs font-semibold">
+                {t(`dashboard.perfil.cardEntrance.effects.${i18nKey}.label`)}
+              </span>
+              <span className="mt-0.5 block text-[9px] leading-tight opacity-70">
+                {t(`dashboard.perfil.cardEntrance.effects.${i18nKey}.hint`)}
+              </span>
             </button>
           ))}
         </div>
@@ -1000,10 +1015,11 @@ function MidiaPanel({
   handleUpload: (k: "avatar" | "banner" | "background" | "inner_banner" | "music", f: File | undefined) => void;
   handleRemove: (k: "avatar" | "background" | "inner_banner") => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <MediaUpload
-        label="Avatar"
+        label={t("dashboard.midia.avatar")}
         url={profile.avatar_url}
         onPick={() => refs.avatarRef.current?.click()}
         onRemove={() => handleRemove("avatar")}
@@ -1022,14 +1038,16 @@ function MidiaPanel({
         />
       )}
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Avatar ring</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.midia.avatarRing.section")}
+        </p>
         <ColorField
-          label="Ring color"
+          label={t("dashboard.midia.avatarRing.ringColor")}
           value={profile.avatar_border_color ?? profile.card_border_color}
           onChange={(v) => update("avatar_border_color", v)}
         />
         <SliderField
-          label="Ring size"
+          label={t("dashboard.midia.avatarRing.ringSize")}
           min={64}
           max={160}
           step={2}
@@ -1038,7 +1056,7 @@ function MidiaPanel({
           display={`${profile.avatar_size ?? 96}px`}
         />
         <SliderField
-          label="Ring thickness"
+          label={t("dashboard.midia.avatarRing.ringThickness")}
           min={0}
           max={8}
           step={0.1}
@@ -1048,7 +1066,7 @@ function MidiaPanel({
         />
       </div>
       <MediaUpload
-        label="Page background image"
+        label={t("dashboard.midia.pageBackground")}
         url={profile.background_url}
         onPick={() => refs.bgRef.current?.click()}
         onRemove={() => handleRemove("background")}
@@ -1067,9 +1085,11 @@ function MidiaPanel({
         />
       )}
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Wallpaper</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.midia.wallpaper.section")}
+        </p>
         <SliderField
-          label="Blur"
+          label={t("dashboard.midia.wallpaper.blur")}
           min={0}
           max={30}
           step={1}
@@ -1078,7 +1098,7 @@ function MidiaPanel({
           display={`${profile.background_blur ?? 0}px`}
         />
         <SliderField
-          label="Brightness"
+          label={t("dashboard.midia.wallpaper.brightness")}
           min={40}
           max={160}
           step={5}
@@ -1088,7 +1108,7 @@ function MidiaPanel({
         />
       </div>
       <MediaUpload
-        label="Inner card banner"
+        label={t("dashboard.midia.innerBanner")}
         url={profile.inner_banner_url}
         onPick={() => refs.innerBannerRef.current?.click()}
         onRemove={() => handleRemove("inner_banner")}
@@ -1124,18 +1144,18 @@ function AudioPanel({
   handleUpload: (k: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art", f: File | undefined) => void;
   handleRemove: (k: "avatar" | "background" | "inner_banner" | "music" | "music_art") => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-white/45">
-          Profile music
+          {t("dashboard.audio.profileMusic.section")}
         </p>
         <p className="mb-3 text-[11px] leading-relaxed text-white/45">
-          Upload an audio or video file (mp3, mp4). The track loops in the segment you choose.
-          With music active, tap to reveal is required.
+          {t("dashboard.audio.profileMusic.description")}
         </p>
         <MediaUpload
-          label="Track (mp3 / mp4)"
+          label={t("dashboard.audio.track")}
           url={profile.music_url}
           onPick={() => musicRef.current?.click()}
           onRemove={() => handleRemove("music")}
@@ -1146,60 +1166,59 @@ function AudioPanel({
 
       {profile.music_url && (
         <>
-          <Field label="Track title (floating player)">
+          <Field label={t("dashboard.audio.trackTitle")}>
             <input
               value={profile.music_title ?? ""}
               onChange={(e) => update("music_title", e.target.value)}
-              placeholder="Song name"
+              placeholder={t("dashboard.audio.trackTitlePlaceholder")}
               className={panelInputClass}
             />
           </Field>
 
           <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
-              Player card
+              {t("dashboard.audio.playerCard.section")}
             </p>
             <p className="text-[11px] leading-relaxed text-white/45">
-              Displays a custom card below your profile with circular cover art, name, and playback controls.
-              Disable to use only the floating button in the corner of the screen.
+              {t("dashboard.audio.playerCard.description")}
             </p>
             <ToggleField
-              label="Show card below profile"
+              label={t("dashboard.audio.playerCard.showBelowProfile")}
               checked={profile.music_card_enabled !== false}
               onChange={(v) => update("music_card_enabled", v)}
             />
             {profile.music_card_enabled !== false && (
               <>
-                <Field label="Circular cover (image or GIF)">
+                <Field label={t("dashboard.audio.playerCard.circularCover")}>
                   <MediaUpload
-                    label="Player artwork"
+                    label={t("dashboard.audio.playerCard.playerArtwork")}
                     url={profile.music_card_art_url}
                     onPick={() => musicArtRef.current?.click()}
                     onRemove={() => handleRemove("music_art")}
                     shape="square"
                   />
                   <p className="mt-1.5 text-[11px] text-white/40">
-                    Leave empty to use the default music icon.
+                    {t("dashboard.audio.playerCard.emptyArtHint")}
                   </p>
                 </Field>
-                <Field label="Name on card">
+                <Field label={t("dashboard.audio.playerCard.nameOnCard")}>
                   <input
                     value={profile.music_card_title ?? ""}
                     onChange={(e) => update("music_card_title", e.target.value || null)}
-                    placeholder={profile.music_title ?? "Name displayed on card"}
+                    placeholder={profile.music_title ?? t("dashboard.audio.playerCard.namePlaceholder")}
                     className={panelInputClass}
                   />
                 </Field>
-                <Field label="Subtitle (optional)">
+                <Field label={t("dashboard.audio.playerCard.subtitle")}>
                   <input
                     value={profile.music_card_subtitle ?? ""}
                     onChange={(e) => update("music_card_subtitle", e.target.value || null)}
-                    placeholder="Artist, album, quote..."
+                    placeholder={t("dashboard.audio.playerCard.subtitlePlaceholder")}
                     className={panelInputClass}
                   />
                 </Field>
                 <SliderField
-                  label="Player card width"
+                  label={t("dashboard.audio.playerCard.width")}
                   min={40}
                   max={100}
                   step={5}
@@ -1207,16 +1226,13 @@ function AudioPanel({
                   onChange={(v) => update("music_card_width_pct", v)}
                   display={`${profile.music_card_width_pct ?? 100}%`}
                 />
-                <p className="text-[11px] leading-relaxed text-white/40">
-                  Percentage of the main card width. The player is centered below the profile.
-                </p>
               </>
             )}
           </div>
 
           <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">
-              Loop segment
+              {t("dashboard.audio.loopSegment.section")}
             </p>
             <MusicTrimEditor
               url={profile.music_url}
@@ -1232,13 +1248,11 @@ function AudioPanel({
   );
 }
 
-type CardLayoutOption = { value: "default" | "centered" | "aligned"; label: string; desc: string; preview: React.ReactNode };
+type CardLayoutOption = { value: "default" | "centered" | "aligned"; preview: React.ReactNode };
 
 const CARD_LAYOUT_OPTIONS: CardLayoutOption[] = [
   {
     value: "default",
-    label: "Default",
-    desc: "Avatar on top, content below",
     preview: (
       <svg viewBox="0 0 60 72" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="60" height="72" rx="6" fill="currentColor" opacity="0.08" />
@@ -1253,8 +1267,6 @@ const CARD_LAYOUT_OPTIONS: CardLayoutOption[] = [
   },
   {
     value: "centered",
-    label: "Centered",
-    desc: "Everything centered",
     preview: (
       <svg viewBox="0 0 60 72" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="60" height="72" rx="6" fill="currentColor" opacity="0.08" />
@@ -1272,8 +1284,6 @@ const CARD_LAYOUT_OPTIONS: CardLayoutOption[] = [
   },
   {
     value: "aligned",
-    label: "Aligned",
-    desc: "Avatar on the left, info on the right",
     preview: (
       <svg viewBox="0 0 60 72" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="60" height="72" rx="6" fill="currentColor" opacity="0.08" />
@@ -1295,12 +1305,31 @@ const CARD_LAYOUT_OPTIONS: CardLayoutOption[] = [
 ];
 
 function LayoutPickerField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useI18n();
+  const layoutLabels: Record<CardLayoutOption["value"], { label: string; desc: string }> = {
+    default: {
+      label: t("dashboard.aparencia.cardLayout.default.label"),
+      desc: t("dashboard.aparencia.cardLayout.default.desc"),
+    },
+    centered: {
+      label: t("dashboard.aparencia.cardLayout.centered.label"),
+      desc: t("dashboard.aparencia.cardLayout.centered.desc"),
+    },
+    aligned: {
+      label: t("dashboard.aparencia.cardLayout.aligned.label"),
+      desc: t("dashboard.aparencia.cardLayout.aligned.desc"),
+    },
+  };
+
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">Card layout</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">
+        {t("dashboard.aparencia.cardLayout.section")}
+      </p>
       <div className="grid grid-cols-3 gap-2">
         {CARD_LAYOUT_OPTIONS.map((opt) => {
           const active = value === opt.value;
+          const { label, desc } = layoutLabels[opt.value];
           return (
             <button
               key={opt.value}
@@ -1315,8 +1344,8 @@ function LayoutPickerField({ value, onChange }: { value: string; onChange: (v: s
               <div className={`h-16 w-full rounded-lg p-1 ${active ? "bg-pink-500/10" : "bg-white/[0.03]"}`}>
                 {opt.preview}
               </div>
-              <span className="text-[11px] font-semibold leading-tight">{opt.label}</span>
-              <span className="text-[10px] leading-tight text-white/40">{opt.desc}</span>
+              <span className="text-[11px] font-semibold leading-tight">{label}</span>
+              <span className="text-[10px] leading-tight text-white/40">{desc}</span>
             </button>
           );
         })}
@@ -1358,58 +1387,53 @@ function AparenciaPanel({
         }}
       />
       <div className="grid grid-cols-2 gap-3">
-        <ColorField label="Page background" value={profile.background_color} onChange={(v) => update("background_color", v)} />
-        <ColorField label="Card color" value={profile.card_color} onChange={(v) => update("card_color", v)} />
+        <ColorField label={t("dashboard.aparencia.pageBackground")} value={profile.background_color} onChange={(v) => update("background_color", v)} />
+        <ColorField label={t("dashboard.aparencia.cardColor")} value={profile.card_color} onChange={(v) => update("card_color", v)} />
       </div>
-      <SliderField label="Card opacity" min={0} max={1} step={0.05} value={profile.card_opacity} onChange={(v) => update("card_opacity", v)} display={`${Math.round(profile.card_opacity * 100)}%`} />
-      <SliderField label="Blur" min={0} max={40} step={1} value={profile.card_blur} onChange={(v) => update("card_blur", v)} display={`${profile.card_blur}px`} />
+      <SliderField label={t("dashboard.aparencia.cardOpacity")} min={0} max={1} step={0.05} value={profile.card_opacity} onChange={(v) => update("card_opacity", v)} display={`${Math.round(profile.card_opacity * 100)}%`} />
+      <SliderField label={t("dashboard.aparencia.blur")} min={0} max={40} step={1} value={profile.card_blur} onChange={(v) => update("card_blur", v)} display={`${profile.card_blur}px`} />
       <ToggleField
         label={t("dashboard.aparencia.cardGlass")}
         checked={!!profile.card_glass_enabled}
         onChange={(v) => update("card_glass_enabled", v)}
       />
-      {profile.card_glass_enabled && (
-        <p className="text-[11px] leading-relaxed text-white/40">
-          {t("dashboard.aparencia.cardGlassHint")}
-        </p>
-      )}
-      <SliderField label="Border radius" min={0} max={40} step={1} value={profile.card_border_radius} onChange={(v) => update("card_border_radius", v)} display={`${profile.card_border_radius}px`} />
+      <SliderField label={t("dashboard.aparencia.borderRadius")} min={0} max={40} step={1} value={profile.card_border_radius} onChange={(v) => update("card_border_radius", v)} display={`${profile.card_border_radius}px`} />
 
       <BorderStylePicker value={borderStyle} onChange={(v) => update("card_border_style", v)} />
 
       <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
-          {isCustomBorder ? "Custom border" : "Border"}
+          {isCustomBorder ? t("dashboard.aparencia.border.customSection") : t("dashboard.aparencia.border.section")}
         </p>
 
         {profile.effect_tilt ? (
           <div className="flex items-start gap-2 rounded-lg border border-amber-400/25 bg-amber-400/10 px-3 py-2.5">
             <span className="mt-0.5 text-amber-400" aria-hidden>⚠</span>
             <p className="text-xs text-amber-300/90 leading-relaxed">
-              Borders cannot be used while Tilt 3D is active. Disable Tilt to configure the border.
+              {t("dashboard.aparencia.borderTiltWarning")}
             </p>
           </div>
         ) : (
           <>
-            <ColorField label="Border color" value={profile.card_border_color} onChange={(v) => update("card_border_color", v)} />
-            <SliderField label="Border thickness" min={0} max={8} step={0.1} value={profile.card_border_width} onChange={(v) => update("card_border_width", v)} display={`${profile.card_border_width}px`} />
+            <ColorField label={t("dashboard.aparencia.border.color")} value={profile.card_border_color} onChange={(v) => update("card_border_color", v)} />
+            <SliderField label={t("dashboard.aparencia.border.thickness")} min={0} max={8} step={0.1} value={profile.card_border_width} onChange={(v) => update("card_border_width", v)} display={`${profile.card_border_width}px`} />
             <ToggleField
-              label="Border effect (glowing)"
+              label={t("dashboard.aparencia.border.glow")}
               checked={!!profile.effect_border_glow}
               onChange={(v) => update("effect_border_glow", v)}
             />
             {profile.effect_border_glow && (
               <p className="text-[11px] text-white/40">
-                The border follows the mouse cursor with an animated glow effect.
+                {t("dashboard.aparencia.border.glowHint")}
               </p>
             )}
           </>
         )}
       </div>
 
-      <SliderField label="Card width" min={280} max={1200} step={10} value={profile.card_width ?? DEFAULT_CARD_WIDTH} onChange={(v) => update("card_width", v)} display={`${profile.card_width ?? DEFAULT_CARD_WIDTH}px`} />
+      <SliderField label={t("dashboard.aparencia.cardWidth")} min={280} max={1200} step={10} value={profile.card_width ?? DEFAULT_CARD_WIDTH} onChange={(v) => update("card_width", v)} display={`${profile.card_width ?? DEFAULT_CARD_WIDTH}px`} />
       <SliderField
-        label="Card height"
+        label={t("dashboard.aparencia.cardHeight")}
         min={minCardHeight}
         max={CARD_HEIGHT_SLIDER_MAX}
         step={10}
@@ -1417,14 +1441,13 @@ function AparenciaPanel({
         onChange={(v) => update("card_height", clampCardHeight(profile, v, blocks))}
         display={`${cardHeight}px`}
       />
-      <p className="text-[11px] leading-relaxed text-white/40">
-        Minimum height: {minCardHeight}px — calculated from card content (bio, labels, socials, Discord, hotel, inner blocks).
-      </p>
 
       <div className="border-t border-white/10 pt-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">Effects</h3>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.aparencia.effects.section")}
+        </h3>
         <ToggleField
-          label="Tilt 3D (tilt with mouse)"
+          label={t("dashboard.aparencia.effects.tilt3d")}
           checked={!!profile.effect_tilt}
           onChange={(v) => {
             update("effect_tilt", v);
@@ -1437,7 +1460,7 @@ function AparenciaPanel({
         {profile.effect_tilt && (
           <div className="mt-2 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
             <SliderField
-              label="Tilt strength"
+              label={t("dashboard.aparencia.effects.tiltStrength")}
               min={1}
               max={10}
               step={1}
@@ -1446,22 +1469,22 @@ function AparenciaPanel({
               display={`${profile.effect_tilt_strength ?? 5}`}
             />
             <div className="mt-2 flex justify-between text-[10px] text-white/30">
-              <span>Gentle</span>
-              <span>Strong</span>
+              <span>{t("dashboard.aparencia.tiltStrengthGentle")}</span>
+              <span>{t("dashboard.aparencia.tiltStrengthStrong")}</span>
             </div>
           </div>
         )}
-        <ToggleField label="Lift on hover" checked={!!profile.effect_hover} onChange={(v) => update("effect_hover", v)} />
-        <ToggleField label="Glow" checked={!!profile.effect_glow} onChange={(v) => update("effect_glow", v)} />
+        <ToggleField label={t("dashboard.aparencia.effects.liftOnHover")} checked={!!profile.effect_hover} onChange={(v) => update("effect_hover", v)} />
+        <ToggleField label={t("dashboard.aparencia.effects.glow")} checked={!!profile.effect_glow} onChange={(v) => update("effect_glow", v)} />
         {profile.effect_glow && (
           <div className="mt-2 space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
             <ColorField
-              label="Glow color"
+              label={t("dashboard.aparencia.effects.glowColor")}
               value={profile.effect_glow_color ?? profile.card_border_color}
               onChange={(v) => update("effect_glow_color", v)}
             />
             <SliderField
-              label="Glow size"
+              label={t("dashboard.aparencia.effects.glowSize")}
               min={4}
               max={80}
               step={1}
@@ -1477,6 +1500,7 @@ function AparenciaPanel({
 }
 
 function EfeitosPanel({ profile, update }: { profile: Profile; update: <K extends keyof Profile>(k: K, v: Profile[K]) => void }) {
+  const { t } = useI18n();
   const resetEffects = () => {
     update("name_text_animation", "none");
     update("bio_text_animation", "none");
@@ -1491,17 +1515,12 @@ function EfeitosPanel({ profile, update }: { profile: Profile; update: <K extend
         onClick={resetEffects}
         className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/75 transition hover:bg-white/[0.08]"
       >
-        Reset text effects
+        {t("dashboard.efeitos.reset")}
       </button>
       <div className={panelSectionClass}>
-        <p className={panelSectionTitleClass}>Text animation</p>
-        <p className="mb-2 text-[11px] leading-relaxed text-white/40">
-          Choose an effect for the name or description. Most use colors from Colors.
-          <span className="text-white/55"> Glitch</span> keeps the effect's own colors (red/cyan).
-          In Morphing, separate words with <span className="text-white/55">|</span> in the bio.
-        </p>
+        <p className={panelSectionTitleClass}>{t("dashboard.efeitos.textAnimation.section")}</p>
         <TextAnimationPicker
-          label="Display name"
+          label={t("dashboard.efeitos.textAnimation.displayName")}
           value={(profile.name_text_animation ?? "none") as TextAnimationId}
           onChange={(v) => update("name_text_animation", v)}
           previewColor={profile.title_text_color ?? "#ffffff"}
@@ -1510,13 +1529,13 @@ function EfeitosPanel({ profile, update }: { profile: Profile; update: <K extend
         />
         {(profile.name_text_animation ?? "none") === "particle" && (
           <ColorField
-            label="Particle color (name)"
+            label={t("dashboard.efeitos.particleColorName")}
             value={profile.name_particle_color ?? "#ff2d7a"}
             onChange={(v) => update("name_particle_color", v)}
           />
         )}
         <TextAnimationPicker
-          label="Description / Bio"
+          label={t("dashboard.efeitos.textAnimation.bio")}
           value={(profile.bio_text_animation ?? "none") as TextAnimationId}
           onChange={(v) => update("bio_text_animation", v)}
           previewColor={profile.body_text_color ?? "rgba(255,255,255,0.80)"}
@@ -1525,7 +1544,7 @@ function EfeitosPanel({ profile, update }: { profile: Profile; update: <K extend
         />
         {(profile.bio_text_animation ?? "none") === "particle" && (
           <ColorField
-            label="Particle color (bio)"
+            label={t("dashboard.efeitos.particleColorBio")}
             value={profile.bio_particle_color ?? "#ff2d7a"}
             onChange={(v) => update("bio_particle_color", v)}
           />
@@ -1536,6 +1555,7 @@ function EfeitosPanel({ profile, update }: { profile: Profile; update: <K extend
 }
 
 function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends keyof Profile>(k: K, v: Profile[K]) => void }) {
+  const { t } = useI18n();
   const pageFont = profile.page_font_family ?? DEFAULT_PAGE_FONT_STACK;
   const nameFont = profile.name_font_family ?? "inherit";
   const resetColors = () => {
@@ -1555,6 +1575,12 @@ function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends
     update("text_glow_scope", "all");
   };
 
+  const textGlowScopeLabel = (scope: TextGlowScope) => {
+    if (scope === "display_name") return t("dashboard.colors.textGlow.scope.displayName");
+    if (scope === "titles") return t("dashboard.colors.textGlow.scope.titles");
+    return t("dashboard.colors.textGlow.scope.all");
+  };
+
   return (
     <div className="space-y-4">
       <button
@@ -1562,17 +1588,17 @@ function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends
         onClick={resetColors}
         className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/75 transition hover:bg-white/[0.08]"
       >
-        Reset to site defaults
+        {t("dashboard.colors.reset")}
       </button>
       <div className={panelSectionClass}>
-        <p className={panelSectionTitleClass}>Fonts</p>
+        <p className={panelSectionTitleClass}>{t("dashboard.colors.fonts.section")}</p>
         <FontPickerField
-          label="Full page font"
+          label={t("dashboard.colors.fonts.fullPage")}
           value={pageFont}
           onChange={(v) => update("page_font_family", v)}
         />
         <FontPickerField
-          label="Display name font"
+          label={t("dashboard.colors.fonts.displayName")}
           value={nameFont}
           onChange={(v) => update("name_font_family", v)}
           allowInherit
@@ -1580,20 +1606,20 @@ function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends
       </div>
 
       <div className={panelSectionClass}>
-        <p className={panelSectionTitleClass}>Text colors</p>
-        <ColorField label="Titles (name and headings)" value={profile.title_text_color ?? "#ffffff"} onChange={(v) => update("title_text_color", v)} />
-        <ColorField label="Body text (bio/descriptions)" value={profile.body_text_color ?? "rgba(255,255,255,0.80)"} onChange={(v) => update("body_text_color", v)} />
-        <ColorField label="Secondary text (@, labels)" value={profile.muted_text_color ?? "rgba(255,255,255,0.55)"} onChange={(v) => update("muted_text_color", v)} />
+        <p className={panelSectionTitleClass}>{t("dashboard.colors.textColors.section")}</p>
+        <ColorField label={t("dashboard.colors.textColors.titles")} value={profile.title_text_color ?? "#ffffff"} onChange={(v) => update("title_text_color", v)} />
+        <ColorField label={t("dashboard.colors.textColors.body")} value={profile.body_text_color ?? "rgba(255,255,255,0.80)"} onChange={(v) => update("body_text_color", v)} />
+        <ColorField label={t("dashboard.colors.secondaryText")} value={profile.muted_text_color ?? "rgba(255,255,255,0.55)"} onChange={(v) => update("muted_text_color", v)} />
       </div>
 
       <div className={panelSectionClass}>
-        <p className={panelSectionTitleClass}>Icons and details</p>
-        <ColorField label="Icon color" value={profile.icon_color ?? "rgba(255,255,255,0.85)"} onChange={(v) => update("icon_color", v)} />
-        <ColorField label="Badge (background)" value={profile.badge_bg_color ?? "rgba(0,0,0,0.45)"} onChange={(v) => update("badge_bg_color", v)} />
-        <ColorField label="Badge (text)" value={profile.badge_text_color ?? "rgba(255,255,255,0.85)"} onChange={(v) => update("badge_text_color", v)} />
-        <ColorField label="Inner divider" value={profile.inner_divider_color ?? "#ffffff"} onChange={(v) => update("inner_divider_color", v)} />
+        <p className={panelSectionTitleClass}>{t("dashboard.colors.iconsAndDetails.section")}</p>
+        <ColorField label={t("dashboard.colors.iconColor")} value={profile.icon_color ?? "rgba(255,255,255,0.85)"} onChange={(v) => update("icon_color", v)} />
+        <ColorField label={t("dashboard.colors.badgeBackground")} value={profile.badge_bg_color ?? "rgba(0,0,0,0.45)"} onChange={(v) => update("badge_bg_color", v)} />
+        <ColorField label={t("dashboard.colors.badgeText")} value={profile.badge_text_color ?? "rgba(255,255,255,0.85)"} onChange={(v) => update("badge_text_color", v)} />
+        <ColorField label={t("dashboard.colors.innerDivider")} value={profile.inner_divider_color ?? "#ffffff"} onChange={(v) => update("inner_divider_color", v)} />
         <SliderField
-          label="Inner divider opacity"
+          label={t("dashboard.colors.innerDividerOpacity")}
           min={0}
           max={1}
           step={0.05}
@@ -1604,9 +1630,9 @@ function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends
       </div>
 
       <div className={panelSectionClass}>
-        <p className={panelSectionTitleClass}>Bloom / Glow on text</p>
+        <p className={panelSectionTitleClass}>{t("dashboard.colors.textGlow.section")}</p>
         <ToggleField
-          label="Enable text glow"
+          label={t("dashboard.colors.textGlow.enable")}
           checked={profile.text_glow_enabled === true}
           onChange={(v) => {
             update("text_glow_enabled", v);
@@ -1618,7 +1644,7 @@ function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends
         {profile.text_glow_enabled && (
           <>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-white/55">Apply to</label>
+              <label className="text-xs font-medium text-white/55">{t("dashboard.colors.textGlow.applyTo")}</label>
               <div className="grid gap-1.5">
                 {(["display_name", "titles", "all"] as TextGlowScope[]).map((scope) => {
                   const active = normalizeTextGlowScope(profile.text_glow_scope) === scope;
@@ -1634,15 +1660,15 @@ function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends
                           : "border-white/[0.08] bg-white/[0.03] text-white/70 hover:border-white/15 hover:bg-white/[0.05]",
                       )}
                     >
-                      {TEXT_GLOW_SCOPE_LABELS[scope]}
+                      {textGlowScopeLabel(scope)}
                     </button>
                   );
                 })}
               </div>
             </div>
-            <ColorField label="Glow color" value={profile.text_glow_color ?? "#ff2d7a"} onChange={(v) => update("text_glow_color", v)} />
+            <ColorField label={t("dashboard.colors.textGlow.glowColor")} value={profile.text_glow_color ?? "#ff2d7a"} onChange={(v) => update("text_glow_color", v)} />
             <SliderField
-              label="Glow intensity"
+              label={t("dashboard.colors.textGlow.glowIntensity")}
               min={0}
               max={TEXT_GLOW_MAX_PX}
               step={1}
@@ -1658,6 +1684,7 @@ function ColorsPanel({ profile, update }: { profile: Profile; update: <K extends
 }
 
 function RedesPanel({ profile, update }: { profile: Profile; update: <K extends keyof Profile>(k: K, v: Profile[K]) => void }) {
+  const { t } = useI18n();
   const useBrand = profile.social_original_colors !== false;
   const active = profile.socials ?? {};
 
@@ -1686,25 +1713,27 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
     <div className="space-y-5">
       {/* Color mode toggle */}
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">Icon color</p>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.redes.iconColor.section")}
+        </p>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => update("social_original_colors", true)}
             className={`rounded-lg px-3 py-2 text-xs font-medium transition ${useBrand ? "bg-white text-black" : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"}`}
           >
-            Original colors
+            {t("dashboard.redes.iconColor.originalColors")}
           </button>
           <button
             onClick={() => update("social_original_colors", false)}
             className={`rounded-lg px-3 py-2 text-xs font-medium transition ${!useBrand ? "bg-white text-black" : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"}`}
           >
-            Custom
+            {t("dashboard.redes.iconColor.custom")}
           </button>
         </div>
         {!useBrand && (
           <div className="mt-3">
             <ColorField
-              label="Icon color"
+              label={t("dashboard.colors.iconColor")}
               value={profile.social_icon_color ?? "#ffffff"}
               onChange={(v) => update("social_icon_color", v)}
             />
@@ -1712,7 +1741,7 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
         )}
         <div className="mt-3">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">
-            Icon style
+            {t("dashboard.redes.iconStyle.section")}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -1724,7 +1753,7 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
                   : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
               }`}
             >
-              Boxed
+              {t("dashboard.redes.iconStyle.boxed")}
             </button>
             <button
               type="button"
@@ -1735,13 +1764,13 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
                   : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
               }`}
             >
-              Logo only
+              {t("dashboard.redes.iconStyle.logoOnly")}
             </button>
           </div>
         </div>
         <div className="mt-3">
           <SliderField
-            label="Icon size"
+            label={t("dashboard.redes.iconSize.label")}
             min={60}
             max={200}
             step={5}
@@ -1749,13 +1778,10 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
             onChange={(v) => update("social_icon_size", v)}
             display={formatSocialIconSizeLabel(profile)}
           />
-          <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-            Scales the visible logo. Boxed mode adds a small border around the icon only.
-          </p>
         </div>
         <div className="mt-3">
           <SliderField
-            label="Icon spacing"
+            label={t("dashboard.redes.iconSpacing.label")}
             min={0}
             max={20}
             step={1}
@@ -1763,51 +1789,53 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
             onChange={(v) => update("social_icon_gap", v)}
             display={
               (profile.social_icon_gap ?? 5) === 0
-                ? "0px (touching)"
+                ? t("dashboard.redes.iconSpacing.touching")
                 : `${profile.social_icon_gap ?? 5}px`
             }
           />
           <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-            0 = icons touching. Increase to add space between them.
+            {t("dashboard.redes.iconSpacing.hint")}
           </p>
         </div>
         <div className="mt-3">
           <ToggleField
-            label="Bloom around icons"
+            label={t("dashboard.redes.iconBloom.label")}
             checked={profile.social_icon_bloom === true}
             onChange={(v) => update("social_icon_bloom", v)}
           />
           <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-            Soft glow around each icon individually (follows the logo shape).
+            {t("dashboard.redes.iconBloom.hint")}
           </p>
           {profile.social_icon_bloom === true && (
             <div className="mt-3">
               <ColorField
-                label="Glow color"
+                label={t("dashboard.colors.textGlow.glowColor")}
                 value={profile.social_icon_bloom_color ?? profile.social_icon_color ?? "#ffffff"}
                 onChange={(v) => update("social_icon_bloom_color", v)}
               />
               <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-                Glow color only — does not change the icon color.
+                {t("dashboard.redes.iconBloom.colorHint")}
               </p>
             </div>
           )}
         </div>
         <div className="mt-3">
           <ToggleField
-            label="Show title"
+            label={t("dashboard.redes.showTitle.label")}
             checked={profile.show_social_titles === true}
             onChange={(v) => update("show_social_titles", v)}
           />
           <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-            Shows the network name below the icon on the card (e.g. Imgur, GitHub).
+            {t("dashboard.redes.showTitle.hint")}
           </p>
         </div>
       </div>
 
       {/* Grid of social icons */}
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">Choose networks</p>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.redes.chooseNetworks")}
+        </p>
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
           {SOCIALS.map((s) => {
             const isActive = s.key in active;
@@ -1839,7 +1867,9 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
       {/* Inputs for active socials */}
       {Object.keys(active).length > 0 && (
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">Fill in your links</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">
+            {t("dashboard.redes.fillLinks")}
+          </p>
           <div className="space-y-2">
             {Object.keys(active).map((key) => {
               const def = SOCIAL_MAP[key];
@@ -1866,7 +1896,7 @@ function RedesPanel({ profile, update }: { profile: Profile; update: <K extends 
                       type="button"
                       onClick={() => removeSocial(key)}
                       className="shrink-0 rounded-md p-1.5 text-white/50 transition hover:bg-white/[0.06] hover:text-red-400"
-                      title="Remove"
+                      title={t("dashboard.common.remove")}
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -1899,6 +1929,7 @@ function ComentariosPanel({
   profile: Profile;
   update: <K extends keyof Profile>(k: K, v: Profile[K]) => void;
 }) {
+  const { t, locale } = useI18n();
   const [comments, setComments] = useState<ProfileCommentRow[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -1947,11 +1978,13 @@ function ComentariosPanel({
     setComments((prev) => prev.filter((c) => c.id !== id));
   };
 
+  const dateLocale = locale === "pt" ? "pt-BR" : locale === "es" ? "es" : "en-US";
+
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
         <ToggleField
-          label="Show comments on public profile"
+          label={t("dashboard.comentarios.showOnProfile")}
           checked={profile.comments_enabled !== false}
           onChange={(v) => update("comments_enabled", v)}
         />
@@ -1959,20 +1992,20 @@ function ComentariosPanel({
 
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
-          All comments
+          {t("dashboard.comentarios.allComments")}
         </p>
         <button
           type="button"
           onClick={() => void loadComments()}
           className="rounded-md border border-white/15 px-2 py-1 text-[11px] text-white/70 transition hover:bg-white/10"
         >
-          Reload
+          {t("dashboard.comentarios.reload")}
         </button>
       </div>
 
-      {loading && <p className="text-xs text-white/55">Loading...</p>}
+      {loading && <p className="text-xs text-white/55">{t("dashboard.common.loading")}</p>}
       {!loading && comments.length === 0 && (
-        <p className="text-xs text-white/45">No comments yet.</p>
+        <p className="text-xs text-white/45">{t("dashboard.comentarios.empty")}</p>
       )}
 
       <div className="space-y-2">
@@ -1987,13 +2020,13 @@ function ComentariosPanel({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold text-white">{c.author_name}</p>
                 <p className="text-[10px] text-white/45">
-                  {new Date(c.created_at).toLocaleString("en-US")}
+                  {new Date(c.created_at).toLocaleString(dateLocale)}
                 </p>
               </div>
               <span className={`rounded-full px-2 py-0.5 text-[10px] ${
                 c.is_visible ? "bg-emerald-500/20 text-emerald-300" : "bg-yellow-500/20 text-yellow-300"
               }`}>
-                {c.is_visible ? "Visible" : "Hidden"}
+                {c.is_visible ? t("dashboard.common.visible") : t("dashboard.common.hidden")}
               </span>
             </div>
             <p className="mb-3 whitespace-pre-wrap text-xs text-white/80">{c.content}</p>
@@ -2003,14 +2036,14 @@ function ComentariosPanel({
                 onClick={() => void toggleVisibility(c)}
                 className="rounded-md border border-white/15 px-2 py-1 text-[11px] text-white/80 transition hover:bg-white/10"
               >
-                {c.is_visible ? "Hide" : "Show"}
+                {c.is_visible ? t("dashboard.common.hide") : t("dashboard.common.show")}
               </button>
               <button
                 type="button"
                 onClick={() => void deleteComment(c.id)}
                 className="rounded-md border border-red-300/30 px-2 py-1 text-[11px] text-red-200 transition hover:bg-red-500/20"
               >
-                Delete
+                {t("dashboard.common.delete")}
               </button>
             </div>
           </div>
@@ -2021,6 +2054,8 @@ function ComentariosPanel({
 }
 
 function ConexoesPanel({ profile, update }: { profile: Profile; update: <K extends keyof Profile>(k: K, v: Profile[K]) => void }) {
+  const { t } = useI18n();
+  const discordError = (code: DiscordVerifyError) => t(`dashboard.conexoes.discord.errors.${code}`);
   const [discordInput, setDiscordInput] = useState(profile.discord_user_id ?? "");
   const [discordLoading, setDiscordLoading] = useState(false);
   const [lanyardModalOpen, setLanyardModalOpen] = useState(false);
@@ -2064,7 +2099,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
   const startVerification = async () => {
     const userId = discordInput.trim();
     if (!/^\d{15,22}$/.test(userId)) {
-      toast.error(DISCORD_VERIFY_MESSAGES.invalid_id);
+      toast.error(discordError("invalid_id"));
       return;
     }
     setDiscordLoading(true);
@@ -2080,7 +2115,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
       setValidateUnlockAt(now + DISCORD_OTP_WAIT_MS);
       setOtpExpiresAt(now + DISCORD_OTP_WAIT_MS + DISCORD_OTP_VALIDATE_WINDOW_MS);
       setTransferPending(false);
-      toast.success("Code generated — add it to your Discord bio");
+      toast.success(t("dashboard.conexoes.discord.codeGenerated"));
     } finally {
       setDiscordLoading(false);
     }
@@ -2090,7 +2125,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
     const userId = discordInput.trim();
     if (!otp || !validateUnlockAt || !otpExpiresAt) return;
     if (waitSecondsLeft > 0) {
-      toast.error(DISCORD_VERIFY_MESSAGES.waiting);
+      toast.error(discordError("waiting"));
       return;
     }
     try {
@@ -2113,8 +2148,8 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
         setTransferPending(false);
         toast.success(
           forceTransfer
-            ? "Discord transferred and connected to this profile!"
-            : "Discord verified and connected!",
+            ? t("dashboard.conexoes.discord.transferred")
+            : t("dashboard.conexoes.discord.verified"),
         );
         return;
       }
@@ -2126,7 +2161,11 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
         setLanyardModalOpen(true);
         return;
       }
-      toast.error(result.error ?? "Validation failed.");
+      toast.error(
+        result.code && isDiscordVerifyError(result.code)
+          ? discordError(result.code)
+          : result.error ?? t("dashboard.conexoes.discord.validationFailed"),
+      );
       if (result.code === "expired") {
         setOtp(null);
         setValidateUnlockAt(null);
@@ -2144,9 +2183,9 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
     if (!otp) return;
     try {
       await navigator.clipboard.writeText(otp);
-      toast.success("Code copied");
+      toast.success(t("dashboard.conexoes.discord.codeCopied"));
     } catch {
-      toast.error("Could not copy the code");
+      toast.error(t("dashboard.conexoes.discord.codeCopyFailed"));
     }
   };
 
@@ -2157,7 +2196,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
     setValidateUnlockAt(null);
     setOtpExpiresAt(null);
     setTransferPending(false);
-    toast.success("Discord disconnected");
+    toast.success(t("dashboard.conexoes.discord.disconnected"));
   };
 
   const verificationPending = Boolean(otp && otpExpiresAt);
@@ -2166,7 +2205,9 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">Discord</p>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.conexoes.discord.section")}
+        </p>
         {profile.discord_user_id ? (
           <DiscordConnectedCard
             userId={profile.discord_user_id}
@@ -2175,22 +2216,22 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
         ) : (
           <>
             <p className="mb-3 text-xs text-white/50">
-              To connect, you must be in the{" "}
+              {t("dashboard.conexoes.discord.connectIntroBefore")}{" "}
               <a
                 href={LANYARD_INVITE_URL}
                 target="_blank"
                 rel="noreferrer"
                 className="text-pink-300 underline hover:text-pink-200"
               >
-                Lanyard server
+                {t("dashboard.conexoes.discord.serverLinkLabel")}
               </a>
-              . Generate a code, add it to your Discord profile bio, and validate.
+              {t("dashboard.conexoes.discord.connectIntroAfter")}
             </p>
             <div className="flex gap-2">
               <input
                 value={discordInput}
                 onChange={(e) => setDiscordInput(e.target.value.replace(/\s+/g, ""))}
-                placeholder="User ID (e.g. 123456789012345678)"
+                placeholder={t("dashboard.conexoes.discord.userIdPlaceholder")}
                 disabled={verificationPending}
                 className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-pink-500/40 disabled:opacity-60"
               />
@@ -2200,18 +2241,20 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
                 disabled={!discordInput.trim() || verificationPending || discordLoading}
                 className="shrink-0 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Generate code
+                {t("dashboard.conexoes.discord.generateCode")}
               </button>
             </div>
 
             {verificationPending && (
               <div className="mt-3 space-y-3 rounded-lg border border-pink-500/30 bg-pink-500/10 p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs text-white/70">Add this code to your Discord bio:</p>
+                  <p className="text-xs text-white/70">{t("dashboard.conexoes.discord.addCodeToBio")}</p>
                   {waitSecondsLeft > 0 ? (
                     <span className="text-xs font-semibold text-pink-200">{waitSecondsLeft}s</span>
                   ) : (
-                    <span className="text-xs font-semibold text-emerald-300">Ready</span>
+                    <span className="text-xs font-semibold text-emerald-300">
+                      {t("dashboard.conexoes.discord.ready")}
+                    </span>
                   )}
                 </div>
                 <button
@@ -2222,7 +2265,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
                   {otp}
                 </button>
                 <p className="text-[11px] leading-relaxed text-white/50">
-                  Discord → User Settings → Profiles → About Me. Paste the code, save, and wait 50s to validate.
+                  {t("dashboard.conexoes.discord.bioInstructions")}
                 </p>
                 <button
                   type="button"
@@ -2231,15 +2274,15 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
                   className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {discordLoading
-                    ? "Validating..."
+                    ? t("dashboard.conexoes.discord.validating")
                     : waitSecondsLeft > 0
-                      ? `Wait ${waitSecondsLeft}s`
-                      : "Validate"}
+                      ? t("dashboard.conexoes.discord.waitSeconds", { seconds: waitSecondsLeft })
+                      : t("dashboard.conexoes.discord.validate")}
                 </button>
                 {transferPending && (
                   <div className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
                     <p className="text-xs leading-relaxed text-amber-100/90">
-                      {CONNECTION_ALREADY_LINKED_MESSAGE}
+                      {t("dashboard.conexoes.alreadyLinked")}
                     </p>
                     <button
                       type="button"
@@ -2247,7 +2290,9 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
                       disabled={discordLoading || !canValidate}
                       className="w-full rounded-lg border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-50 transition hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {discordLoading ? "Transferring..." : "Continue and link here"}
+                      {discordLoading
+                        ? t("dashboard.conexoes.discord.transferring")
+                        : t("dashboard.conexoes.discord.continueLink")}
                     </button>
                   </div>
                 )}
@@ -2259,7 +2304,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
 
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-white/45">
-          Discord position
+          {t("dashboard.conexoes.discord.position.section")}
         </p>
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -2271,7 +2316,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
                 : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
             }`}
           >
-            Inside card
+            {t("dashboard.conexoes.discord.position.insideCard")}
           </button>
           <button
             type="button"
@@ -2282,14 +2327,14 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
                 : "bg-white/[0.03] text-white/65 hover:bg-white/[0.06]"
             }`}
           >
-            Separate
+            {t("dashboard.conexoes.discord.position.separate")}
           </button>
         </div>
       </div>
 
       {profile.discord_user_id && (
         <ToggleField
-          label="Show Discord badges"
+          label={t("dashboard.conexoes.discord.showBadges")}
           checked={profile.discord_show_badges !== false}
           onChange={(v) => update("discord_show_badges", v)}
         />
@@ -2297,7 +2342,7 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
 
       {profile.discord_user_id && (profile.discord_card_mode ?? "inside") === "inside" && (
         <SliderField
-          label="Discord size in card"
+          label={t("dashboard.conexoes.discord.insideScale")}
           min={80}
           max={140}
           step={5}
@@ -2311,6 +2356,18 @@ function ConexoesPanel({ profile, update }: { profile: Profile; update: <K exten
 
       <LanyardNotFoundModal open={lanyardModalOpen} onClose={() => setLanyardModalOpen(false)} />
     </div>
+  );
+}
+
+function isDiscordVerifyError(code: string): code is DiscordVerifyError {
+  return (
+    code === "invalid_id" ||
+    code === "profile_not_found" ||
+    code === "not_in_lanyard" ||
+    code === "code_not_found" ||
+    code === "expired" ||
+    code === "waiting" ||
+    code === "network"
   );
 }
 
@@ -2385,6 +2442,7 @@ function MediaUpload({ label, url, onPick, onRemove, shape, isMedia }: {
   shape: "circle" | "wide";
   isMedia?: boolean;
 }) {
+  const { t } = useI18n();
   const shapeClass =
     shape === "circle"
       ? "aspect-square max-w-[140px] rounded-full"
@@ -2404,7 +2462,7 @@ function MediaUpload({ label, url, onPick, onRemove, shape, isMedia }: {
               <div className="grid h-full w-full place-items-center bg-black/40 text-white/80">
                 <div className="text-center">
                   <Upload className="mx-auto mb-1 h-5 w-5 opacity-80" />
-                  <p className="text-xs font-medium">Music file uploaded</p>
+                  <p className="text-xs font-medium">{t("dashboard.mediaUpload.musicFileUploaded")}</p>
                 </div>
               </div>
             ) : isVideo ? (
@@ -2415,14 +2473,14 @@ function MediaUpload({ label, url, onPick, onRemove, shape, isMedia }: {
           ) : (
             <div className="flex flex-col items-center gap-1.5 py-6 text-white/50">
               <Upload className="h-5 w-5" />
-              <span className="text-xs">{isMedia ? "Upload music" : "Upload image"}</span>
+              <span className="text-xs">{isMedia ? t("dashboard.common.uploadMusic") : t("dashboard.common.uploadImage")}</span>
             </div>
           )}
           {url && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition group-hover:opacity-100">
               <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
                 <Upload className="h-3.5 w-3.5" />
-                Replace
+                {t("dashboard.common.replace")}
               </span>
             </div>
           )}
@@ -2434,7 +2492,7 @@ function MediaUpload({ label, url, onPick, onRemove, shape, isMedia }: {
               e.stopPropagation();
               onRemove();
             }}
-            title={isMedia ? "Remove music" : "Remove image"}
+            title={isMedia ? t("dashboard.mediaUpload.removeMusic") : t("dashboard.mediaUpload.removeImage")}
             className={`absolute z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white shadow-lg ring-1 ring-white/25 backdrop-blur-md transition hover:scale-105 hover:bg-red-500/90 hover:ring-red-300/40 ${
               shape === "circle" ? "right-1 top-1" : "right-2 top-2"
             }`}
@@ -2460,6 +2518,7 @@ function MusicTrimEditor({
   onChangeStart: (v: number) => void;
   onChangeEnd: (v: number | null) => void;
 }) {
+  const { t } = useI18n();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
@@ -2595,7 +2654,7 @@ function MusicTrimEditor({
           className="inline-flex items-center gap-1 rounded-md border border-white/20 px-2 py-1 text-xs text-white/85 transition hover:bg-white/10"
         >
           {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-          {isPlaying ? "Pause" : "Play"}
+          {isPlaying ? t("dashboard.common.pause") : t("dashboard.common.play")}
         </button>
         <span className="text-xs text-white/70">
           {fmtTime(current)} / {fmtTime(total)}
@@ -2646,7 +2705,7 @@ function MusicTrimEditor({
           }}
           className="absolute inset-y-0 w-3 cursor-ew-resize border-r border-black/35 bg-emerald-200 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
           style={{ left: `calc(${startPct}% - 6px)` }}
-          title="Start"
+          title={t("dashboard.audioTrim.start")}
         />
         <button
           type="button"
@@ -2662,7 +2721,7 @@ function MusicTrimEditor({
           }}
           className="absolute inset-y-0 w-3 cursor-ew-resize border-l border-black/35 bg-emerald-200 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
           style={{ left: `calc(${endPct}% - 6px)` }}
-          title="End"
+          title={t("dashboard.audioTrim.end")}
         />
         <div
           className="absolute inset-y-0 w-[2px] bg-red-400/90"
@@ -2708,31 +2767,35 @@ function ToggleField({
   );
 }
 
-const BORDER_STYLES: { key: string; label: string; preview: React.CSSProperties }[] = [
-  { key: "solid", label: "Solid", preview: { border: "2px solid #fff" } },
-  { key: "dashed", label: "Dashed", preview: { border: "2px dashed #fff" } },
-  { key: "dotted", label: "Dotted", preview: { border: "2px dotted #fff" } },
-  { key: "double", label: "Double", preview: { border: "4px double #fff" } },
-];
+const BORDER_STYLE_KEYS = ["solid", "dashed", "dotted", "double"] as const;
+const BORDER_STYLE_PREVIEWS: Record<(typeof BORDER_STYLE_KEYS)[number], React.CSSProperties> = {
+  solid: { border: "2px solid #fff" },
+  dashed: { border: "2px dashed #fff" },
+  dotted: { border: "2px dotted #fff" },
+  double: { border: "4px double #fff" },
+};
 
 function BorderStylePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useI18n();
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-white/50">Border style</label>
+      <label className="mb-1.5 block text-xs font-medium text-white/50">
+        {t("dashboard.aparencia.borderStyle")}
+      </label>
       <div className="grid grid-cols-2 gap-2">
-        {BORDER_STYLES.map((s) => {
-          const active = value === s.key;
+        {BORDER_STYLE_KEYS.map((key) => {
+          const active = value === key;
           return (
             <button
-              key={s.key}
+              key={key}
               type="button"
-              onClick={() => onChange(s.key)}
+              onClick={() => onChange(key)}
               className={`group flex flex-col items-center gap-1.5 rounded-xl border p-2 text-[10px] font-medium transition ${
                 active ? "border-pink-500/50 bg-pink-500/10 text-white" : "border-white/[0.06] bg-white/[0.03] text-white/65 hover:border-white/15 hover:text-white"
               }`}
             >
-              <span className="h-8 w-full rounded-md bg-white/[0.04]" style={s.preview} />
-              {s.label}
+              <span className="h-8 w-full rounded-md bg-white/[0.04]" style={BORDER_STYLE_PREVIEWS[key]} />
+              {t(`dashboard.aparencia.borderStyles.${key}`)}
             </button>
           );
         })}

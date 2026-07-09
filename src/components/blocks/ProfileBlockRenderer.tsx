@@ -24,6 +24,7 @@ import {
   getDiscordTitleStyle,
   hexToRgba,
 } from "@/lib/profile-colors";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   block: ProfileBlock;
@@ -193,7 +194,8 @@ function ButtonBlock({
   sharedInRow?: boolean;
   onLinkClick?: () => void;
 }) {
-  const t = getBlockSizeTokens(size);
+  const tokens = getBlockSizeTokens(size);
+  const { t: tr } = useI18n();
   const href = block.url || "#";
   return (
     <a
@@ -207,13 +209,13 @@ function ButtonBlock({
           window.open(href, "_blank", "noopener,noreferrer");
         }
       }}
-      className={`flex h-full w-full items-center justify-center px-2 py-2 text-center font-semibold transition hover:brightness-110 ${t.btn}`}
+      className={`flex h-full w-full items-center justify-center px-2 py-2 text-center font-semibold transition hover:brightness-110 ${tokens.btn}`}
       style={{
         background: hexToRgba(profile.card_border_color, 0.18),
         color: profile.title_text_color ?? "#ffffff",
       }}
     >
-      {block.title || "Abrir link"}
+      {block.title || tr("profile.openLink")}
     </a>
   );
 }

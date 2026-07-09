@@ -1,4 +1,5 @@
 import { Volume2, VolumeX } from "lucide-react";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   volume: number;
@@ -13,6 +14,7 @@ export function MusicVolumeControl({
   onToggleMute,
   className = "",
 }: Props) {
+  const { t } = useI18n();
   const muted = volume <= 0.001;
   const safeVolume = Math.min(1, Math.max(0, volume));
 
@@ -30,8 +32,8 @@ export function MusicVolumeControl({
         type="button"
         onClick={onToggleMute}
         className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-white/70 transition hover:bg-white/10 hover:text-white"
-        title="Mute / unmute"
-        aria-label="Mute or unmute"
+        title={t("dashboard.audio.playerControls.muteUnmute")}
+        aria-label={t("dashboard.audio.playerControls.muteUnmute")}
       >
         {muted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
       </button>
@@ -45,7 +47,7 @@ export function MusicVolumeControl({
           onInput={(e) => emit(Number(e.currentTarget.value) / 100)}
           onChange={(e) => emit(Number(e.currentTarget.value) / 100)}
           className="biosy-music-volume-input"
-          aria-label="Volume"
+          aria-label={t("dashboard.audio.playerControls.volume")}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(safeVolume * 100)}

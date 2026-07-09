@@ -17,6 +17,7 @@ import type { Profile } from "@/lib/profile-storage";
 import { fetchProfileStatsBundle, type ProfileStatsBundle } from "@/lib/profile-stats";
 import { DashboardAccountLayout } from "./DashboardAccountLayout";
 import { formatViewCount } from "@/lib/format-view-count";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   profile: Profile;
@@ -30,6 +31,7 @@ const chartTooltipStyle = {
 };
 
 export function ContaEstatisticasPanel({ profile }: Props) {
+  const { t } = useI18n();
   const [stats, setStats] = useState<ProfileStatsBundle | null>(null);
   const [commentCount, setCommentCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -63,27 +65,32 @@ export function ContaEstatisticasPanel({ profile }: Props) {
   const insights = [
     {
       icon: TrendingUp,
-      label: "Week",
+      label: t("dashboard.estatisticas.insights.week"),
       value: loading ? "—" : formatViewCount(weekViews),
-      hint: stats?.peakDay7 ? `Peak ${stats.peakDay7.views} · ${stats.peakDay7.label}` : "No peak yet",
+      hint: stats?.peakDay7
+        ? t("dashboard.estatisticas.hints.peak", {
+            count: stats.peakDay7.views,
+            label: stats.peakDay7.label,
+          })
+        : t("dashboard.estatisticas.hints.noPeakYet"),
     },
     {
       icon: Calendar,
-      label: "Month",
+      label: t("dashboard.estatisticas.insights.month"),
       value: loading ? "—" : formatViewCount(monthViews),
-      hint: "Last 30 days",
+      hint: t("dashboard.estatisticas.hints.last30Days"),
     },
     {
       icon: MessageSquare,
-      label: "Comments",
+      label: t("dashboard.estatisticas.insights.comments"),
       value: loading ? "—" : String(commentCount),
-      hint: "On your public card",
+      hint: t("dashboard.estatisticas.hints.onPublicCard"),
     },
     {
       icon: Eye,
-      label: "Avg/day",
+      label: t("dashboard.estatisticas.insights.avgDay"),
       value: loading ? "—" : formatViewCount(stats?.avgPerDay7 ?? 0),
-      hint: "7-day basis",
+      hint: t("dashboard.estatisticas.hints.basis7Day"),
     },
   ];
 
@@ -97,12 +104,10 @@ export function ContaEstatisticasPanel({ profile }: Props) {
               className="mb-3 inline-flex items-center gap-1.5 dash-t-caption text-white/40 transition hover:text-white"
             >
               <ArrowLeft className="dash-icon-sm" />
-              Back to dashboard
+              {t("dashboard.estatisticas.backToDashboard")}
             </Link>
-            <h1 className="dash-t-heading font-bold text-white">Analytics</h1>
-            <p className="mt-1.5 dash-t-body text-white/45">
-              Visit and engagement numbers for your public profile.
-            </p>
+            <h1 className="dash-t-heading font-bold text-white">{t("dashboard.estatisticas.title")}</h1>
+            <p className="mt-1.5 dash-t-body text-white/45">{t("dashboard.estatisticas.subtitle")}</p>
           </div>
         </div>
 
@@ -110,13 +115,13 @@ export function ContaEstatisticasPanel({ profile }: Props) {
         <section className="biosy-dash-hero relative overflow-hidden rounded-3xl border border-white/[0.08] px-6 py-8 lg:px-10">
           <div className="pointer-events-none absolute -right-10 top-0 h-48 w-48 rounded-full bg-pink-500/10 blur-3xl" />
           <p className="dash-t-caption font-medium uppercase tracking-widest text-white/40">
-            Total visits
+            {t("dashboard.estatisticas.totalVisits")}
           </p>
           <p className="mt-2 text-5xl font-bold tracking-tight text-white lg:text-6xl">
             {loading ? "—" : formatViewCount(totalViews)}
           </p>
           <p className="mt-2 dash-t-body text-white/45">
-            @{profile.username} · since profile was created
+            {t("dashboard.estatisticas.sinceCreated", { username: profile.username })}
           </p>
         </section>
 
@@ -141,8 +146,12 @@ export function ContaEstatisticasPanel({ profile }: Props) {
 
         {/* Charts — stacked, different types */}
         <section className="biosy-dash-panel">
-          <h2 className="dash-t-title font-semibold text-white">Last 7 days</h2>
-          <p className="mt-1 dash-t-caption text-white/40">Daily visit curve</p>
+          <h2 className="dash-t-title font-semibold text-white">
+            {t("dashboard.estatisticas.charts.last7Days")}
+          </h2>
+          <p className="mt-1 dash-t-caption text-white/40">
+            {t("dashboard.estatisticas.charts.last7DaysDesc")}
+          </p>
           {loading ? (
             <ChartSkeleton />
           ) : (
@@ -164,7 +173,10 @@ export function ContaEstatisticasPanel({ profile }: Props) {
                   />
                   <Tooltip
                     contentStyle={chartTooltipStyle}
-                    formatter={(value) => [`${value} views`, "Day"]}
+                    formatter={(value) => [
+                      `${value} ${t("dashboard.estatisticas.charts.tooltipViews")}`,
+                      t("dashboard.estatisticas.charts.tooltipDay"),
+                    ]}
                   />
                   <Line
                     type="monotone"
@@ -181,8 +193,12 @@ export function ContaEstatisticasPanel({ profile }: Props) {
         </section>
 
         <section className="biosy-dash-panel">
-          <h2 className="dash-t-title font-semibold text-white">Last 30 days</h2>
-          <p className="mt-1 dash-t-caption text-white/40">Daily volume this month</p>
+          <h2 className="dash-t-title font-semibold text-white">
+            {t("dashboard.estatisticas.charts.last30Days")}
+          </h2>
+          <p className="mt-1 dash-t-caption text-white/40">
+            {t("dashboard.estatisticas.charts.last30DaysDesc")}
+          </p>
           {loading ? (
             <ChartSkeleton />
           ) : (
@@ -205,7 +221,10 @@ export function ContaEstatisticasPanel({ profile }: Props) {
                   />
                   <Tooltip
                     contentStyle={chartTooltipStyle}
-                    formatter={(value) => [`${value} views`, "Day"]}
+                    formatter={(value) => [
+                      `${value} ${t("dashboard.estatisticas.charts.tooltipViews")}`,
+                      t("dashboard.estatisticas.charts.tooltipDay"),
+                    ]}
                   />
                   <Bar dataKey="views" fill="oklch(0.55 0.22 350)" radius={[4, 4, 0, 0]} maxBarSize={12} />
                 </BarChart>

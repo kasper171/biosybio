@@ -12,6 +12,7 @@ import { profileHasFullAccess } from "@/lib/profile-roles";
 import { AvatarWithFrame } from "@/components/AvatarWithFrame";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   profile: Profile;
@@ -21,6 +22,7 @@ type Props = {
 const PAGE_SIZE = 48;
 
 export function MoldurasPanel({ profile, update }: Props) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const hasFullAccess = profileHasFullAccess(profile);
@@ -38,7 +40,7 @@ export function MoldurasPanel({ profile, update }: Props) {
 
   const selectFrame = (frameId: string | null) => {
     if (frameId && !canUseAvatarFrame(frameId, profile)) {
-      toast.error("Premium frame — upgrade to unlock.");
+      toast.error(t("dashboard.molduras.premiumLocked"));
       return;
     }
     update("avatar_frame_id", frameId);
@@ -47,7 +49,9 @@ export function MoldurasPanel({ profile, update }: Props) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">Preview</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+          {t("dashboard.molduras.preview")}
+        </p>
         <div className="mt-3 flex justify-center py-2">
           <AvatarWithFrame size={Math.min(avatarSize, 120)} frameId={profile.avatar_frame_id}>
             <Avatar
@@ -69,7 +73,9 @@ export function MoldurasPanel({ profile, update }: Props) {
           </AvatarWithFrame>
         </div>
         <p className="mt-2 text-center text-[11px] text-white/40">
-          {profile.avatar_frame_id ? profile.avatar_frame_id : "No frame selected"}
+          {profile.avatar_frame_id
+            ? profile.avatar_frame_id
+            : t("dashboard.molduras.noFrameSelected")}
         </p>
       </div>
 
@@ -82,21 +88,24 @@ export function MoldurasPanel({ profile, update }: Props) {
             setQuery(e.target.value);
             setPage(0);
           }}
-          placeholder="Search frames..."
+          placeholder={t("dashboard.molduras.searchPlaceholder")}
           className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] py-2.5 pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-pink-500/40"
         />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/45">
         <span>
-          {AVATAR_FRAMES.length} frames · {FREE_AVATAR_FRAME_COUNT} free
+          {t("dashboard.molduras.framesCount", {
+            total: AVATAR_FRAMES.length,
+            free: FREE_AVATAR_FRAME_COUNT,
+          })}
         </span>
         {hasFullAccess ? (
           <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-amber-200">
-            <Crown className="h-3 w-3" /> Premium
+            <Crown className="h-3 w-3" /> {t("dashboard.common.premium")}
           </span>
         ) : (
-          <span className="text-white/35">Premium unlocks the rest</span>
+          <span className="text-white/35">{t("dashboard.molduras.premiumUnlocksRest")}</span>
         )}
       </div>
 
@@ -112,7 +121,7 @@ export function MoldurasPanel({ profile, update }: Props) {
           )}
         >
           <X className="h-4 w-4 text-white/45" />
-          <span className="mt-1 text-[9px] text-white/45">None</span>
+          <span className="mt-1 text-[9px] text-white/45">{t("dashboard.molduras.none")}</span>
         </button>
 
         {pageItems.map((frame) => {
@@ -171,7 +180,7 @@ export function MoldurasPanel({ profile, update }: Props) {
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             className="rounded-lg border border-white/10 px-3 py-1.5 disabled:opacity-40"
           >
-            Previous
+            {t("dashboard.molduras.previous")}
           </button>
           <span>
             {safePage + 1} / {totalPages}
@@ -182,7 +191,7 @@ export function MoldurasPanel({ profile, update }: Props) {
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             className="rounded-lg border border-white/10 px-3 py-1.5 disabled:opacity-40"
           >
-            Next
+            {t("dashboard.molduras.next")}
           </button>
         </div>
       )}

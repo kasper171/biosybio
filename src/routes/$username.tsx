@@ -21,6 +21,31 @@ import { buildProfileShareMeta } from "@/lib/share-embed";
 import { resolvePageFaviconUrl } from "@/lib/page-meta";
 import type { ProfileShareEmbedRow } from "@/lib/profile/profile-embed.server";
 import { SITE_TITLE } from "@/lib/site";
+import { useI18n } from "@/i18n/LocaleProvider";
+
+function ProfileNotFound() {
+  const { t } = useI18n();
+  return (
+    <SiteStatusPage
+      title={t("profile.notFoundTitle")}
+      description={t("profile.notFoundDesc")}
+      actions={
+        <>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))",
+            }}
+          >
+            {t("common.goHome")}
+          </Link>
+          <SiteStatusOutlineLink href="/auth">{t("profile.createProfile")}</SiteStatusOutlineLink>
+        </>
+      }
+    />
+  );
+}
 
 export const Route = createFileRoute("/$username")({
   loader: async ({ params }) => {
@@ -43,26 +68,7 @@ export const Route = createFileRoute("/$username")({
     };
   },
   component: PublicProfile,
-  notFoundComponent: () => (
-    <SiteStatusPage
-      title="Profile not found"
-      description="This user doesn't exist yet."
-      actions={
-        <>
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            style={{
-              background: "linear-gradient(135deg, oklch(0.65 0.28 0), oklch(0.55 0.27 10))",
-            }}
-          >
-            Go home
-          </Link>
-          <SiteStatusOutlineLink href="/auth">Create your profile</SiteStatusOutlineLink>
-        </>
-      }
-    />
-  ),
+  notFoundComponent: ProfileNotFound,
 });
 
 function scheduleProfileViewIncrement(

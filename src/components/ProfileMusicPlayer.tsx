@@ -4,12 +4,14 @@ import { useProfileMusic } from "@/contexts/ProfileMusicContext";
 import { MusicVolumeControl } from "@/components/MusicVolumeControl";
 import { isCardGlassEnabled, cardGlassChipStyle } from "@/lib/card-glass";
 import type { Profile } from "@/lib/profile-storage";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   profile?: Pick<Profile, "card_glass_enabled">;
 };
 
 export function ProfileMusicPlayerFloating({ profile }: Props) {
+  const { t } = useI18n();
   const glassEnabled = isCardGlassEnabled(profile);
   const {
     trackTitle,
@@ -42,7 +44,7 @@ export function ProfileMusicPlayerFloating({ profile }: Props) {
                 type="button"
                 onClick={togglePlay}
                 className="grid h-7 w-7 shrink-0 place-items-center rounded-sm text-white/90 transition hover:bg-white/10"
-                title={isPlaying ? "Pause" : "Play"}
+                title={isPlaying ? t("dashboard.common.pause") : t("dashboard.common.play")}
               >
                 {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               </button>
@@ -63,7 +65,7 @@ export function ProfileMusicPlayerFloating({ profile }: Props) {
                 type="button"
                 onClick={() => setOpen(false)}
                 className="grid h-7 w-7 place-items-center rounded-sm text-white/80 transition hover:bg-white/10"
-                title="Close player"
+                title={t("dashboard.audio.playerControls.closePlayer")}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -80,7 +82,7 @@ export function ProfileMusicPlayerFloating({ profile }: Props) {
                   onInput={(e) => seek(Number(e.currentTarget.value))}
                   onChange={(e) => seek(Number(e.currentTarget.value))}
                   className="biosy-range-input w-full"
-                  aria-label="Track progress"
+                  aria-label={t("dashboard.audio.playerControls.trackProgress")}
                 />
               </div>
             </div>
@@ -93,7 +95,7 @@ export function ProfileMusicPlayerFloating({ profile }: Props) {
             glassEnabled ? "card-glass" : "bg-black/40 backdrop-blur-sm hover:bg-black/55"
           } ${isPlaying ? "animate-[biosy-music-pulse_1s_ease-in-out_infinite]" : ""}`}
           style={glassEnabled && profile ? cardGlassChipStyle(profile) : undefined}
-          title="Open music player"
+          title={t("dashboard.audio.playerControls.openPlayer")}
         >
           <Music2 className="h-5 w-5" />
         </button>

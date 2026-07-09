@@ -3,12 +3,10 @@ import { Loader2, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import type { Profile } from "@/lib/profile-storage";
 import { HotelProfileCard } from "@/components/HotelProfileCard";
-import { CONNECTION_ALREADY_LINKED_MESSAGE } from "@/lib/connection-verify";
 import { linkVerifiedConnectionFn, verifyHotelMottoFn } from "@/lib/connection/connection.functions";
 import {
   HOTEL_OTP_VALIDATE_WINDOW_MS,
   HOTEL_OTP_WAIT_MS,
-  HOTEL_VERIFY_MESSAGES,
   generateHotelOtp,
 } from "@/lib/hotel-verify";
 import {
@@ -16,11 +14,6 @@ import {
   clearHotelCache,
   fetchHotelProfile,
   HABBO_HOTELS,
-  HOTEL_CARD_PLACEMENT_LABELS,
-  HOTEL_CARD_ROW_LABELS,
-  HOTEL_CARD_SHAPE_LABELS,
-  HOTEL_CARD_SIZE_LABELS,
-  HOTEL_FETCH_MESSAGES,
   hotelDataToProfilePatch,
   isHabboConnected,
   isHabbletConnected,
@@ -29,7 +22,13 @@ import {
   type HotelCardLayoutConfig,
   type HotelPlatform,
   type HotelProfileData,
+  type HotelCardPlacement,
+  type HotelCardRow,
+  type HotelCardShape,
+  type HotelCardSize,
 } from "@/lib/hotel";
+import type { HotelFetchErrorCode } from "@/lib/hotel/types";
+import { useI18n } from "@/i18n/LocaleProvider";
 
 type Props = {
   profile: Profile;
@@ -42,10 +41,33 @@ const panelBtnActive = "border-pink-hot/50 bg-pink-hot/15 text-white";
 const panelBtnIdle =
   "border-white/10 bg-black/20 text-white/55 hover:border-white/20 hover:text-white";
 
-const PLATFORM_LABELS: Record<HotelPlatform, string> = {
-  habbo: "Habbo Hotel",
-  habblet: "Habblet",
+const PLATFORM_KEYS: Record<HotelPlatform, string> = {
+  habbo: "dashboard.conexoes.hotel.platforms.habbo",
+  habblet: "dashboard.conexoes.hotel.platforms.habblet",
 };
+
+function useHotelLayoutLabels() {
+  const { t } = useI18n();
+  return {
+    placement: {
+      inside: t("dashboard.conexoes.hotel.layout.inside"),
+      outside: t("dashboard.conexoes.hotel.layout.outside"),
+    } as Record<HotelCardPlacement, string>,
+    row: {
+      same_row: t("dashboard.conexoes.hotel.layout.sameRow"),
+      separate_row: t("dashboard.conexoes.hotel.layout.separateRow"),
+    } as Record<HotelCardRow, string>,
+    shape: {
+      rectangle: t("dashboard.conexoes.hotel.layout.rectangle"),
+      square: t("dashboard.conexoes.hotel.layout.square"),
+    } as Record<HotelCardShape, string>,
+    size: {
+      sm: t("dashboard.conexoes.hotel.layout.sm"),
+      md: t("dashboard.conexoes.hotel.layout.md"),
+      lg: t("dashboard.conexoes.hotel.layout.lg"),
+    } as Record<HotelCardSize, string>,
+  };
+}
 
 function applyPatch(
   update: Props["update"],
@@ -108,6 +130,10 @@ function PlatformConnectSection({
   update: Props["update"];
   onBatchUpdate?: Props["onBatchUpdate"];
 }) {
+  const { t } = useI18n();
+  const platformLabel = t(PLATFORM_KEYS[platform]);
+  const hotelFetchError = (code: HotelFetchErrorCode) =>
+    t(`dashboard.conexoes.hotel.fetchErrors.${code}`);
   const connected =
     platform === "habbo" ? isHabboConnected(profile) : isHabbletConnected(profile);
   const storedData =
@@ -154,13 +180,13 @@ function PlatformConnectSection({
         );
         if (!result.ok) {
           setPreview(null);
-          setError(HOTEL_FETCH_MESSAGES[result.error]);
+          setError(hotelFetchError(result.error));
           return;
         }
         setPreview(result.data);
       } catch {
         setPreview(null);
-        setError(HOTEL_FETCH_MESSAGES.service_unavailable);
+        setError(hotelFetchError("service_unavailable"));
       } finally {
         setLoading(false);
       }
@@ -211,7 +237,7 @@ function PlatformConnectSection({
         { bypassCache: true, fresh: true },
       );
       if (!result.ok) {
-        toast.error(HOTEL_FETCH_MESSAGES[result.error]);
+        toast.error(hotelFetchError(result.error));
         return;
       }
       setPreview(result.data);
@@ -225,7 +251,7 @@ function PlatformConnectSection({
     setValidateUnlockAt(now + HOTEL_OTP_WAIT_MS);
     setOtpExpiresAt(now + HOTEL_OTP_WAIT_MS + HOTEL_OTP_VALIDATE_WINDOW_MS);
     setTransferPending(false);
-    toast.success("Code generated — add it to your character's motto");
+    toast.success(t("dashboard.conexoes.hotel.codeGenerated"));
   };
 
   const fetchFreshMotto = async (lookupName: string, hotelDomainValue: string | null) => {
@@ -241,7 +267,7 @@ function PlatformConnectSection({
   const runHotelLink = async (forceTransfer: boolean) => {
     if (!preview || !otp || !validateUnlockAt || !otpExpiresAt) return;
     if (waitSecondsLeft > 0) {
-      toast.error(HOTEL_VERIFY_MESSAGES.waiting);
+      toast.error(t("lib.hotelWaiting"));
       return;
     }
 
@@ -256,7 +282,7 @@ function PlatformConnectSection({
 
       const freshProfile = await fetchFreshMotto(lookupName, hotelDomainValue);
       if (!freshProfile.ok) {
-        toast.error(HOTEL_FETCH_MESSAGES[freshProfile.error]);
+        toast.error(hotelFetchError(freshProfile.error));
         return;
       }
 
@@ -299,7 +325,7 @@ function PlatformConnectSection({
       }
 
       if (!mottoCheck.ok) {
-        toast.error(mottoCheck.error ?? HOTEL_VERIFY_MESSAGES.code_not_found);
+        toast.error(mottoCheck.error ?? t("lib.hotelCodeNotFound"));
         if (mottoCheck.code === "expired") {
           resetVerification();
         }
@@ -335,8 +361,8 @@ function PlatformConnectSection({
         resetVerification();
         toast.success(
           forceTransfer
-            ? `${PLATFORM_LABELS[platform]} transferred and connected!`
-            : `${PLATFORM_LABELS[platform]} verified and connected!`,
+            ? t("dashboard.conexoes.hotel.transferred", { platform: platformLabel })
+            : t("dashboard.conexoes.hotel.verified", { platform: platformLabel }),
         );
         return;
       }
@@ -346,7 +372,7 @@ function PlatformConnectSection({
         return;
       }
 
-      toast.error(result.error ?? "Validation failed.");
+      toast.error(result.error ?? t("dashboard.conexoes.hotel.validationFailed"));
       if (result.code === "expired") {
         resetVerification();
       }
@@ -359,9 +385,9 @@ function PlatformConnectSection({
     if (!otp) return;
     try {
       await navigator.clipboard.writeText(otp);
-      toast.success("Code copied");
+      toast.success(t("dashboard.conexoes.hotel.codeCopied"));
     } catch {
-      toast.error("Could not copy code");
+      toast.error(t("dashboard.conexoes.hotel.codeCopyFailed"));
     }
   };
 
@@ -371,7 +397,7 @@ function PlatformConnectSection({
     setPreview(null);
     setConnecting(false);
     resetVerification();
-    toast.success(`${PLATFORM_LABELS[platform]} disconnected`);
+    toast.success(t("dashboard.conexoes.hotel.disconnected", { platform: platformLabel }));
   };
 
   const displayData = preview ?? storedData;
@@ -381,10 +407,10 @@ function PlatformConnectSection({
   return (
     <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-white/80">{PLATFORM_LABELS[platform]}</p>
+        <p className="text-xs font-semibold text-white/80">{platformLabel}</p>
         {connected && (
           <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-            Connected
+            {t("dashboard.conexoes.hotel.connected")}
           </span>
         )}
       </div>
@@ -406,7 +432,7 @@ function PlatformConnectSection({
           onClick={() => setConnecting(true)}
           className="w-full rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2.5 text-xs font-medium text-white/80 transition hover:bg-white/[0.1]"
         >
-          Connect {PLATFORM_LABELS[platform]}
+          {t("dashboard.conexoes.hotel.connect", { platform: platformLabel })}
         </button>
       )}
 
@@ -414,7 +440,7 @@ function PlatformConnectSection({
         <div className="space-y-3">
           {platform === "habbo" && (
             <label className="block">
-              <span className="mb-1 block text-xs text-white/50">Hotel</span>
+              <span className="mb-1 block text-xs text-white/50">{t("dashboard.conexoes.hotel.hotel")}</span>
               <select
                 value={hotelDomain}
                 onChange={(e) => {
@@ -435,7 +461,7 @@ function PlatformConnectSection({
 
           <label className="block">
             <span className="mb-1 flex items-center gap-2 text-xs text-white/50">
-              Player name
+              {t("dashboard.conexoes.hotel.playerName")}
               {loading && <Loader2 className="h-3 w-3 animate-spin" />}
             </span>
             <input
@@ -446,14 +472,15 @@ function PlatformConnectSection({
                 resetVerification();
               }}
               disabled={loading || verificationPending}
-              placeholder="e.g. Grabando"
+              placeholder={t("dashboard.conexoes.hotel.playerPlaceholder")}
               className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-white/30 disabled:opacity-60"
             />
           </label>
 
           <p className="text-[11px] leading-relaxed text-white/45">
-            Generate a code and add it to your character&apos;s <strong className="font-medium text-white/60">motto</strong> on
-            {PLATFORM_LABELS[platform]} to prove the account is yours.
+            {t("dashboard.conexoes.hotel.verifyIntroBefore")}{" "}
+            <strong className="font-medium text-white/60">{t("dashboard.conexoes.hotel.verifyIntroMotto")}</strong>{" "}
+            {t("dashboard.conexoes.hotel.verifyIntroAfter", { platform: platformLabel })}
           </p>
 
           {error && (
@@ -465,7 +492,7 @@ function PlatformConnectSection({
           {preview && (
             <div className="overflow-hidden rounded-xl border border-pink-500/20 bg-pink-500/5 p-2">
               <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-white/45">
-                Preview
+                {t("dashboard.conexoes.hotel.preview")}
               </p>
               <HotelProfileCard
                 data={preview}
@@ -483,18 +510,18 @@ function PlatformConnectSection({
               disabled={loading}
               className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Generate verification code
+              {t("dashboard.conexoes.hotel.generateCode")}
             </button>
           )}
 
           {verificationPending && (
             <div className="space-y-3 rounded-lg border border-pink-500/30 bg-pink-500/10 p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-white/70">Add this code to your character&apos;s motto:</p>
+                <p className="text-xs text-white/70">{t("dashboard.conexoes.hotel.addCodeToMotto")}</p>
                 {waitSecondsLeft > 0 ? (
                   <span className="text-xs font-semibold text-pink-200">{waitSecondsLeft}s</span>
                 ) : (
-                  <span className="text-xs font-semibold text-emerald-300">Ready</span>
+                  <span className="text-xs font-semibold text-emerald-300">{t("dashboard.conexoes.hotel.ready")}</span>
                 )}
               </div>
               <button
@@ -505,12 +532,11 @@ function PlatformConnectSection({
                 {otp}
               </button>
               <p className="text-[11px] leading-relaxed text-white/50">
-                In-game, open your character profile and edit the motto. Paste the code, save, and wait
-                65s. When you click Validate, we fetch the updated motto from the hotel API.
+                {t("dashboard.conexoes.hotel.mottoInstructions")}
               </p>
               {preview.motto ? (
                 <p className="rounded-md border border-white/10 bg-black/30 px-2.5 py-2 text-[11px] text-white/55">
-                  <span className="font-medium text-white/70">Current motto from API: </span>
+                  <span className="font-medium text-white/70">{t("dashboard.conexoes.hotel.currentMotto")} </span>
                   {preview.motto}
                 </p>
               ) : null}
@@ -521,15 +547,15 @@ function PlatformConnectSection({
                 className="w-full rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {verifying
-                  ? "Verifying motto..."
+                  ? t("dashboard.conexoes.hotel.validating")
                   : waitSecondsLeft > 0
-                    ? `Wait ${waitSecondsLeft}s`
-                    : "Validate"}
+                    ? t("dashboard.conexoes.hotel.waitSeconds", { seconds: waitSecondsLeft })
+                    : t("dashboard.conexoes.hotel.validate")}
               </button>
               {transferPending && (
                 <div className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
                   <p className="text-xs leading-relaxed text-amber-100/90">
-                    {CONNECTION_ALREADY_LINKED_MESSAGE}
+                    {t("dashboard.conexoes.alreadyLinked")}
                   </p>
                   <button
                     type="button"
@@ -537,7 +563,9 @@ function PlatformConnectSection({
                     disabled={verifying || !canValidate}
                     className="w-full rounded-lg border border-amber-400/40 bg-amber-500/20 px-3 py-2 text-xs font-semibold text-amber-50 transition hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {verifying ? "Transferring..." : "Continue and link here"}
+                    {verifying
+                      ? t("dashboard.conexoes.hotel.transferring")
+                      : t("dashboard.conexoes.hotel.continueLink")}
                   </button>
                 </div>
               )}
@@ -554,7 +582,7 @@ function PlatformConnectSection({
             }}
             className="w-full rounded-lg border border-white/10 px-3 py-2 text-xs text-white/60"
           >
-            Cancel
+            {t("dashboard.common.cancel")}
           </button>
         </div>
       )}
@@ -566,7 +594,7 @@ function PlatformConnectSection({
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-300 transition hover:bg-red-500/15"
         >
           <Unplug className="h-3.5 w-3.5" />
-          Disconnect {PLATFORM_LABELS[platform]}
+          {t("dashboard.conexoes.hotel.disconnect", { platform: platformLabel })}
         </button>
       )}
     </div>
@@ -574,6 +602,8 @@ function PlatformConnectSection({
 }
 
 export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) {
+  const { t } = useI18n();
+  const layoutLabels = useHotelLayoutLabels();
   const layout: HotelCardLayoutConfig = {
     placement: profile.hotel_card_placement === "outside" ? "outside" : "inside",
     row: profile.hotel_card_row === "same_row" ? "same_row" : "separate_row",
@@ -589,12 +619,9 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
   return (
     <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-3">
       <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
-        Habbo & Habblet
+        {t("dashboard.conexoes.hotel.section")}
       </p>
-      <p className="text-[11px] leading-relaxed text-white/40">
-        You can connect Habbo Hotel and Habblet at the same time — they are separate profiles. Verification
-        requires adding a code to your character&apos;s motto.
-      </p>
+      <p className="text-[11px] leading-relaxed text-white/40">{t("dashboard.conexoes.hotel.intro")}</p>
 
       <PlatformConnectSection
         platform="habbo"
@@ -615,13 +642,13 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
       {anyConnected && (
         <div className="space-y-3 border-t border-white/[0.06] pt-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
-            Card layout
+            {t("dashboard.conexoes.hotel.cardLayout")}
           </p>
           <OptionGrid
-            label="Position"
+            label={t("dashboard.conexoes.hotel.position")}
             value={layout.placement}
             options={["inside", "outside"]}
-            labels={HOTEL_CARD_PLACEMENT_LABELS}
+            labels={layoutLabels.placement}
             onChange={(placement) =>
               applyPatch(update, onBatchUpdate, {
                 hotel_card_placement: placement,
@@ -629,43 +656,43 @@ export function HotelConnectionPanel({ profile, update, onBatchUpdate }: Props) 
             }
           />
           <OptionGrid
-            label="Arrangement"
+            label={t("dashboard.conexoes.hotel.arrangement")}
             value={layout.row}
             options={["same_row", "separate_row"]}
-            labels={HOTEL_CARD_ROW_LABELS}
+            labels={layoutLabels.row}
             onChange={(row) =>
               applyPatch(update, onBatchUpdate, { hotel_card_row: row })
             }
           />
           {layout.placement === "outside" && (
             <p className="text-[10px] leading-relaxed text-white/35">
-              Beside: narrow vertical column, same height as the card — name on top, large avatar in the center, info below. Below: horizontal strip across the card width — one fills the row, two split it.
+              {t("dashboard.conexoes.hotel.hintOutsideRow")}
             </p>
           )}
           {layout.placement === "inside" && (
             <p className="text-[10px] leading-relaxed text-white/35">
-              Beside: Habbo and Habblet side by side in the card footer. Below: stacked vertically. With only one connected, it spans the full width.
+              {t("dashboard.conexoes.hotel.hintInsideRow")}
             </p>
           )}
           <OptionGrid
-            label="Shape"
+            label={t("dashboard.conexoes.hotel.shape")}
             value={layout.shape}
             options={["rectangle", "square"]}
-            labels={HOTEL_CARD_SHAPE_LABELS}
+            labels={layoutLabels.shape}
             onChange={(shape) =>
               applyPatch(update, onBatchUpdate, { hotel_card_shape: shape })
             }
           />
           {layout.placement === "outside" && layout.row === "same_row" && (
             <p className="text-[10px] leading-relaxed text-white/35">
-              Beside: height always matches the main card. Size only changes the width of the rectangle.
+              {t("dashboard.conexoes.hotel.hintOutsideSize")}
             </p>
           )}
           <OptionGrid
-            label="Size"
+            label={t("dashboard.conexoes.hotel.size")}
             value={layout.size}
             options={["sm", "md", "lg"]}
-            labels={HOTEL_CARD_SIZE_LABELS}
+            labels={layoutLabels.size}
             cols={3}
             onChange={(size) =>
               applyPatch(update, onBatchUpdate, { hotel_card_size: size })
