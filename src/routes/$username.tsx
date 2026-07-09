@@ -75,10 +75,7 @@ function scheduleProfileViewIncrement(
   profile: Profile,
   onViewCount: (count: number) => void,
 ): void {
-  if (profile.show_view_count === false) return;
   if (hasCountedProfileView(profile.id)) return;
-
-  markProfileViewCounted(profile.id);
 
   void incrementProfileViewFn({
     data: {
@@ -86,7 +83,9 @@ function scheduleProfileViewIncrement(
       visitorId: getOrCreateVisitorId(),
     },
   }).then((result) => {
-    if (result.ok && result.viewCount !== null) {
+    if (!result.ok) return;
+    markProfileViewCounted(profile.id);
+    if (result.viewCount !== null) {
       onViewCount(result.viewCount);
     }
   });

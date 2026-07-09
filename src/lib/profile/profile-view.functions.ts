@@ -32,6 +32,9 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
     if (ipAllowed.kind === "denied") {
       return { ok: false as const, viewCount: null, rateLimited: true as const };
     }
+    if (ipAllowed.kind === "unavailable") {
+      console.warn("[incrementProfileViewFn] IP rate limit unavailable:", ipAllowed.reason);
+    }
 
     const profileAllowed = await consumeRateLimit(
       supabaseAdmin,
@@ -41,6 +44,9 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
     );
     if (profileAllowed.kind === "denied") {
       return { ok: false as const, viewCount: null, rateLimited: true as const };
+    }
+    if (profileAllowed.kind === "unavailable") {
+      console.warn("[incrementProfileViewFn] profile rate limit unavailable:", profileAllowed.reason);
     }
 
     const { data: existingDedup } = await supabaseAdmin
