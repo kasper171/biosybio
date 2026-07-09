@@ -36,6 +36,11 @@ import {
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
+import { AlbumI18nProvider } from "@/features/album/i18n/album-messages";
+import { useAlbumStudioPanels, type AlbumStudioPanelKey } from "@/features/album/hooks/useAlbumStudioPanels";
+import { useAlbumStyle } from "@/features/album/hooks/useAlbumStyle";
+
+export type { AlbumStudioPanelKey };
 
 export type AccountSection =
   | "overview"
@@ -64,10 +69,10 @@ type NavLink = {
   id: string;
   label: string;
   icon: LucideIcon;
-  to: "/dashboard" | "/dashboard/estilo" | "/dashboard/album";
+  to: "/dashboard" | "/dashboard/estilo";
   search?: {
     view?: "personalizar";
-    panel?: PersonalizePanelKey;
+    panel?: PersonalizePanelKey | AlbumStudioPanelKey;
     section?: "estatisticas" | "privacidade" | "miscellaneous" | "templates";
   };
   active?: boolean;
@@ -107,6 +112,8 @@ type Props = {
   profile: Profile;
   activeSection?: AccountSection;
   activePanel?: PersonalizePanelKey;
+  studioMode?: "card" | "album";
+  activeAlbumPanel?: AlbumStudioPanelKey;
   headerSlot?: React.ReactNode;
   children?: React.ReactNode;
   /** Sidebar sobrepõe o preview em tela cheia (modo personalizar). */
@@ -117,6 +124,34 @@ export function DashboardAccountLayout({
   profile,
   activeSection = "overview",
   activePanel,
+  studioMode = "card",
+  activeAlbumPanel = "album-layout",
+  headerSlot,
+  children,
+  overlay = false,
+}: Props) {
+  return (
+    <AlbumI18nProvider>
+      <DashboardAccountLayoutInner
+        profile={profile}
+        activeSection={activeSection}
+        activePanel={activePanel}
+        studioMode={studioMode}
+        activeAlbumPanel={activeAlbumPanel}
+        headerSlot={headerSlot}
+        children={children}
+        overlay={overlay}
+      />
+    </AlbumI18nProvider>
+  );
+}
+
+function DashboardAccountLayoutInner({
+  profile,
+  activeSection = "overview",
+  activePanel,
+  studioMode = "card",
+  activeAlbumPanel = "album-layout",
   headerSlot,
   children,
   overlay = false,
@@ -124,7 +159,12 @@ export function DashboardAccountLayout({
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { t } = useI18n();
+  const { style: displayStyle } = useAlbumStyle();
   const personalizePanels = usePersonalizePanels();
+  const albumPanels = useAlbumStudioPanels();
+  const studioPanels = studioMode === "album" ? albumPanels : personalizePanels;
+  const defaultStudioPanel =
+    displayStyle === "album" ? ("album-layout" as AlbumStudioPanelKey) : ("perfil" as PersonalizePanelKey);
   const [textScale, setTextScale] = useState<DashboardTextScale>(DASHBOARD_TEXT_SCALE_DEFAULT);
 
   useEffect(() => {
@@ -167,13 +207,6 @@ export function DashboardAccountLayout({
         icon: LayoutGrid,
         to: "/dashboard/estilo",
         active: pathname === "/dashboard/estilo",
-      },
-      {
-        id: "album-studio",
-        label: "Studio Álbum",
-        icon: Layers,
-        to: "/dashboard/album",
-        active: pathname === "/dashboard/album",
       },
       {
         id: "privacidade",
@@ -287,7 +320,7 @@ export function DashboardAccountLayout({
           </p>
           <div className="mb-4 space-y-0.5">
             {isPersonalizar ? (
-              personalizePanels.map((panel) => (
+              studioPanels.map((panel) => (
                 <SidebarLink
                   key={panel.key}
                   compact={overlay}
@@ -297,7 +330,10 @@ export function DashboardAccountLayout({
                     icon: panel.icon,
                     to: "/dashboard",
                     search: { view: "personalizar", panel: panel.key },
-                    active: activePanel === panel.key,
+                    active:
+                      studioMode === "album"
+                        ? activeAlbumPanel === panel.key
+                        : activePanel === panel.key,
                   }}
                 />
               ))
@@ -309,7 +345,7 @@ export function DashboardAccountLayout({
                   label: t("dashboard.layout.nav.openEditor"),
                   icon: Palette,
                   to: "/dashboard",
-                  search: { view: "personalizar", panel: "perfil" },
+                  search: { view: "personalizar", panel: defaultStudioPanel },
                   active: false,
                 }}
               />

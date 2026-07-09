@@ -104,12 +104,19 @@ import {
   normalizeOverlayOpacity,
   normalizeOverlaySpacing,
 } from "@/lib/overlays/profile-overlays";
+import { AlbumPersonalizarShell } from "@/features/album/components/editor/AlbumPersonalizarShell";
+import { useAlbumStyle } from "@/features/album/hooks/useAlbumStyle";
+import {
+  isAlbumStudioPanelKey,
+  type AlbumStudioPanelKey,
+} from "@/features/album/hooks/useAlbumStudioPanels";
+import "@/features/album/styles/album.css";
 
 type PanelKey = PersonalizePanelKey;
 
 type DashboardSearch = {
   view?: "personalizar";
-  panel?: PanelKey;
+  panel?: PanelKey | AlbumStudioPanelKey;
   section?: "estatisticas" | "privacidade" | "miscellaneous" | "templates";
 };
 
@@ -117,7 +124,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: `Dashboard — ${SITE_NAME}` }] }),
   validateSearch: (search: Record<string, unknown>): DashboardSearch => ({
     view: search.view === "personalizar" ? "personalizar" : undefined,
-    panel: isPanelKey(search.panel) ? search.panel : undefined,
+    panel:
+      isPanelKey(search.panel) || isAlbumStudioPanelKey(search.panel)
+        ? (search.panel as PanelKey | AlbumStudioPanelKey)
+        : undefined,
     section:
       search.section === "estatisticas"
         ? "estatisticas"
@@ -134,10 +144,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function DashboardLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isAlbumSubRoute =
-    pathname === "/dashboard/album" || pathname === "/dashboard/estilo";
+  const isEstiloRoute = pathname === "/dashboard/estilo";
 
-  if (isAlbumSubRoute) {
+  if (isEstiloRoute) {
     return <Outlet />;
   }
 
@@ -167,6 +176,7 @@ const TOOLS_OPEN_STORAGE_KEY = "biosy-editor-tools-open";
 
 function DashboardIndex() {
   const { t } = useI18n();
+  const { style: displayStyle, loading: displayStyleLoading } = useAlbumStyle();
   const personalizePanels = usePersonalizePanels();
   const { view, panel: panelFromSearch, section } = Route.useSearch();
   const isPersonalizar = view === "personalizar";
@@ -175,7 +185,12 @@ function DashboardIndex() {
   const [saving, setSaving] = useState(false);
   const [textScale, setTextScale] = useState<DashboardTextScale>(DASHBOARD_TEXT_SCALE_DEFAULT);
   const [toolsOpen, setToolsOpen] = useState(true);
-  const [openPanel, setOpenPanel] = useState<PanelKey>(panelFromSearch ?? "perfil");
+  const [openPanel, setOpenPanel] = useState<PanelKey>(
+    isPanelKey(panelFromSearch) ? panelFromSearch : "perfil",
+  );
+  const [openAlbumPanel, setOpenAlbumPanel] = useState<AlbumStudioPanelKey>(
+    isAlbumStudioPanelKey(panelFromSearch) ? panelFromSearch : "album-layout",
+  );
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const avatarRef = useRef<HTMLInputElement>(null);
   const bannerRef = useRef<HTMLInputElement>(null);
@@ -285,7 +300,9 @@ function DashboardIndex() {
   }, []);
 
   useEffect(() => {
-    if (panelFromSearch) setOpenPanel(panelFromSearch);
+    if (!panelFromSearch) return;
+    if (isPanelKey(panelFromSearch)) setOpenPanel(panelFromSearch);
+    if (isAlbumStudioPanelKey(panelFromSearch)) setOpenAlbumPanel(panelFromSearch);
   }, [panelFromSearch]);
 
   const update = <K extends keyof Profile>(k: K, v: Profile[K]) =>
@@ -577,6 +594,27 @@ function DashboardIndex() {
       );
     }
     return <DashboardOverviewPage profile={profile} />;
+  }
+
+  if (displayStyleLoading) {
+    return (
+      <div className="grid min-h-screen place-items-center text-white/60">
+        {t("dashboard.common.loading")}
+      </div>
+    );
+  }
+
+  if (displayStyle === "album") {
+    return (
+      <AlbumPersonalizarShell
+        profile={profile}
+        textScale={textScale}
+        toolsOpen={toolsOpen}
+        setToolsPanelOpen={setToolsPanelOpen}
+        openPanel={openAlbumPanel}
+        onShareLink={() => void handleShareLink()}
+      />
+    );
   }
 
   return (

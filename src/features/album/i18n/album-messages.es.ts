@@ -18,6 +18,11 @@ export const albumMessagesEs = {
       tabTheme: "Apariencia",
       tabConnections: "Conexiones",
       preview: "Ver perfil",
+      panels: {
+        "album-layout": "Layout",
+        "album-theme": "Apariencia",
+        "album-connections": "Conexiones",
+      },
     },
     editor: {
       addBlock: "Añadir bloque",

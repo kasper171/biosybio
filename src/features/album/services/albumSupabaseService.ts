@@ -72,7 +72,10 @@ export async function fetchAlbumConnectionsClient(userId: string) {
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    console.warn("[album_connections]", error.message);
+    return null;
+  }
   return data;
 }
 

@@ -1,16 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AlbumStudio } from "@/features/album/components/editor/AlbumStudio";
-import { DashboardAlbumRouteLayout } from "@/features/album/components/DashboardAlbumRouteLayout";
-import "@/features/album/styles/album.css";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/dashboard/album")({
-  component: AlbumStudioPage,
+  beforeLoad: () => {
+    throw redirect({
+      to: "/dashboard",
+      search: { view: "personalizar", panel: "album-layout" },
+    });
+  },
 });
-
-function AlbumStudioPage() {
-  return (
-    <DashboardAlbumRouteLayout>
-      <AlbumStudio />
-    </DashboardAlbumRouteLayout>
-  );
-}

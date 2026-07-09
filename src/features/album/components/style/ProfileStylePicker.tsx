@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { LayoutGrid, LayoutTemplate } from "lucide-react";
+import { toast } from "sonner";
 import { useAlbumStyle } from "@/features/album/hooks/useAlbumStyle";
 import { AlbumI18nProvider, useAlbumI18n } from "@/features/album/i18n/album-messages";
 import type { ProfileDisplayStyle } from "@/features/album/types/album.types";
@@ -11,12 +12,18 @@ function ProfileStylePickerInner() {
 
   const select = async (next: ProfileDisplayStyle) => {
     const ok = await saveStyle(next);
-    if (!ok) return;
-    if (next === "album") {
-      navigate({ to: "/dashboard/album" });
-    } else {
-      navigate({ to: "/dashboard", search: { view: "personalizar" } });
+    if (!ok) {
+      toast.error("Não foi possível salvar o estilo. Tente novamente.");
+      return;
     }
+    toast.success(next === "album" ? "Estilo Álbum ativado" : "Estilo Card Normal ativado");
+    navigate({
+      to: "/dashboard",
+      search: {
+        view: "personalizar",
+        panel: next === "album" ? "album-layout" : "perfil",
+      },
+    });
   };
 
   return (
