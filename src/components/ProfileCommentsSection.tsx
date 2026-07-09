@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { MessageCircle, Send, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { CardGlassProfile } from "@/lib/card-glass";
+import { cardGlassChipStyle, isCardGlassEnabled } from "@/lib/card-glass";
 
 type CommentRow = {
   id: number;
@@ -16,10 +18,11 @@ type CommentRow = {
 type Props = {
   profileId: string;
   enabled: boolean;
-  cardGlassEnabled?: boolean;
+  cardGlassProfile?: CardGlassProfile;
 };
 
-export function ProfileCommentsSection({ profileId, enabled, cardGlassEnabled = false }: Props) {
+export function ProfileCommentsSection({ profileId, enabled, cardGlassProfile }: Props) {
+  const glassEnabled = isCardGlassEnabled(cardGlassProfile);
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [idx, setIdx] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -182,8 +185,9 @@ export function ProfileCommentsSection({ profileId, enabled, cardGlassEnabled = 
         {formOpen && (
           <div
             className={`mx-auto mt-2 max-w-md rounded-lg border border-white/15 p-2 text-left ${
-              cardGlassEnabled ? "card-glass" : "bg-black/50 backdrop-blur-sm"
+              glassEnabled ? "card-glass" : "bg-black/50 backdrop-blur-sm"
             }`}
+            style={glassEnabled && cardGlassProfile ? cardGlassChipStyle(cardGlassProfile) : undefined}
           >
             {!currentUserId && (
               <div className="flex items-center justify-between gap-2">

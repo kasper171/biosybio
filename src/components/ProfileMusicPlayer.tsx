@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Music2, Pause, Play, X } from "lucide-react";
 import { useProfileMusic } from "@/contexts/ProfileMusicContext";
 import { MusicVolumeControl } from "@/components/MusicVolumeControl";
-import { isCardGlassEnabled } from "@/lib/card-glass";
+import { isCardGlassEnabled, cardGlassChipStyle } from "@/lib/card-glass";
 import type { Profile } from "@/lib/profile-storage";
 
 type Props = {
@@ -35,6 +35,7 @@ export function ProfileMusicPlayerFloating({ profile }: Props) {
             className={`w-[min(320px,calc(100vw-1rem))] rounded-lg border border-white/20 px-2 py-1.5 text-white ${
               glassEnabled ? "card-glass" : "bg-black/55 backdrop-blur-md"
             }`}
+            style={glassEnabled && profile ? cardGlassChipStyle(profile) : undefined}
           >
             <div className="flex items-center gap-2">
               <button
@@ -91,6 +92,7 @@ export function ProfileMusicPlayerFloating({ profile }: Props) {
           className={`grid h-11 w-11 place-items-center rounded-full border border-white/20 text-white shadow-lg transition hover:scale-105 ${
             glassEnabled ? "card-glass" : "bg-black/40 backdrop-blur-sm hover:bg-black/55"
           } ${isPlaying ? "animate-[biosy-music-pulse_1s_ease-in-out_infinite]" : ""}`}
+          style={glassEnabled && profile ? cardGlassChipStyle(profile) : undefined}
           title="Open music player"
         >
           <Music2 className="h-5 w-5" />

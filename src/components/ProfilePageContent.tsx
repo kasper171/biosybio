@@ -471,7 +471,7 @@ export function ProfilePageContent({
           <ProfileCommentsSection
             profileId={profile.id}
             enabled={profile.comments_enabled !== false}
-            cardGlassEnabled={profile.card_glass_enabled === true}
+            cardGlassProfile={profile}
           />
         </div>
       </div>

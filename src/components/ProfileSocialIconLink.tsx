@@ -5,7 +5,7 @@ import {
   resolveSocialIconBloomColor,
 } from "@/lib/social-icons";
 import type { Profile } from "@/lib/profile-storage";
-import { isCardGlassEnabled } from "@/lib/card-glass";
+import { isCardGlassEnabled, cardGlassChipStyle } from "@/lib/card-glass";
 import type { ComponentType, MouseEvent, ReactNode, SVGProps } from "react";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
@@ -96,7 +96,7 @@ export function ProfileSocialIconLink({
                 ? "card-glass border-white/15"
                 : "border-white/10 bg-white/5 hover:bg-white/10",
             )}
-            style={{ width: boxPx, height: boxPx }}
+            style={{ width: boxPx, height: boxPx, ...(glassEnabled ? cardGlassChipStyle(profile) : {}) }}
           >
             <SocialIconWithGlow
               icon={Icon}

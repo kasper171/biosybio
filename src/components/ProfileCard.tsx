@@ -32,6 +32,7 @@ import { formatViewCount } from "@/lib/format-view-count";
 import { cn } from "@/lib/utils";
 import {
   cardGlassClass,
+  cardGlassChipStyle,
   cardGlassNeedsStableStacking,
   cardGlassSurfaceLayerStyle,
   cardSurfaceFillStyle,
@@ -408,7 +409,7 @@ function CardLayoutContent({
             glassEnabled ? "card-glass" : "backdrop-blur-sm",
           )}
           title="UID"
-          style={glassEnabled ? { color: badgeStyle.color } : badgeStyle}
+          style={glassEnabled ? { color: badgeStyle.color, ...cardGlassChipStyle(profile) } : badgeStyle}
         >
           <Hash className="h-3.5 w-3.5 shrink-0" aria-hidden style={iconStyle} />
           <span>{profile.public_uid.toLocaleString("en-US")}</span>
@@ -421,7 +422,7 @@ function CardLayoutContent({
             glassEnabled ? "card-glass" : "backdrop-blur-sm",
           )}
           title="Views"
-          style={glassEnabled ? { color: badgeStyle.color } : badgeStyle}
+          style={glassEnabled ? { color: badgeStyle.color, ...cardGlassChipStyle(profile) } : badgeStyle}
         >
           <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden style={iconStyle} />
           <span>{formatViewCount(profile.view_count ?? 0)}</span>

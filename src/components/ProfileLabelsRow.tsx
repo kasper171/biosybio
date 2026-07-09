@@ -5,7 +5,7 @@ import {
   normalizeProfileLabels,
 } from "@/lib/profile-labels";
 import { hexToRgba } from "@/lib/profile-colors";
-import { isCardGlassEnabled } from "@/lib/card-glass";
+import { isCardGlassEnabled, cardGlassChipStyle } from "@/lib/card-glass";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +46,7 @@ export function ProfileLabelsRow({ profile, className, align = "center" }: Props
                 ? {
                     borderColor: hexToRgba(color, 0.55),
                     color,
+                    ...cardGlassChipStyle(profile),
                   }
                 : {
                     borderColor: hexToRgba(color, 0.55),

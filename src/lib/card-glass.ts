@@ -7,6 +7,8 @@ export type CardGlassProfile = Pick<
   "card_glass_enabled" | "card_color" | "card_opacity" | "card_blur"
 >;
 
+export const CARD_GLASS_BG = "rgba(255, 255, 255, 0.06)";
+
 export function isCardGlassEnabled(
   profile: Pick<Profile, "card_glass_enabled"> | null | undefined,
 ): boolean {
@@ -20,13 +22,31 @@ export function cardGlassNeedsStableStacking(
   return isCardGlassEnabled(profile);
 }
 
+/** Borda + sombras do vidro (backdrop vai inline — mesmo método do card normal). */
 export function cardGlassClass(
   profile: Pick<Profile, "card_glass_enabled"> | null | undefined,
 ): string | undefined {
   return isCardGlassEnabled(profile) ? "card-glass" : undefined;
 }
 
-/** Layout da camada de superfície absoluta (sem background/blur — vêm da classe ou fill). */
+function cardBlurPx(profile: CardGlassProfile): number {
+  return Number(profile.card_blur ?? 0) || 0;
+}
+
+/** Mesmo pipeline do card normal: backdrop-filter inline via style (não só CSS). */
+function cardBackdropFilters(
+  blurPx: number,
+  glass: boolean,
+): Pick<CSSProperties, "backdropFilter" | "WebkitBackdropFilter"> {
+  if (blurPx <= 0) return {};
+  const filter = glass ? `blur(${blurPx}px) saturate(180%)` : `blur(${blurPx}px)`;
+  return {
+    backdropFilter: filter,
+    WebkitBackdropFilter: filter,
+  };
+}
+
+/** Layout da camada de superfície absoluta. */
 export function cardGlassSurfaceLayerStyle(borderRadius: number): CSSProperties {
   return {
     position: "absolute",
@@ -37,22 +57,32 @@ export function cardGlassSurfaceLayerStyle(borderRadius: number): CSSProperties 
   };
 }
 
-/** Preenchimento padrão quando glass está desligado. */
+/** Preenchimento da superfície — card normal ou glass (sempre com blur inline). */
 export function cardSurfaceFillStyle(
   profile: CardGlassProfile,
   glassEnabled = isCardGlassEnabled(profile),
 ): Pick<CSSProperties, "background" | "backdropFilter" | "WebkitBackdropFilter"> {
-  if (glassEnabled) return {};
+  const blur = cardBlurPx(profile);
 
-  const blur = Number(profile.card_blur ?? 0);
+  if (glassEnabled) {
+    return {
+      background: CARD_GLASS_BG,
+      ...cardBackdropFilters(blur, true),
+    };
+  }
+
   return {
     background: hexToRgba(profile.card_color, profile.card_opacity),
-    ...(blur > 0
-      ? {
-          backdropFilter: `blur(${blur}px)`,
-          WebkitBackdropFilter: `blur(${blur}px)`,
-        }
-      : {}),
+    ...cardBackdropFilters(blur, false),
+  };
+}
+
+/** Mini-cards (badges, ícones sociais, pills) — mesmo blur inline do slider. */
+export function cardGlassChipStyle(profile: CardGlassProfile): CSSProperties {
+  if (!isCardGlassEnabled(profile)) return {};
+  return {
+    background: CARD_GLASS_BG,
+    ...cardBackdropFilters(cardBlurPx(profile), true),
   };
 }
 

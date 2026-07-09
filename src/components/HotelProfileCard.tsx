@@ -5,6 +5,7 @@ import {
   buildCardBorderChrome,
 } from "@/lib/card-border";
 import {
+  cardGlassChipStyle,
   cardGlassClass,
   cardGlassIsolationClass,
   cardGlassNeedsStableStacking,
@@ -92,7 +93,7 @@ function HotelBorderLabel({
         align === "center" ? "left-1/2 -translate-x-1/2 -translate-y-1/2" : "left-2 -translate-y-1/2"
       }`}
       style={{
-        ...(glassEnabled ? {} : { background: bg }),
+        ...(glassEnabled ? cardGlassChipStyle(profile) : { background: bg }),
         fontSize: compact ? HOTEL_BORDER_LABEL_SIZE.compact : HOTEL_BORDER_LABEL_SIZE.default,
       }}
     >
