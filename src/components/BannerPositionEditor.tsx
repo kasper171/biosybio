@@ -3,6 +3,7 @@ import { Move } from "lucide-react";
 import { useViewportAspect } from "@/hooks/useViewportAspect";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { isVideoMediaUrl } from "@/lib/media-url";
+import { LoopVideo } from "@/components/LoopVideo";
 
 export type ImagePositionVariant = "banner" | "avatar" | "wallpaper";
 
@@ -82,12 +83,8 @@ export function BannerPositionEditor({ url, posX, posY, onChange, variant = "ban
         onPointerCancel={() => setDragging(false)}
       >
         {isVideo ? (
-          <video
+          <LoopVideo
             src={url}
-            autoPlay
-            loop
-            muted
-            playsInline
             draggable={false}
             className="pointer-events-none h-full w-full object-cover"
             style={mediaStyle}

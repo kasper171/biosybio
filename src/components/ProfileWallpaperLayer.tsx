@@ -1,5 +1,6 @@
 import { imageObjectPosition } from "@/lib/image-position";
 import { isVideoMediaUrl } from "@/lib/media-url";
+import { LoopVideo } from "@/components/LoopVideo";
 
 type Props = {
   url: string | null | undefined;
@@ -40,13 +41,8 @@ export function ProfileWallpaperLayer({
     >
       {url ? (
         isVideo ? (
-          <video
+          <LoopVideo
             src={url}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
             className="h-full w-full object-cover"
             style={{ objectPosition }}
           />

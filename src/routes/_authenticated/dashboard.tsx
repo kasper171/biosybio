@@ -18,6 +18,7 @@ import {
 import { profileHasFullAccess } from "@/lib/profile-roles";
 import { isProfileVideoFile } from "@/lib/profile-upload-validation";
 import { isVideoMediaUrl } from "@/lib/media-url";
+import { LoopVideo } from "@/components/LoopVideo";
 import { PublicProfileView } from "@/components/PublicProfileView";
 import { DashboardOverviewPage } from "@/components/dashboard/DashboardOverviewPage";
 import { DashboardEstatisticasPage } from "@/components/dashboard/DashboardEstatisticasPage";
@@ -2395,14 +2396,7 @@ function MediaUpload({ label, url, onPick, onRemove, shape, isMedia }: {
                 </div>
               </div>
             ) : isVideo ? (
-              <video
-                src={url}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="h-full w-full object-cover"
-              />
+              <LoopVideo src={url} className="h-full w-full object-cover" />
             ) : (
               <img src={url} alt={label} className="h-full w-full object-cover" />
             )
