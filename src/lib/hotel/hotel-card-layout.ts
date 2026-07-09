@@ -87,6 +87,26 @@ export function getHotelCardLayoutFromProfile(profile: Profile): HotelCardLayout
   };
 }
 
+/** No celular/tablet: hotel fora do card sempre abaixo, em retângulo horizontal. */
+export function resolveHotelLayoutForViewport(
+  layout: HotelCardLayoutConfig,
+  compact: boolean,
+): HotelCardLayoutConfig {
+  if (!compact) return layout;
+
+  const rectangle: HotelCardShape = "rectangle";
+
+  if (layout.placement === "outside" && layout.row === "same_row") {
+    return { ...layout, row: "separate_row", shape: rectangle };
+  }
+
+  if (layout.shape === "square") {
+    return { ...layout, shape: rectangle };
+  }
+
+  return layout;
+}
+
 export function getHotelCardFrameStyle(
   size: HotelCardSize,
   shape: HotelCardShape,

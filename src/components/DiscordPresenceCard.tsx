@@ -108,11 +108,14 @@ export function DiscordPresenceCard({
   profileTheme,
   showBadges = true,
   scale = 100,
+  stackActivity = false,
 }: {
   userId: string;
   variant?: "inside" | "outside";
   profileTheme?: Profile;
   showBadges?: boolean;
+  /** Empilha atividade abaixo do perfil (layout mobile). */
+  stackActivity?: boolean;
   /** Escala visual do bloco (80–140). */
   scale?: number;
 }) {
@@ -212,7 +215,8 @@ export function DiscordPresenceCard({
     return () => ro.disconnect();
   }, [hasActivity, variant]);
 
-  const isCompactActivity = hasActivity && containerWidth < ACTIVITY_COMPACT_WIDTH_PX;
+  const isCompactActivity =
+    !stackActivity && hasActivity && containerWidth < ACTIVITY_COMPACT_WIDTH_PX;
   const activityCompactRatio = isCompactActivity
     ? Math.max(0.45, containerWidth / ACTIVITY_COMPACT_WIDTH_PX)
     : 1;
@@ -315,14 +319,23 @@ export function DiscordPresenceCard({
       <div
         ref={layoutRef}
         className={cn(
-          "relative z-[1] flex min-w-0 items-center",
-          hasActivity ? (isCompactActivity ? "gap-1.5" : "justify-between gap-3") : "justify-between gap-3",
+          "relative z-[1] flex min-w-0",
+          stackActivity && hasActivity
+            ? "flex-col items-stretch gap-3"
+            : cn(
+                "items-center",
+                hasActivity
+                  ? isCompactActivity
+                    ? "gap-1.5"
+                    : "justify-between gap-3"
+                  : "justify-between gap-3",
+              ),
         )}
       >
         <div
           className={cn(
             "flex shrink-0 items-center",
-            isCompactActivity ? "gap-2" : "gap-3",
+            stackActivity ? "w-full gap-3" : isCompactActivity ? "gap-2" : "gap-3",
           )}
         >
           <img
@@ -391,12 +404,19 @@ export function DiscordPresenceCard({
             target="_blank"
             rel="noreferrer"
             className={cn(
-              "ml-auto flex min-w-0 shrink items-center transition opacity-95 hover:opacity-100",
-              isCompactActivity ? "max-w-[36%] gap-0.5" : "gap-3",
+              "flex min-w-0 shrink items-center transition opacity-95 hover:opacity-100",
+              stackActivity
+                ? "w-full gap-3"
+                : cn("ml-auto", isCompactActivity ? "max-w-[36%] gap-0.5" : "gap-3"),
             )}
             title="View profile on Discord"
           >
-            <div className="min-w-0 flex-1 overflow-hidden text-right">
+            <div
+              className={cn(
+                "min-w-0 flex-1 overflow-hidden",
+                stackActivity ? "text-left" : "text-right",
+              )}
+            >
               <p
                 className="truncate font-semibold leading-tight"
                 style={{ ...titleFallback, ...titleGlowFallback, fontSize: effActivityTitlePx }}

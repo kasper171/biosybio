@@ -21,7 +21,9 @@ import {
   HOTEL_BESIDE_GAP_PX,
   HOTEL_BELOW_GAP_PX,
   listHotelConnections,
+  resolveHotelLayoutForViewport,
 } from "@/lib/hotel";
+import { useProfileCompactLayout } from "@/hooks/use-profile-compact-layout";
 import { SOCIAL_MAP, resolveSocialUrl } from "@/lib/socials";
 import { ProfileSocialIconLink } from "@/components/ProfileSocialIconLink";
 import { FaGlobe } from "react-icons/fa";
@@ -97,8 +99,13 @@ export function ProfilePageContent({
 
   const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const { inside: insideBlocks, outside: outsideBlocks } = splitBlocksByPlacement(blocks);
+  const compactLayout = useProfileCompactLayout();
+  const useCompactHotelLayout = compactLayout && !isEditor;
 
-  const hotelLayout = getHotelCardLayoutFromProfile(profile);
+  const hotelLayout = resolveHotelLayoutForViewport(
+    getHotelCardLayoutFromProfile(profile),
+    useCompactHotelLayout,
+  );
   const hotelConnections = listHotelConnections(profile);
   const mainCardDims = getMainCardDimensions(profile);
   const hasHotel = hotelConnections.length > 0;
@@ -178,6 +185,7 @@ export function ProfilePageContent({
         profileTheme={profile}
         showBadges={profile.discord_show_badges !== false}
         scale={profile.discord_inside_scale ?? 100}
+        stackActivity={useCompactHotelLayout}
       />
     ) : null;
 
@@ -188,7 +196,7 @@ export function ProfilePageContent({
         {hotelCardsInside && (
           <div
             className={
-              hotelInsideBeside
+              hotelInsideBeside && !useCompactHotelLayout
                 ? "flex flex-col gap-3 sm:flex-row sm:items-stretch"
                 : "space-y-3"
             }
@@ -296,6 +304,7 @@ export function ProfilePageContent({
           variant="outside"
           profileTheme={profile}
           showBadges={profile.discord_show_badges !== false}
+          stackActivity={useCompactHotelLayout}
         />
       </div>
     ) : null;

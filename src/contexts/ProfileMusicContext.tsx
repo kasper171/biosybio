@@ -42,6 +42,15 @@ export function useProfileMusicOptional(): ProfileMusicState | null {
   return useContext(ProfileMusicContext);
 }
 
+function seekAudioTo(audio: HTMLAudioElement, timeSec: number): void {
+  const safe = Math.max(0, timeSec);
+  try {
+    audio.currentTime = safe;
+  } catch {
+    // iOS pode rejeitar seek antes dos metadados — retentamos em loadedmetadata.
+  }
+}
+
 export function ProfileMusicProvider({
   config,
   children,
@@ -57,6 +66,7 @@ export function ProfileMusicProvider({
   const [current, setCurrent] = useState(startSec);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(DEFAULT_MUSIC_VOLUME);
+  const [mediaReady, setMediaReady] = useState(false);
 
   const assignAudioRef = (el: HTMLAudioElement | null) => {
     audioRef.current = el;
@@ -73,6 +83,14 @@ export function ProfileMusicProvider({
   const seekMax = Math.max(loopEnd, loopStart + 0.1);
 
   useEffect(() => {
+    hasAutoPlayedRef.current = false;
+    setMediaReady(false);
+    setDuration(0);
+    setCurrent(loopStart);
+    setIsPlaying(false);
+  }, [musicUrl, loopStart, endSec]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.volume = volume;
@@ -82,41 +100,60 @@ export function ProfileMusicProvider({
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onLoaded = () => {
+    const applyLoopStart = () => {
       const d = Number.isFinite(audio.duration) ? audio.duration : 0;
       setDuration(d);
-      audio.currentTime = loopStart;
+      seekAudioTo(audio, loopStart);
       setCurrent(loopStart);
+      setMediaReady(true);
+    };
+
+    const onLoaded = () => {
+      applyLoopStart();
     };
     const onTime = () => {
       const now = audio.currentTime;
       const hardEnd = endSec == null ? (audio.duration || duration) : endSec;
       if (hardEnd > loopStart && now >= hardEnd) {
-        audio.currentTime = loopStart;
+        seekAudioTo(audio, loopStart);
         if (!audio.paused) void audio.play().catch(() => {});
       }
       setCurrent(audio.currentTime);
     };
     const onEnded = () => {
-      audio.currentTime = loopStart;
+      seekAudioTo(audio, loopStart);
       void audio.play().catch(() => {});
     };
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
 
     audio.addEventListener("loadedmetadata", onLoaded);
+    audio.addEventListener("durationchange", onLoaded);
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("ended", onEnded);
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
+
+    if (audio.readyState >= 1) {
+      applyLoopStart();
+    }
+
     return () => {
       audio.removeEventListener("loadedmetadata", onLoaded);
+      audio.removeEventListener("durationchange", onLoaded);
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
     };
-  }, [duration, endSec, loopStart]);
+  }, [duration, endSec, loopStart, musicUrl]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !mediaReady) return;
+    seekAudioTo(audio, loopStart);
+    setCurrent(loopStart);
+  }, [loopStart, mediaReady]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -127,20 +164,24 @@ export function ProfileMusicProvider({
       return;
     }
 
-    if (autoplay && !hasAutoPlayedRef.current) {
-      hasAutoPlayedRef.current = true;
-      audio.volume = volume;
-      audio.currentTime = loopStart;
-      void audio.play().catch(() => {});
-    }
-  }, [autoplay, enabled, loopStart, volume]);
+    if (!autoplay || hasAutoPlayedRef.current || !mediaReady) return;
+
+    hasAutoPlayedRef.current = true;
+    audio.volume = volume;
+    seekAudioTo(audio, loopStart);
+    setCurrent(loopStart);
+    void audio.play().catch(() => {
+      hasAutoPlayedRef.current = false;
+    });
+  }, [autoplay, enabled, loopStart, volume, mediaReady]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.paused) {
       if (audio.currentTime < loopStart || audio.currentTime > seekMax) {
-        audio.currentTime = loopStart;
+        seekAudioTo(audio, loopStart);
+        setCurrent(loopStart);
       }
       void audio.play().catch(() => {});
     } else {
@@ -151,7 +192,7 @@ export function ProfileMusicProvider({
   const seek = (t: number) => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.currentTime = t;
+    seekAudioTo(audio, t);
     setCurrent(t);
   };
 
@@ -186,7 +227,7 @@ export function ProfileMusicProvider({
 
   return (
     <ProfileMusicContext.Provider value={value}>
-      <audio ref={assignAudioRef} src={musicUrl} preload="auto" />
+      <audio ref={assignAudioRef} src={musicUrl} preload="auto" playsInline />
       {children}
     </ProfileMusicContext.Provider>
   );

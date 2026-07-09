@@ -4,6 +4,7 @@ export { HABBO_HOTELS, getHabboHotel, normalizeHabboHotelDomain, getHotelPlatfor
 export { buildHotelAvatarUrl, HOTEL_AVATAR_QUERY } from "@/lib/hotel/avatar";
 export {
   getHotelCardLayoutFromProfile,
+  resolveHotelLayoutForViewport,
   getHotelCardFrameStyle,
   getHotelCardBorderRadius,
   getHotelBesideFrameStyle,
