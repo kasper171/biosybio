@@ -107,11 +107,12 @@ export const ptCore: MessageTree = {
     usernamePlaceholder: "seunome",
   },
   home: {
-    heroLine1: "Seu mundo.",
-    heroLine2: "Seu perfil.",
-    heroLine3: "Do seu jeito.",
+    heroLine1: "Muito mais",
+    heroLine2: "que um link.",
     heroSubtitle:
-      "Links, música, álbuns, cards e redes — tudo sobre você em uma página incrível.",
+      "Crie uma página totalmente personalizada com Spotify, Discord, badges, redes sociais, temas, efeitos e tudo o que representa você.",
+    heroFeature1: "Personalização total",
+    heroFeature2: "Layouts únicos",
     claimCta: "Reservar",
     checking: "Verificando...",
     reservedForYou: "Reservado para você",

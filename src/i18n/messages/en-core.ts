@@ -112,11 +112,12 @@ export const enCore: MessageTree = {
   },
 
   home: {
-    heroLine1: "Your world.",
-    heroLine2: "Your profile.",
-    heroLine3: "Your way.",
+    heroLine1: "Much more",
+    heroLine2: "than a link.",
     heroSubtitle:
-      "Links, music, albums, cards, and socials — everything about you in one stunning page.",
+      "Create a fully customized page with Spotify, Discord, badges, socials, themes, effects, and everything that represents you.",
+    heroFeature1: "Full customization",
+    heroFeature2: "Unique layouts",
     claimCta: "Claim",
     checking: "Checking...",
     reservedForYou: "Reserved for you",

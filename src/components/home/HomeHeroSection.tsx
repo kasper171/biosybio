@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutGrid, Palette } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { MotionConfig } from "motion/react";
 import { toast } from "sonner";
@@ -103,10 +103,6 @@ export function HomeHeroSection() {
                 >
                   {t("home.heroLine2")}
                 </span>
-                <br />
-              </HomeHeroEntrance>
-              <HomeHeroEntrance as="span" delay={240} duration={1000} variant="left" className="block">
-                {t("home.heroLine3")}
               </HomeHeroEntrance>
             </h1>
 
@@ -114,6 +110,27 @@ export function HomeHeroSection() {
               <p className="mt-7 max-w-lg text-base text-white/60 sm:text-lg lg:mt-8">
                 {t("home.heroSubtitle")}
               </p>
+            </HomeHeroEntrance>
+
+            <HomeHeroEntrance delay={440} duration={900}>
+              <div className="mt-5 flex max-w-lg flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-white sm:text-base">
+                <span className="inline-flex items-center gap-2">
+                  <Palette
+                    className="h-4 w-4 shrink-0"
+                    style={{ color: "oklch(0.65 0.28 0)" }}
+                    aria-hidden
+                  />
+                  {t("home.heroFeature1")}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <LayoutGrid
+                    className="h-4 w-4 shrink-0"
+                    style={{ color: "oklch(0.65 0.28 0)" }}
+                    aria-hidden
+                  />
+                  {t("home.heroFeature2")}
+                </span>
+              </div>
             </HomeHeroEntrance>
 
             <HomeHeroEntrance delay={500} duration={1000} variant="scale">

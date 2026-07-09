@@ -107,11 +107,12 @@ export const esCore: MessageTree = {
     usernamePlaceholder: "tunombre",
   },
   home: {
-    heroLine1: "Tu mundo.",
-    heroLine2: "Tu perfil.",
-    heroLine3: "A tu manera.",
+    heroLine1: "Mucho más",
+    heroLine2: "que un enlace.",
     heroSubtitle:
-      "Enlaces, música, álbumes, tarjetas y redes — todo sobre ti en una página increíble.",
+      "Crea una página totalmente personalizada con Spotify, Discord, badges, redes sociales, temas, efectos y todo lo que te representa.",
+    heroFeature1: "Personalización total",
+    heroFeature2: "Diseños únicos",
     claimCta: "Reservar",
     checking: "Comprobando...",
     reservedForYou: "Reservado para ti",
