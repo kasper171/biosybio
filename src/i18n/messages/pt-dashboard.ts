@@ -158,6 +158,9 @@ export const ptDashboard: MessageTree = {
       section: "Wallpaper",
       blur: "Desfoque",
       brightness: "Brilho",
+      revealDelay: "Aparecer após revelar",
+      revealDelayImmediate: "Imediato",
+      revealDelaySeconds: "{{seconds}}s",
     },
     positionEditor: {
       dragHint: "Arraste a imagem",

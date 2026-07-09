@@ -22,6 +22,7 @@ export type Database = {
           background_url: string | null
           background_blur: number
           background_brightness: number
+          background_reveal_delay_sec: number
           banner_url: string | null
           bio: string
           card_blur: number
@@ -93,6 +94,7 @@ export type Database = {
           background_url?: string | null
           background_blur?: number
           background_brightness?: number
+          background_reveal_delay_sec?: number
           banner_url?: string | null
           bio?: string
           card_blur?: number
@@ -164,6 +166,7 @@ export type Database = {
           background_url?: string | null
           background_blur?: number
           background_brightness?: number
+          background_reveal_delay_sec?: number
           banner_url?: string | null
           bio?: string
           card_blur?: number

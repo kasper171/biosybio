@@ -38,6 +38,8 @@ type Props = {
   animKey?: number;
   /** Preview do dashboard — layout fiel à página pública em área reduzida */
   isEditor?: boolean;
+  /** Wallpaper visível (false = só cor de fundo até o delay pós-reveal) */
+  wallpaperVisible?: boolean;
 };
 
 export function ProfilePageContent({
@@ -46,6 +48,7 @@ export function ProfilePageContent({
   animate = true,
   animKey = 0,
   isEditor = false,
+  wallpaperVisible = true,
 }: Props) {
   const entries = Object.entries(profile.socials || {}).filter(([, v]) => v);
   const useBrand = profile.social_original_colors !== false;
@@ -404,15 +407,24 @@ export function ProfilePageContent({
   );
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-auto overflow-y-visible">
-      <ProfileWallpaperLayer
-        url={profile.background_url}
-        fallbackColor={profile.background_color}
-        posX={profile.background_pos_x ?? 50}
-        posY={profile.background_pos_y ?? 50}
-        blur={bgBlur}
-        brightness={bgBrightness}
-      />
+    <div
+      className="relative min-h-screen w-full overflow-x-auto overflow-y-visible"
+      style={{ backgroundColor: profile.background_color }}
+    >
+      <div
+        className="fixed inset-0 z-0 transition-opacity duration-700 ease-out"
+        style={{ opacity: wallpaperVisible ? 1 : 0 }}
+        aria-hidden={!wallpaperVisible}
+      >
+        <ProfileWallpaperLayer
+          url={profile.background_url}
+          fallbackColor={profile.background_color}
+          posX={profile.background_pos_x ?? 50}
+          posY={profile.background_pos_y ?? 50}
+          blur={bgBlur}
+          brightness={bgBrightness}
+        />
+      </div>
       <div className="relative z-10 flex min-h-screen w-full items-center justify-center bg-black/40 px-4 py-10">
         <div
           className={`w-full ${hotelOutsideBeside ? "max-w-[min(100%,920px)]" : ""}`}

@@ -18,6 +18,7 @@ import {
 import { profileHasFullAccess } from "@/lib/profile-roles";
 import { isProfileVideoFile } from "@/lib/profile-upload-validation";
 import { isVideoMediaUrl } from "@/lib/media-url";
+import { BACKGROUND_REVEAL_DELAY_MAX_SEC } from "@/lib/background-reveal-delay";
 import { LoopVideo } from "@/components/LoopVideo";
 import { PublicProfileView } from "@/components/PublicProfileView";
 import { DashboardOverviewPage } from "@/components/dashboard/DashboardOverviewPage";
@@ -426,6 +427,7 @@ function Dashboard() {
         background_color: profile.background_color,
         background_blur: profile.background_blur ?? 0,
         background_brightness: profile.background_brightness ?? 100,
+        background_reveal_delay_sec: profile.background_reveal_delay_sec ?? 0,
         card_color: profile.card_color,
         card_opacity: profile.card_opacity,
         card_blur: profile.card_blur,
@@ -1016,6 +1018,7 @@ function MidiaPanel({
   handleRemove: (k: "avatar" | "background" | "inner_banner") => void;
 }) {
   const { t } = useI18n();
+  const tapRevealFlow = Boolean(profile.music_url) || profile.tap_to_reveal_enabled === true;
   return (
     <div className="space-y-4">
       <MediaUpload
@@ -1106,6 +1109,23 @@ function MidiaPanel({
           onChange={(v) => update("background_brightness", v)}
           display={`${profile.background_brightness ?? 100}%`}
         />
+        {profile.background_url && tapRevealFlow && (
+          <SliderField
+            label={t("dashboard.midia.wallpaper.revealDelay")}
+            min={0}
+            max={BACKGROUND_REVEAL_DELAY_MAX_SEC}
+            step={0.5}
+            value={profile.background_reveal_delay_sec ?? 0}
+            onChange={(v) => update("background_reveal_delay_sec", v)}
+            display={
+              (profile.background_reveal_delay_sec ?? 0) <= 0
+                ? t("dashboard.midia.wallpaper.revealDelayImmediate")
+                : t("dashboard.midia.wallpaper.revealDelaySeconds", {
+                    seconds: profile.background_reveal_delay_sec ?? 0,
+                  })
+            }
+          />
+        )}
       </div>
       <MediaUpload
         label={t("dashboard.midia.innerBanner")}

@@ -159,6 +159,9 @@ export const enDashboard: MessageTree = {
       section: "Wallpaper",
       blur: "Blur",
       brightness: "Brightness",
+      revealDelay: "Show after reveal",
+      revealDelayImmediate: "Immediate",
+      revealDelaySeconds: "{{seconds}}s",
     },
     positionEditor: {
       dragHint: "Drag the image",

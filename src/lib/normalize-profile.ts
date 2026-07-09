@@ -17,6 +17,7 @@ import {
   normalizeOverlaySpacing,
   normalizeProfileOverlayType,
 } from "@/lib/overlays/profile-overlays";
+import { normalizeBackgroundRevealDelaySec } from "@/lib/background-reveal-delay";
 
 export function normalizeProfile(raw: Record<string, unknown>): Profile {
   const p = raw as Profile;
@@ -126,6 +127,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     tap_reveal_brightness: Number(p.tap_reveal_brightness ?? 55),
     tap_reveal_mode: (p.tap_reveal_mode as "avatar_text" | "text_only") === "text_only" ? "text_only" : "avatar_text",
     tap_reveal_text: (p.tap_reveal_text as string) ?? "Tap to reveal",
+    background_reveal_delay_sec: normalizeBackgroundRevealDelaySec(p.background_reveal_delay_sec),
     card_reveal_effect:
       (p.card_reveal_effect as "fade" | "slide_up" | "scale") === "slide_up"
         ? "slide_up"

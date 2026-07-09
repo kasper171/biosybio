@@ -158,6 +158,9 @@ export const esDashboard: MessageTree = {
       section: "Fondo",
       blur: "Desenfoque",
       brightness: "Brillo",
+      revealDelay: "Mostrar al revelar",
+      revealDelayImmediate: "Inmediato",
+      revealDelaySeconds: "{{seconds}}s",
     },
     positionEditor: {
       dragHint: "Arrastra la imagen",

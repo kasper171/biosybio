@@ -11,6 +11,7 @@ import { useProfilePageMeta } from "@/hooks/useProfilePageMeta";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 import { ProfileOverlayLayer } from "@/components/overlays/ProfileOverlayLayer";
 import { ProfileByosyBranding } from "@/components/ProfileByosyBranding";
+import { normalizeBackgroundRevealDelaySec } from "@/lib/background-reveal-delay";
 
 type Props = {
   profile: Profile;
@@ -28,8 +29,13 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
   const hasMusic = Boolean(liveProfile.music_url);
   const musicCardMode = hasMusic && liveProfile.music_card_enabled !== false;
   const tapEnabled = hasMusic || liveProfile.tap_to_reveal_enabled === true;
+  const wallpaperDelaySec = normalizeBackgroundRevealDelaySec(liveProfile.background_reveal_delay_sec);
   const [revealed, setRevealed] = useState(!tapEnabled);
+  const [wallpaperVisible, setWallpaperVisible] = useState(
+    isEditor || !tapEnabled || wallpaperDelaySec <= 0,
+  );
   const [animKey, setAnimKey] = useState(0);
+  const wallpaperTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     setLiveProfile(profile);
@@ -51,9 +57,12 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
 
   useEffect(() => {
     setRevealed(!tapEnabled);
+    setWallpaperVisible(isEditor || !tapEnabled || wallpaperDelaySec <= 0);
     setAnimKey((k) => k + 1);
   }, [
     tapEnabled,
+    isEditor,
+    wallpaperDelaySec,
     liveProfile.tap_reveal_blur,
     liveProfile.tap_reveal_brightness,
     liveProfile.tap_reveal_mode,
@@ -63,10 +72,46 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
     liveProfile.music_start_sec,
     liveProfile.music_end_sec,
     liveProfile.music_card_enabled,
+    liveProfile.background_reveal_delay_sec,
   ]);
 
   const showOverlay = tapEnabled && !revealed;
   const showContent = !showOverlay;
+
+  useEffect(() => {
+    if (wallpaperTimerRef.current != null) {
+      window.clearTimeout(wallpaperTimerRef.current);
+      wallpaperTimerRef.current = null;
+    }
+
+    if (isEditor || !tapEnabled) {
+      setWallpaperVisible(true);
+      return;
+    }
+
+    if (!showContent) {
+      setWallpaperVisible(wallpaperDelaySec <= 0);
+      return;
+    }
+
+    if (wallpaperDelaySec <= 0) {
+      setWallpaperVisible(true);
+      return;
+    }
+
+    setWallpaperVisible(false);
+    wallpaperTimerRef.current = window.setTimeout(() => {
+      setWallpaperVisible(true);
+      wallpaperTimerRef.current = null;
+    }, wallpaperDelaySec * 1000);
+
+    return () => {
+      if (wallpaperTimerRef.current != null) {
+        window.clearTimeout(wallpaperTimerRef.current);
+        wallpaperTimerRef.current = null;
+      }
+    };
+  }, [showContent, wallpaperDelaySec, tapEnabled, isEditor, animKey]);
 
   useProfilePageMeta(liveProfile, {
     enabled: showContent,
@@ -85,6 +130,7 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
       animate={!isEditor}
       animKey={animKey}
       isEditor={isEditor}
+      wallpaperVisible={wallpaperVisible}
     />
   ) : null;
 

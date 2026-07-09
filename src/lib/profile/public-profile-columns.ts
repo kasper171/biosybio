@@ -42,6 +42,7 @@ export const PUBLIC_PROFILE_SELECT = [
   "background_color",
   "background_blur",
   "background_brightness",
+  "background_reveal_delay_sec",
 
   // Card layout / styling
   "card_color",

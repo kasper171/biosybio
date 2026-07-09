@@ -51,6 +51,8 @@ export type Profile = {
   background_color: string;
   background_blur: number;
   background_brightness: number;
+  /** Segundos após revelar até o wallpaper aparecer (0 = imediato). */
+  background_reveal_delay_sec: number;
   card_color: string;
   card_opacity: number;
   card_blur: number;
