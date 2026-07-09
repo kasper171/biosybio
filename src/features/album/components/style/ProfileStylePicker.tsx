@@ -11,9 +11,9 @@ function ProfileStylePickerInner() {
   const { style, loading, saving, saveStyle } = useAlbumStyle();
 
   const select = async (next: ProfileDisplayStyle) => {
-    const ok = await saveStyle(next);
-    if (!ok) {
-      toast.error("Não foi possível salvar o estilo. Tente novamente.");
+    const result = await saveStyle(next);
+    if (!result.ok) {
+      toast.error(result.error ?? "Não foi possível salvar o estilo. Tente novamente.");
       return;
     }
     toast.success(next === "album" ? "Estilo Álbum ativado" : "Estilo Card Normal ativado");
@@ -22,6 +22,7 @@ function ProfileStylePickerInner() {
       search: {
         view: "personalizar",
         panel: next === "album" ? "album-layout" : "perfil",
+        displayStyle: next,
       },
     });
   };

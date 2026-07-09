@@ -117,6 +117,7 @@ type PanelKey = PersonalizePanelKey;
 type DashboardSearch = {
   view?: "personalizar";
   panel?: PanelKey | AlbumStudioPanelKey;
+  displayStyle?: "card" | "album";
   section?: "estatisticas" | "privacidade" | "miscellaneous" | "templates";
 };
 
@@ -127,6 +128,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     panel:
       isPanelKey(search.panel) || isAlbumStudioPanelKey(search.panel)
         ? (search.panel as PanelKey | AlbumStudioPanelKey)
+        : undefined,
+    displayStyle:
+      search.displayStyle === "album" || search.displayStyle === "card"
+        ? search.displayStyle
         : undefined,
     section:
       search.section === "estatisticas"
@@ -178,7 +183,8 @@ function DashboardIndex() {
   const { t } = useI18n();
   const { style: displayStyle, loading: displayStyleLoading } = useAlbumStyle();
   const personalizePanels = usePersonalizePanels();
-  const { view, panel: panelFromSearch, section } = Route.useSearch();
+  const { view, panel: panelFromSearch, displayStyle: displayStyleHint, section } = Route.useSearch();
+  const effectiveDisplayStyle = displayStyleHint ?? displayStyle;
   const isPersonalizar = view === "personalizar";
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -596,7 +602,7 @@ function DashboardIndex() {
     return <DashboardOverviewPage profile={profile} />;
   }
 
-  if (displayStyleLoading) {
+  if (displayStyleLoading && !displayStyleHint) {
     return (
       <div className="grid min-h-screen place-items-center text-white/60">
         {t("dashboard.common.loading")}
@@ -604,7 +610,7 @@ function DashboardIndex() {
     );
   }
 
-  if (displayStyle === "album") {
+  if (effectiveDisplayStyle === "album") {
     return (
       <AlbumPersonalizarShell
         profile={profile}

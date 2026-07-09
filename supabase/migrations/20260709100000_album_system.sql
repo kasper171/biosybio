@@ -37,6 +37,9 @@ CREATE POLICY "profile_display_styles_delete_owner"
   TO authenticated
   USING (auth.uid() = user_id);
 
+GRANT SELECT ON public.profile_display_styles TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profile_display_styles TO authenticated;
+
 -- ── Album layout + theme (jsonb) ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.album_layouts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -78,6 +81,9 @@ CREATE POLICY "album_layouts_delete_owner"
   FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
+
+GRANT SELECT ON public.album_layouts TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.album_layouts TO authenticated;
 
 -- ── Album connections (isolated from profiles discord/habbo columns) ─────────
 CREATE TABLE IF NOT EXISTS public.album_connections (
@@ -137,6 +143,9 @@ CREATE POLICY "album_connections_delete_owner"
   FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
+
+GRANT SELECT ON public.album_connections TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.album_connections TO authenticated;
 
 -- ── updated_at triggers ────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.album_touch_updated_at()

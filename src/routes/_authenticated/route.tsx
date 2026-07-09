@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingStartGate } from "@/components/onboarding/OnboardingStartGate";
+import { AlbumStyleProvider } from "@/features/album/hooks/AlbumStyleProvider";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -14,9 +15,9 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   return (
-    <>
+    <AlbumStyleProvider>
       <Outlet />
       <OnboardingStartGate />
-    </>
+    </AlbumStyleProvider>
   );
 }
