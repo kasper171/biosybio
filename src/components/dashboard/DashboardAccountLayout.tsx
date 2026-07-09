@@ -161,6 +161,20 @@ export function DashboardAccountLayout({
         active: activeSection === "templates",
       },
       {
+        id: "estilo",
+        label: "Estilo",
+        icon: LayoutGrid,
+        to: "/dashboard/estilo",
+        active: false,
+      },
+      {
+        id: "album-studio",
+        label: "Studio Álbum",
+        icon: Layers,
+        to: "/dashboard/album",
+        active: false,
+      },
+      {
         id: "privacidade",
         label: t("dashboard.layout.nav.account"),
         icon: Shield,

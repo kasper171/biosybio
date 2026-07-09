@@ -15,6 +15,8 @@ import { Route as UsernameRouteImport } from './routes/$username'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDashboardEstiloRouteImport } from './routes/_authenticated/dashboard.estilo'
+import { Route as AuthenticatedDashboardAlbumRouteImport } from './routes/_authenticated/dashboard.album'
 
 const PlanosRoute = PlanosRouteImport.update({
   id: '/planos',
@@ -45,20 +47,36 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDashboardEstiloRoute =
+  AuthenticatedDashboardEstiloRouteImport.update({
+    id: '/estilo',
+    path: '/estilo',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardAlbumRoute =
+  AuthenticatedDashboardAlbumRouteImport.update({
+    id: '/album',
+    path: '/album',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/planos': typeof PlanosRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/dashboard/album': typeof AuthenticatedDashboardAlbumRoute
+  '/dashboard/estilo': typeof AuthenticatedDashboardEstiloRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/planos': typeof PlanosRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/dashboard/album': typeof AuthenticatedDashboardAlbumRoute
+  '/dashboard/estilo': typeof AuthenticatedDashboardEstiloRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -67,13 +85,29 @@ export interface FileRoutesById {
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/planos': typeof PlanosRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/_authenticated/dashboard/album': typeof AuthenticatedDashboardAlbumRoute
+  '/_authenticated/dashboard/estilo': typeof AuthenticatedDashboardEstiloRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$username' | '/auth' | '/planos' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/$username'
+    | '/auth'
+    | '/planos'
+    | '/dashboard'
+    | '/dashboard/album'
+    | '/dashboard/estilo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$username' | '/auth' | '/planos' | '/dashboard'
+  to:
+    | '/'
+    | '/$username'
+    | '/auth'
+    | '/planos'
+    | '/dashboard'
+    | '/dashboard/album'
+    | '/dashboard/estilo'
   id:
     | '__root__'
     | '/'
@@ -82,6 +116,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/planos'
     | '/_authenticated/dashboard'
+    | '/_authenticated/dashboard/album'
+    | '/_authenticated/dashboard/estilo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -136,15 +172,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/estilo': {
+      id: '/_authenticated/dashboard/estilo'
+      path: '/estilo'
+      fullPath: '/dashboard/estilo'
+      preLoaderRoute: typeof AuthenticatedDashboardEstiloRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/album': {
+      id: '/_authenticated/dashboard/album'
+      path: '/album'
+      fullPath: '/dashboard/album'
+      preLoaderRoute: typeof AuthenticatedDashboardAlbumRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardAlbumRoute: typeof AuthenticatedDashboardAlbumRoute
+  AuthenticatedDashboardEstiloRoute: typeof AuthenticatedDashboardEstiloRoute
+}
+
+const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
+  {
+    AuthenticatedDashboardAlbumRoute: AuthenticatedDashboardAlbumRoute,
+    AuthenticatedDashboardEstiloRoute: AuthenticatedDashboardEstiloRoute,
+  }
+
+const AuthenticatedDashboardRouteWithChildren =
+  AuthenticatedDashboardRoute._addFileChildren(
+    AuthenticatedDashboardRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

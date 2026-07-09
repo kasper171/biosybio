@@ -16,6 +16,10 @@ import { attachProfileRoles } from "@/lib/profile-roles";
 import { ensureProfileFontsLoaded } from "@/lib/profile-fonts";
 import { incrementProfileViewFn } from "@/lib/profile/profile-view.functions";
 import { fetchPublicProfileByUsernameFn } from "@/lib/profile/profile-public.functions";
+import { fetchAlbumPublicByUsernameFn } from "@/features/album/services/album.functions";
+import { AlbumPublicView } from "@/features/album/components/public/AlbumPublicView";
+import type { AlbumPublicPayload } from "@/features/album/services/albumPublicService.server";
+import "@/features/album/styles/album.css";
 import { warmupProfileTapVisuals } from "@/lib/profile/profile-visual-preload";
 import { buildProfileShareMeta } from "@/lib/share-embed";
 import { resolvePageFaviconUrl } from "@/lib/page-meta";
@@ -103,6 +107,7 @@ function scheduleProfileViewIncrement(
 function PublicProfile() {
   const { username } = Route.useParams();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [albumPayload, setAlbumPayload] = useState<AlbumPublicPayload | null>(null);
   const [notfound, setNotfound] = useState(false);
   const [loading, setLoading] = useState(true);
   const viewTrackedRef = useRef(false);
@@ -111,6 +116,7 @@ function PublicProfile() {
     viewTrackedRef.current = false;
     setLoading(true);
     setProfile(null);
+    setAlbumPayload(null);
     setNotfound(false);
   }, [username]);
 
@@ -118,13 +124,32 @@ function PublicProfile() {
     let cancelled = false;
 
     (async () => {
-      const data = await fetchPublicProfileByUsernameFn({
-        data: { username },
-      });
+      const [data, album] = await Promise.all([
+        fetchPublicProfileByUsernameFn({ data: { username } }),
+        fetchAlbumPublicByUsernameFn({ data: { username } }),
+      ]);
       if (cancelled) return;
       if (!data) {
         setNotfound(true);
         setLoading(false);
+        return;
+      }
+
+      if (album) {
+        setAlbumPayload(album);
+        setLoading(false);
+        if (!viewTrackedRef.current) {
+          viewTrackedRef.current = true;
+          scheduleProfileViewIncrement(
+            { id: album.meta.userId, view_count: album.meta.viewCount } as Profile,
+            (viewCount) => {
+              if (cancelled) return;
+              setAlbumPayload((prev) =>
+                prev ? { ...prev, meta: { ...prev.meta, viewCount } } : prev,
+              );
+            },
+          );
+        }
         return;
       }
 
@@ -160,7 +185,15 @@ function PublicProfile() {
 
   if (notfound) throw notFound();
 
-  if (loading || !profile) {
+  if (loading) {
+    return <div className="grid min-h-screen place-items-center text-white/60">Loading...</div>;
+  }
+
+  if (albumPayload) {
+    return <AlbumPublicView payload={albumPayload} />;
+  }
+
+  if (!profile) {
     return <div className="grid min-h-screen place-items-center text-white/60">Loading...</div>;
   }
 
