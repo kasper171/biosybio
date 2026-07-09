@@ -20,7 +20,7 @@ function HotelGridBlock({ profile, platform }: { profile: Profile; platform: "ha
   const layout = getHotelCardLayoutFromProfile(profile);
 
   return (
-    <div className="flex h-full min-h-0 w-full items-stretch justify-center overflow-hidden p-1">
+    <div className="album-block-fill flex h-full min-h-0 w-full items-stretch justify-center overflow-hidden p-1">
       <HotelProfileCard
         data={data}
         profile={profile}

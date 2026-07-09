@@ -5,6 +5,7 @@ import { albumCreateBlockId } from "@/features/album/lib/album-grid-utils";
 import { parseSpotifyEmbedMeta } from "@/features/album/lib/spotify/album-spotify-embed";
 import { albumSpotifyBlockSize } from "@/features/album/lib/album-connection-block-sizes";
 import { albumSanitizePlainText } from "@/features/album/lib/security/album-sanitize";
+import { ALBUM_TEXT_ANIMATION_IDS, ALBUM_TEXT_ANIMATION_LABELS } from "@/features/album/lib/effects/album-text-animations";
 import { CARD_BORDER_STYLES } from "@/lib/card-border";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
 
@@ -53,7 +54,6 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
   const setSpotifyUrl = (raw: string) => {
     if (!selected || selected.type !== "spotify") return;
     const meta = parseSpotifyEmbedMeta(raw);
-    const size = meta ? albumSpotifyBlockSize(meta.compact) : null;
     onBlocksChange(
       updateBlock(blocks, selected.id, {
         data: {
@@ -61,7 +61,6 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
           embedUrl: meta?.embedUrl ?? raw,
           kind: meta?.kind,
         },
-        ...(size ? { w: size.w, h: size.h } : {}),
       }),
     );
   };
@@ -69,6 +68,60 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
   return (
     <div className="space-y-4">
       <AlbumBlockPalette onAdd={addBlock} />
+
+      {selected?.type === "text" ? (
+        <div className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+          <p className="text-xs font-semibold text-white/70">Texto</p>
+          <textarea
+            value={selected.data.content}
+            onChange={(e) =>
+              onBlocksChange(
+                updateBlock(blocks, selected.id, {
+                  data: { ...selected.data, content: albumSanitizePlainText(e.target.value) },
+                }),
+              )
+            }
+            placeholder="Escreva seu texto..."
+            className="min-h-[88px] w-full resize-y rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none"
+            maxLength={8000}
+          />
+          <select
+            value={selected.data.textAnimation ?? "none"}
+            onChange={(e) =>
+              onBlocksChange(
+                updateBlock(blocks, selected.id, {
+                  data: { ...selected.data, textAnimation: e.target.value },
+                }),
+              )
+            }
+            className="album-input text-xs"
+          >
+            {ALBUM_TEXT_ANIMATION_IDS.map((id) => (
+              <option key={id} value={id}>
+                {ALBUM_TEXT_ANIMATION_LABELS[id]}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selected.data.align ?? "left"}
+            onChange={(e) =>
+              onBlocksChange(
+                updateBlock(blocks, selected.id, {
+                  data: {
+                    ...selected.data,
+                    align: e.target.value as "left" | "center" | "right",
+                  },
+                }),
+              )
+            }
+            className="album-input text-xs"
+          >
+            <option value="left">Alinhado à esquerda</option>
+            <option value="center">Centralizado</option>
+            <option value="right">Alinhado à direita</option>
+          </select>
+        </div>
+      ) : null}
 
       {selected?.type === "spotify" ? (
         <div className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
@@ -98,6 +151,20 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
             <p className="text-[0.65rem] text-white/40">
               Tipo: {selected.data.kind === "track" || selected.data.kind === "episode" ? "Música compacta" : "Playlist / álbum"}
             </p>
+          ) : null}
+          {selected.data.embedUrl && parseSpotifyEmbedMeta(selected.data.embedUrl) ? (
+            <button
+              type="button"
+              className="album-btn w-full text-xs"
+              onClick={() => {
+                const meta = parseSpotifyEmbedMeta(selected.data.embedUrl);
+                if (!meta) return;
+                const size = albumSpotifyBlockSize(meta.compact);
+                onBlocksChange(updateBlock(blocks, selected.id, { w: size.w, h: size.h }));
+              }}
+            >
+              Aplicar tamanho sugerido
+            </button>
           ) : null}
         </div>
       ) : null}

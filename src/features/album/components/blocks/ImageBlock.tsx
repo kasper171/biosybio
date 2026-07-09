@@ -31,7 +31,8 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
 
   if (block.data.url) {
     return (
-      <AlbumMediaPositionLayer
+      <div className="album-block-fill">
+        <AlbumMediaPositionLayer
         url={block.data.url}
         kind="image"
         posX={block.data.posX ?? 50}
@@ -39,7 +40,8 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
         objectFit={block.data.objectFit ?? "cover"}
         editable
         onChange={(x, y) => onChange({ ...block.data, posX: x, posY: y })}
-      />
+        />
+      </div>
     );
   }
 
@@ -71,12 +73,14 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
 export function ImageBlockPublic({ block }: AlbumBlockPublicProps<"image">) {
   if (!block.data.url) return null;
   return (
-    <AlbumMediaPositionLayer
+    <div className="album-block-fill">
+      <AlbumMediaPositionLayer
       url={block.data.url}
       kind="image"
       posX={block.data.posX ?? 50}
       posY={block.data.posY ?? 50}
       objectFit={block.data.objectFit ?? "cover"}
-    />
+      />
+    </div>
   );
 }

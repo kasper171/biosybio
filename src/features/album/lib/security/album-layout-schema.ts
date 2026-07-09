@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { albumNormalizeTextAnimationId } from "@/features/album/lib/effects/album-text-animations";
 import { albumSanitizeHexColor, albumSanitizePlainText } from "@/features/album/lib/security/album-sanitize";
 import {
   albumNormalizeMediaUrl,
@@ -132,6 +133,7 @@ export function sanitizeAlbumLayoutPayload(payload: AlbumLayoutPayload): AlbumLa
         data: {
           ...d,
           content: albumSanitizePlainText(String(d.content ?? "")),
+          textAnimation: albumNormalizeTextAnimationId(d.textAnimation),
           color: d.color ? albumSanitizeHexColor(String(d.color)) ?? undefined : undefined,
         },
       };

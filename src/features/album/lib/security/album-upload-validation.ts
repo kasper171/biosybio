@@ -102,8 +102,29 @@ export function validateAlbumMediaUpload(
     return { ok: false, error: "Unsupported audio type." };
   }
 
-  const ext = EXT_BY_MIME[mime] ?? fileExtension(file.name);
+  const rawExt = EXT_BY_MIME[mime] ?? fileExtension(file.name);
+  const ext = rawExt === "jpeg" ? "jpg" : rawExt;
   if (!ext) return { ok: false, error: "Unsupported file type." };
 
-  return { ok: true, kind, ext, contentType: mime || "application/octet-stream" };
+  const contentType =
+    mime ||
+    (kind === "video"
+      ? ext === "webm"
+        ? "video/webm"
+        : ext === "mov"
+          ? "video/quicktime"
+          : "video/mp4"
+      : kind === "image"
+        ? ext === "png"
+          ? "image/png"
+          : ext === "webp"
+            ? "image/webp"
+            : ext === "gif"
+              ? "image/gif"
+              : "image/jpeg"
+        : kind === "audio"
+          ? "audio/mpeg"
+          : "application/octet-stream");
+
+  return { ok: true, kind, ext, contentType };
 }

@@ -110,7 +110,11 @@ export function AlbumBlockFrame({ block, profile, animate = true, children }: Pr
         />
       ) : null}
 
-      <div className="relative z-[1] h-full w-full min-h-0 overflow-hidden">{children}</div>
+      <div
+        className={`relative z-[1] h-full w-full min-h-0 ${block.type === "text" ? "overflow-visible" : "overflow-hidden"}`}
+      >
+        {children}
+      </div>
 
       {(borderWidth > 0 || chrome.glowEnabled) && (
         <div aria-hidden style={borderOverlayStyle} />

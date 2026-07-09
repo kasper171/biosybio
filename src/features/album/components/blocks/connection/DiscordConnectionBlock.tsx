@@ -31,7 +31,7 @@ export function DiscordConnectionBlockPublic({ block, connections, profile }: Pr
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col justify-center overflow-hidden px-2 py-2">
+    <div className="album-block-fill flex h-full min-h-0 w-full flex-col justify-center overflow-hidden px-2 py-2">
       <DiscordPresenceCard
         userId={userId}
         variant="inside"

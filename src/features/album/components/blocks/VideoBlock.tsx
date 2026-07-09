@@ -12,14 +12,16 @@ export function VideoBlockEditor({ block, onChange }: EditorProps) {
 
   if (block.data.url) {
     return (
-      <AlbumMediaPositionLayer
+      <div className="album-block-fill">
+        <AlbumMediaPositionLayer
         url={block.data.url}
         kind="video"
         posX={block.data.posX ?? 50}
         posY={block.data.posY ?? 50}
         editable
         onChange={(x, y) => onChange({ ...block.data, posX: x, posY: y })}
-      />
+        />
+      </div>
     );
   }
 
@@ -42,6 +44,7 @@ export function VideoBlockEditor({ block, onChange }: EditorProps) {
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (!f) return;
+          toast.loading("Enviando vídeo...", { id: "album-video-upload" });
           void uploadAlbumMediaFile(block.id, f, {
             previousPath: block.data.storagePath,
             previousBytes: block.data.bytes,
@@ -55,8 +58,9 @@ export function VideoBlockEditor({ block, onChange }: EditorProps) {
                 posX: block.data.posX ?? 50,
                 posY: block.data.posY ?? 50,
               });
+              toast.success("Vídeo enviado", { id: "album-video-upload" });
             } else {
-              toast.error(r.error);
+              toast.error(r.error, { id: "album-video-upload" });
             }
           });
         }}
@@ -70,7 +74,8 @@ export function VideoBlockPublic({ block }: AlbumBlockPublicProps<"video">) {
   const posX = block.data.posX ?? 50;
   const posY = block.data.posY ?? 50;
   return (
-    <video
+    <div className="album-block-fill">
+      <video
       src={block.data.url}
       poster={block.data.posterUrl}
       className="h-full w-full object-cover"
@@ -81,6 +86,7 @@ export function VideoBlockPublic({ block }: AlbumBlockPublicProps<"video">) {
       loop={block.data.loop}
       playsInline
       draggable={false}
-    />
+      />
+    </div>
   );
 }

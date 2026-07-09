@@ -301,7 +301,39 @@ const deleteMediaInput = z.object({
   bytes: z.number().int().positive(),
 });
 
+const registerMediaInput = z.object({
+  storagePath: z.string().min(3).max(512),
+  bytes: z.number().int().positive(),
+  previousPath: z.string().max(512).optional(),
+  previousBytes: z.number().int().nonnegative().optional(),
+});
+
 const ALBUM_BUCKET = "album-media";
+
+export const registerAlbumMediaUploadFn = createServerFn({ method: "POST" })
+  .inputValidator(registerMediaInput)
+  .handler(async ({ data }) => {
+    const userId = await requireAuthenticatedUserId();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    if (!albumStoragePathOwnedByUser(userId, data.storagePath)) {
+      return { ok: false as const, error: "Invalid storage path." };
+    }
+
+    if (data.previousPath && data.previousBytes && data.previousBytes > 0) {
+      if (albumStoragePathOwnedByUser(userId, data.previousPath)) {
+        await supabaseAdmin.storage.from(ALBUM_BUCKET).remove([data.previousPath]);
+        await albumReleaseStorageBytes(supabaseAdmin, userId, data.previousBytes);
+      }
+    }
+
+    const reserved = await albumReserveStorageBytes(supabaseAdmin, userId, data.bytes);
+    if (!reserved) {
+      return { ok: false as const, error: "Album storage quota exceeded." };
+    }
+
+    return { ok: true as const };
+  });
 
 export const uploadAlbumMediaFn = createServerFn({ method: "POST" })
   .inputValidator(uploadMediaInput)

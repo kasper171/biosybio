@@ -18,22 +18,7 @@ function SpotifyEmbed({ rawUrl, title, kind }: { rawUrl: string; title?: string;
 }
 
 export function SpotifyBlockEditor({ block }: AlbumBlockEditorProps<"spotify">) {
-  const meta = parseSpotifyEmbedMeta(block.data.embedUrl);
-
-  if (!meta) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center text-white/40">
-        <Music2 className="h-8 w-8" />
-        <span className="text-xs">Cole o link do Spotify no painel lateral</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-full min-h-[80px] w-full overflow-hidden">
-      <SpotifyEmbed rawUrl={block.data.embedUrl} title={block.data.title} kind={meta.kind} />
-    </div>
-  );
+  return <SpotifyBlockPublic block={block} userId="" />;
 }
 
 export function SpotifyBlockPublic({ block }: AlbumBlockPublicProps<"spotify">) {
@@ -48,7 +33,7 @@ export function SpotifyBlockPublic({ block }: AlbumBlockPublicProps<"spotify">) 
   }
 
   return (
-    <div className="h-full min-h-[80px] w-full overflow-hidden">
+    <div className="album-block-fill album-block-fill--embed">
       <SpotifyEmbed rawUrl={block.data.embedUrl} title={block.data.title} kind={meta.kind} />
     </div>
   );

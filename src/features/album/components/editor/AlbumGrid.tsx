@@ -20,7 +20,16 @@ import "react-resizable/css/styles.css";
 
 const ResponsiveGrid = WidthProvider(Responsive);
 
-const PREVIEW_IN_EDIT: AlbumBlockType[] = ["discord", "habbo", "habblet", "spotify"];
+const PREVIEW_IN_EDIT: AlbumBlockType[] = ["discord", "habbo", "habblet", "spotify", "text"];
+
+function shouldPreviewInEdit(block: AlbumBlock, isEdit: boolean): boolean {
+  if (!isEdit) return false;
+  if (PREVIEW_IN_EDIT.includes(block.type)) return true;
+  if (block.type === "image" || block.type === "video") {
+    return Boolean((block.data as { url?: string }).url);
+  }
+  return false;
+}
 
 type Props = {
   blocks: AlbumBlock[];
@@ -118,7 +127,7 @@ export function AlbumGrid({
           if (!def) return null;
 
           const isSelected = selectedId === block.id;
-          const usePreviewInEdit = isEdit && PREVIEW_IN_EDIT.includes(block.type);
+          const usePreviewInEdit = shouldPreviewInEdit(block, isEdit);
 
           const blockContent = (() => {
             if (mode === "public" || usePreviewInEdit) {
@@ -159,20 +168,19 @@ export function AlbumGrid({
           }
 
           return (
-            <div key={block.id}>
-              <AlbumBlockShell
-                selected={isSelected}
-                onSelect={() => onSelect?.(block.id)}
-                onRemove={() => {
-                  void releaseAlbumBlockMedia(block);
-                  onLayoutChange?.(blocks.filter((b) => b.id !== block.id));
-                  if (isSelected) onSelect?.(null);
-                }}
-                onApplyPreset={(key) => applyPreset(block.id, key)}
-              >
-                {framed}
-              </AlbumBlockShell>
-            </div>
+            <AlbumBlockShell
+              key={block.id}
+              selected={isSelected}
+              onSelect={() => onSelect?.(block.id)}
+              onRemove={() => {
+                void releaseAlbumBlockMedia(block);
+                onLayoutChange?.(blocks.filter((b) => b.id !== block.id));
+                if (isSelected) onSelect?.(null);
+              }}
+              onApplyPreset={(key) => applyPreset(block.id, key)}
+            >
+              {framed}
+            </AlbumBlockShell>
           );
         })}
       </ResponsiveGrid>
