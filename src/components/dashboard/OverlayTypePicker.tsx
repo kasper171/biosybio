@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const PREVIEW_SIZE = 72;
-const PREVIEW_INTERVAL_MS = 120;
+const PREVIEW_INTERVAL_MS = 50;
 
 type NoiseCyclers = {
   dense: DenseNoiseFrameCycler;
