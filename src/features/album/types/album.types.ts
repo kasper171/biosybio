@@ -1,5 +1,8 @@
 export type ProfileDisplayStyle = "card" | "album";
 
+import type { CardBorderStyle } from "@/lib/card-border";
+import type { CardRevealEffect } from "@/lib/card-reveal";
+
 export type AlbumBlockType =
   | "image"
   | "video"
@@ -22,6 +25,17 @@ export type AlbumGridItem = {
   static?: boolean;
 };
 
+export type AlbumBlockChrome = {
+  borderWidth?: number;
+  borderColor?: string;
+  borderStyle?: CardBorderStyle | "none";
+  borderRadius?: number;
+  glowEnabled?: boolean;
+  glowColor?: string;
+  glowSize?: number;
+  revealEffect?: CardRevealEffect | "none";
+};
+
 export type AlbumBlockBase = {
   id: string;
   type: AlbumBlockType;
@@ -29,6 +43,7 @@ export type AlbumBlockBase = {
   y: number;
   w: number;
   h: number;
+  chrome?: AlbumBlockChrome;
 };
 
 export type AlbumImageBlockData = {
@@ -52,6 +67,7 @@ export type AlbumVideoBlockData = {
 export type AlbumSpotifyBlockData = {
   embedUrl: string;
   title?: string;
+  kind?: "track" | "album" | "playlist" | "episode" | "show";
 };
 
 export type AlbumTextBlockData = {

@@ -1,6 +1,7 @@
 import type { Profile } from "@/lib/profile-storage";
 import type { AlbumTheme } from "@/features/album/types/album.types";
 import { ProfileRoleBadges } from "@/components/ProfileRoleBadges";
+import { AvatarWithFrame } from "@/components/AvatarWithFrame";
 import { normalizeRoleBadgesPlacement } from "@/lib/profile-roles";
 import { cn } from "@/lib/utils";
 
@@ -18,15 +19,26 @@ export function AlbumProfileSidebar({ profile, theme, className }: Props) {
   const badgePlacement = normalizeRoleBadgesPlacement(profile.role_badges_placement);
   const titleColor = theme.titleTextColor ?? "#fff";
   const mutedColor = theme.mutedTextColor ?? "rgba(255,255,255,0.45)";
+  const avatarSize = profile.avatar_size ?? 88;
 
   return (
     <aside className={cn("album-profile-sidebar", className)}>
       <div className="album-profile-sidebar__avatar-wrap">
-        {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt="" className="album-profile-sidebar__avatar" />
-        ) : (
-          <div className="album-profile-sidebar__avatar album-profile-sidebar__avatar--empty" />
-        )}
+        <AvatarWithFrame size={avatarSize} frameId={profile.avatar_frame_id}>
+          {profile.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt=""
+              className="album-profile-sidebar__avatar"
+              style={{ width: avatarSize, height: avatarSize }}
+            />
+          ) : (
+            <div
+              className="album-profile-sidebar__avatar album-profile-sidebar__avatar--empty"
+              style={{ width: avatarSize, height: avatarSize }}
+            />
+          )}
+        </AvatarWithFrame>
       </div>
 
       <div className="album-profile-sidebar__identity">

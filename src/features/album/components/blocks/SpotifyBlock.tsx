@@ -1,54 +1,44 @@
 import { Music2 } from "lucide-react";
 import type { AlbumBlockEditorProps, AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
-import { albumNormalizeSpotifyEmbedUrl } from "@/features/album/lib/security/album-url-validation";
-import { albumSanitizePlainText } from "@/features/album/lib/security/album-sanitize";
+import { ScaledEmbed } from "@/components/blocks/BlockFrame";
+import { parseSpotifyEmbedMeta } from "@/features/album/lib/spotify/album-spotify-embed";
 
-export function SpotifyBlockEditor({ block, onChange }: AlbumBlockEditorProps<"spotify">) {
-  const normalized = albumNormalizeSpotifyEmbedUrl(block.data.embedUrl);
+function SpotifyEmbed({ embedUrl, title, kind }: { embedUrl: string; title?: string; kind?: string }) {
+  const meta = parseSpotifyEmbedMeta(embedUrl);
+  const nativeHeight = meta?.compact ? 80 : 352;
+  const src = meta?.embedUrl ?? embedUrl;
 
   return (
-    <div className="flex h-full flex-col gap-2 p-3">
-      <input
-        value={block.data.embedUrl}
-        onChange={(e) => {
-          const embed = albumNormalizeSpotifyEmbedUrl(e.target.value);
-          onChange({
-            ...block.data,
-            embedUrl: embed ?? e.target.value,
-            title: block.data.title,
-          });
-        }}
-        placeholder="URL do Spotify (track, album, playlist...)"
-        className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"
-      />
-      <input
-        value={block.data.title ?? ""}
-        onChange={(e) =>
-          onChange({ ...block.data, title: albumSanitizePlainText(e.target.value, 120) })
-        }
-        placeholder="Título (opcional)"
-        className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white"
-      />
-      {normalized ? (
-        <iframe
-          src={normalized}
-          title={block.data.title ?? "Spotify"}
-          className="min-h-0 flex-1 rounded-xl border-0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-        />
-      ) : (
-        <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-white/10 text-xs text-white/40">
-          Cole um link do Spotify
-        </div>
-      )}
+    <ScaledEmbed
+      src={src}
+      title={title ?? (kind === "playlist" ? "Spotify Playlist" : "Spotify")}
+      nativeHeight={nativeHeight}
+    />
+  );
+}
+
+export function SpotifyBlockEditor({ block }: AlbumBlockEditorProps<"spotify">) {
+  const meta = parseSpotifyEmbedMeta(block.data.embedUrl);
+
+  if (!meta) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center text-white/40">
+        <Music2 className="h-8 w-8" />
+        <span className="text-xs">Cole o link do Spotify no painel lateral</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full w-full overflow-hidden">
+      <SpotifyEmbed embedUrl={block.data.embedUrl} title={block.data.title} kind={meta.kind} />
     </div>
   );
 }
 
 export function SpotifyBlockPublic({ block }: AlbumBlockPublicProps<"spotify">) {
-  const embed = albumNormalizeSpotifyEmbedUrl(block.data.embedUrl);
-  if (!embed) {
+  const meta = parseSpotifyEmbedMeta(block.data.embedUrl);
+  if (!meta) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 text-white/30">
         <Music2 className="h-7 w-7" />
@@ -56,13 +46,10 @@ export function SpotifyBlockPublic({ block }: AlbumBlockPublicProps<"spotify">) 
       </div>
     );
   }
+
   return (
-    <iframe
-      src={embed}
-      title={block.data.title ?? "Spotify"}
-      className="h-full w-full rounded-[inherit] border-0"
-      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-      loading="lazy"
-    />
+    <div className="h-full w-full overflow-hidden">
+      <SpotifyEmbed embedUrl={block.data.embedUrl} title={block.data.title} kind={meta.kind} />
+    </div>
   );
 }

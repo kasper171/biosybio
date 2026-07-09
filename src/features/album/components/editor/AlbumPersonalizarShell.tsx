@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronRight, Eye, PanelLeftClose, Save, Share2 } from "lucide-react";
@@ -16,11 +16,14 @@ import { AlbumLayoutToolsPanel } from "@/features/album/components/editor/AlbumL
 import { AlbumThemePanel } from "@/features/album/components/editor/AlbumThemePanel";
 import { AlbumConnectionsPanel } from "@/features/album/components/editor/AlbumConnectionsPanel";
 import { AlbumStudioLayout } from "@/features/album/components/public/AlbumProfileSidebar";
+import { AlbumPageExperience } from "@/features/album/components/public/AlbumPageExperience";
 import { AlbumI18nProvider, useAlbumI18n } from "@/features/album/i18n/album-messages";
 import { useAlbumLayout } from "@/features/album/hooks/useAlbumLayout";
 import { useAlbumStudioPanels } from "@/features/album/hooks/useAlbumStudioPanels";
 import { resolveAlbumConnections } from "@/features/album/lib/resolve-album-connections";
 import { albumPageStyle } from "@/features/album/lib/effects/album-profile-colors";
+import { MoldurasPanel } from "@/components/dashboard/MoldurasPanel";
+import { OverlaysPanel } from "@/components/dashboard/OverlaysPanel";
 
 const TOOLS_PANEL_WIDTH = 360;
 
@@ -31,6 +34,9 @@ type Props = {
   setToolsPanelOpen: (open: boolean) => void;
   openPanel: AlbumStudioPanelKey;
   onShareLink: () => void;
+  onProfileChange: (profile: Profile) => void;
+  onSaveProfile: () => Promise<void>;
+  renderProfilePanel?: (panel: AlbumStudioPanelKey) => ReactNode;
 };
 
 function AlbumPersonalizarShellInner({
@@ -40,6 +46,9 @@ function AlbumPersonalizarShellInner({
   setToolsPanelOpen,
   openPanel,
   onShareLink,
+  onProfileChange,
+  onSaveProfile,
+  renderProfilePanel,
 }: Props) {
   const { t: dashT } = useI18n();
   const { t: albumT } = useAlbumI18n();
@@ -47,18 +56,34 @@ function AlbumPersonalizarShellInner({
   const { layout, theme, setLayout, setTheme, saving, flushSave } = useAlbumLayout();
   const [profile, setProfile] = useState(profileProp);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [savingAll, setSavingAll] = useState(false);
+
+  useEffect(() => {
+    setProfile(profileProp);
+  }, [profileProp]);
 
   const connections = useMemo(() => resolveAlbumConnections(profile), [profile]);
 
-  const updateProfile = <K extends keyof Profile>(k: K, v: Profile[K]) =>
-    setProfile((p) => ({ ...p, [k]: v }));
+  const updateProfile = <K extends keyof Profile>(k: K, v: Profile[K]) => {
+    setProfile((p) => {
+      const next = { ...p, [k]: v };
+      onProfileChange(next);
+      return next;
+    });
+  };
 
   const panelLabel =
     albumPanels.find((p) => p.key === openPanel)?.label ?? albumT("album.studio.tabLayout");
 
   const handleSave = async () => {
-    await flushSave();
-    toast.success(albumT("album.studio.saved"));
+    setSavingAll(true);
+    try {
+      await flushSave();
+      await onSaveProfile();
+      toast.success(albumT("album.studio.saved"));
+    } finally {
+      setSavingAll(false);
+    }
   };
 
   const pageStyle = albumPageStyle(theme);
@@ -77,24 +102,33 @@ function AlbumPersonalizarShellInner({
             : "var(--dash-sidebar-w)",
         }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        style={pageStyle}
       >
-        <div className="album-public-view min-h-full">
-          <div className="album-public-view__inner px-4 py-8 lg:px-8">
-            <AlbumStudioLayout profile={profile} theme={theme}>
-              <AlbumGrid
-                blocks={layout}
-                theme={theme}
-                mode="edit"
-                userId={profile.id}
-                connections={connections}
-                selectedId={selectedBlockId}
-                onSelect={setSelectedBlockId}
-                onLayoutChange={setLayout}
-              />
-            </AlbumStudioLayout>
+        <AlbumPageExperience
+          profile={profile}
+          isEditor
+          onProfileChange={(next) => {
+            setProfile(next);
+            onProfileChange(next);
+          }}
+        >
+          <div className="album-public-view min-h-full" style={pageStyle}>
+            <div className="album-public-view__inner px-4 py-8 lg:px-8">
+              <AlbumStudioLayout profile={profile} theme={theme}>
+                <AlbumGrid
+                  blocks={layout}
+                  theme={theme}
+                  mode="edit"
+                  profile={profile}
+                  userId={profile.id}
+                  connections={connections}
+                  selectedId={selectedBlockId}
+                  onSelect={setSelectedBlockId}
+                  onLayoutChange={setLayout}
+                />
+              </AlbumStudioLayout>
+            </div>
           </div>
-        </div>
+        </AlbumPageExperience>
       </motion.div>
 
       <DashboardAccountLayout
@@ -149,9 +183,22 @@ function AlbumPersonalizarShellInner({
                 <AlbumConnectionsPanel
                   profile={profile}
                   update={updateProfile}
-                  onBatchUpdate={(patch) => setProfile((p) => ({ ...p, ...patch }))}
+                  onBatchUpdate={(patch) => {
+                    setProfile((p) => {
+                      const next = { ...p, ...patch };
+                      onProfileChange(next);
+                      return next;
+                    });
+                  }}
                 />
               ) : null}
+              {openPanel === "molduras" ? (
+                <MoldurasPanel profile={profile} update={updateProfile} />
+              ) : null}
+              {openPanel === "overlays" ? (
+                <OverlaysPanel profile={profile} update={updateProfile} />
+              ) : null}
+              {renderProfilePanel?.(openPanel)}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -204,11 +251,11 @@ function AlbumPersonalizarShellInner({
           <button
             type="button"
             onClick={() => void handleSave()}
-            disabled={saving}
+            disabled={saving || savingAll}
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.08] px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/[0.12] disabled:opacity-50"
           >
             <Save className="h-3.5 w-3.5" />
-            {saving ? albumT("album.studio.saving") : dashT("dashboard.editor.save")}
+            {saving || savingAll ? albumT("album.studio.saving") : dashT("dashboard.editor.save")}
           </button>
         </div>
       </motion.div>

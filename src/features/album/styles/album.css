@@ -542,6 +542,14 @@
   padding: 2rem 1rem 3rem;
 }
 
+.album-page-experience {
+  min-height: 100vh;
+}
+
+.album-block-frame {
+  box-sizing: border-box;
+}
+
 .album-public-view__inner {
   max-width: 80rem;
   margin: 0 auto;

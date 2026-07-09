@@ -612,14 +612,52 @@ function DashboardIndex() {
 
   if (effectiveDisplayStyle === "album") {
     return (
-      <AlbumPersonalizarShell
-        profile={profile}
-        textScale={textScale}
-        toolsOpen={toolsOpen}
-        setToolsPanelOpen={setToolsPanelOpen}
-        openPanel={openAlbumPanel}
-        onShareLink={() => void handleShareLink()}
-      />
+      <>
+        <AlbumPersonalizarShell
+          profile={profile}
+          textScale={textScale}
+          toolsOpen={toolsOpen}
+          setToolsPanelOpen={setToolsPanelOpen}
+          openPanel={openAlbumPanel}
+          onShareLink={() => void handleShareLink()}
+          onProfileChange={setProfile}
+          onSaveProfile={handleSave}
+          renderProfilePanel={(panel) => {
+            if (panel === "perfil") return <PerfilPanel profile={profile} update={update} />;
+            if (panel === "midia") {
+              return (
+                <MidiaPanel
+                  profile={profile}
+                  update={update}
+                  refs={{ avatarRef, bannerRef, bgRef, innerBannerRef }}
+                  handleUpload={handleUpload}
+                  handleRemove={handleRemoveMedia}
+                />
+              );
+            }
+            if (panel === "audio") {
+              return (
+                <AudioPanel
+                  profile={profile}
+                  update={update}
+                  musicRef={musicRef}
+                  musicArtRef={musicArtRef}
+                  handleUpload={handleUpload}
+                  handleRemove={handleRemoveMedia}
+                />
+              );
+            }
+            if (panel === "efeitos") return <EfeitosPanel profile={profile} update={update} />;
+            return null;
+          }}
+        />
+        <input ref={avatarRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("avatar", e.target.files?.[0])} />
+        <input ref={bannerRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("banner", e.target.files?.[0])} />
+        <input ref={bgRef} type="file" accept="image/*,video/mp4,.mp4" hidden onChange={(e) => handleUpload("background", e.target.files?.[0])} />
+        <input ref={innerBannerRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("inner_banner", e.target.files?.[0])} />
+        <input ref={musicRef} type="file" accept="audio/*,video/mp4" hidden onChange={(e) => handleUpload("music", e.target.files?.[0])} />
+        <input ref={musicArtRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("music_art", e.target.files?.[0])} />
+      </>
     );
   }
 

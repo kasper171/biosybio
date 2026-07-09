@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Responsive, WidthProvider, type Layout } from "react-grid-layout/legacy";
-import type { AlbumBlock, AlbumConnectionsRow, AlbumTheme } from "@/features/album/types/album.types";
+import type { Profile } from "@/lib/profile-storage";
+import type { AlbumBlock, AlbumBlockType, AlbumConnectionsRow, AlbumTheme } from "@/features/album/types/album.types";
 import { getAlbumBlockDef } from "@/features/album/registry/blockRegistry";
 import {
   ALBUM_BREAKPOINTS,
@@ -11,6 +12,7 @@ import {
   albumMergeLayoutIntoBlocks,
 } from "@/features/album/lib/album-grid-utils";
 import { AlbumBlockShell } from "@/features/album/components/editor/AlbumBlockShell";
+import { AlbumBlockFrame } from "@/features/album/components/blocks/AlbumBlockFrame";
 import { releaseAlbumBlockMedia } from "@/features/album/lib/album-block-media";
 import { useAlbumBlockResize } from "@/features/album/hooks/useAlbumBlockResize";
 import "react-grid-layout/css/styles.css";
@@ -18,10 +20,13 @@ import "react-resizable/css/styles.css";
 
 const ResponsiveGrid = WidthProvider(Responsive);
 
+const PREVIEW_IN_EDIT: AlbumBlockType[] = ["discord", "habbo", "habblet", "spotify"];
+
 type Props = {
   blocks: AlbumBlock[];
   theme: AlbumTheme;
   mode: "edit" | "public";
+  profile?: Profile | null;
   userId?: string;
   connections?: AlbumConnectionsRow | null;
   selectedId?: string | null;
@@ -29,10 +34,38 @@ type Props = {
   onLayoutChange?: (blocks: AlbumBlock[]) => void;
 };
 
+function renderPublicBlock(
+  block: AlbumBlock,
+  def: NonNullable<ReturnType<typeof getAlbumBlockDef>>,
+  opts: {
+    userId: string;
+    theme: AlbumTheme;
+    connections: AlbumConnectionsRow | null;
+    profile: Profile | null | undefined;
+  },
+) {
+  const Public = def.Public;
+  if (block.type === "text") {
+    return <Public block={block as never} userId={opts.userId} theme={opts.theme} />;
+  }
+  if (block.type === "discord" || block.type === "habbo" || block.type === "habblet") {
+    return (
+      <Public
+        block={block as never}
+        userId={opts.userId}
+        connections={opts.connections}
+        profile={opts.profile}
+      />
+    );
+  }
+  return <Public block={block as never} userId={opts.userId} />;
+}
+
 export function AlbumGrid({
   blocks,
   theme,
   mode,
+  profile,
   userId,
   connections = null,
   selectedId,
@@ -85,27 +118,46 @@ export function AlbumGrid({
           if (!def) return null;
 
           const isSelected = selectedId === block.id;
+          const usePreviewInEdit = isEdit && PREVIEW_IN_EDIT.includes(block.type);
+
+          const blockContent = (() => {
+            if (mode === "public" || usePreviewInEdit) {
+              return renderPublicBlock(block, def, {
+                userId: userId ?? "",
+                theme,
+                connections,
+                profile,
+              });
+            }
+            const Editor = def.Editor;
+            return (
+              <Editor
+                block={block as never}
+                userId={userId ?? ""}
+                theme={theme}
+                onChange={(data) => {
+                  onLayoutChange?.(
+                    blocks.map((b) => (b.id === block.id ? { ...b, data } : b)),
+                  );
+                }}
+              />
+            );
+          })();
+
+          const framed = (
+            <AlbumBlockFrame block={block} profile={profile} animate={mode === "public"}>
+              {blockContent}
+            </AlbumBlockFrame>
+          );
 
           if (mode === "public") {
-            const Public = def.Public;
-            const publicEl =
-              block.type === "text" ? (
-                <Public block={block as never} userId={userId ?? ""} theme={theme} />
-              ) : block.type === "discord" ||
-                block.type === "habbo" ||
-                block.type === "habblet" ? (
-                <Public block={block as never} userId={userId ?? ""} connections={connections} />
-              ) : (
-                <Public block={block as never} userId={userId ?? ""} />
-              );
             return (
               <div key={block.id} className="album-block album-block--public">
-                {publicEl}
+                {framed}
               </div>
             );
           }
 
-          const Editor = def.Editor;
           return (
             <div key={block.id}>
               <AlbumBlockShell
@@ -118,16 +170,7 @@ export function AlbumGrid({
                 }}
                 onApplyPreset={(key) => applyPreset(block.id, key)}
               >
-                <Editor
-                  block={block as never}
-                  userId={userId ?? ""}
-                  theme={theme}
-                  onChange={(data) => {
-                    onLayoutChange?.(
-                      blocks.map((b) => (b.id === block.id ? { ...b, data } : b)),
-                    );
-                  }}
-                />
+                {framed}
               </AlbumBlockShell>
             </div>
           );
