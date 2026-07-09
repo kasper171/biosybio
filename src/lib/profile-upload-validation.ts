@@ -9,7 +9,7 @@ export type ProfileAssetKind =
   | "page_favicon";
 
 export type ProfileUploadValidationOptions = {
-  /** Premium: vídeos mp4 até 30 MB; free até 10 MB. */
+  /** Premium: mp4 wallpaper/faixa até 30 MB; free até 10 MB. */
   isPremium?: boolean;
 };
 
@@ -38,23 +38,28 @@ const VIDEO_MIMES = new Set([
   "application/mp4",
 ]);
 
+const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+
 const MAX_BYTES: Record<ProfileAssetKind, number> = {
   avatar: 5 * 1024 * 1024,
-  banner: 10 * 1024 * 1024,
-  background: 10 * 1024 * 1024,
-  inner_banner: 10 * 1024 * 1024,
-  music: 10 * 1024 * 1024,
+  banner: IMAGE_MAX_BYTES,
+  background: IMAGE_MAX_BYTES,
+  inner_banner: IMAGE_MAX_BYTES,
+  music: IMAGE_MAX_BYTES,
   music_art: 5 * 1024 * 1024,
   share_embed: 5 * 1024 * 1024,
   page_favicon: 1 * 1024 * 1024,
 };
 
-/** Áudio na faixa de música — limite geral (não vídeo). */
 const MUSIC_AUDIO_MAX_BYTES = 10 * 1024 * 1024;
 
-/** Vídeo mp4 — free até 10 MB; Premium até 30 MB. */
-export const MUSIC_VIDEO_MAX_BYTES_FREE = 10 * 1024 * 1024;
-export const MUSIC_VIDEO_MAX_BYTES_PREMIUM = 30 * 1024 * 1024;
+export const PROFILE_VIDEO_MAX_BYTES_FREE = 10 * 1024 * 1024;
+export const PROFILE_VIDEO_MAX_BYTES_PREMIUM = 30 * 1024 * 1024;
+
+/** @deprecated */
+export const MUSIC_VIDEO_MAX_BYTES_FREE = PROFILE_VIDEO_MAX_BYTES_FREE;
+/** @deprecated */
+export const MUSIC_VIDEO_MAX_BYTES_PREMIUM = PROFILE_VIDEO_MAX_BYTES_PREMIUM;
 
 const EXT_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -84,8 +89,7 @@ function fileExtension(name: string): string {
   return match?.[1] ?? "";
 }
 
-/** Vídeo mp4/mov — extensão tem prioridade (Windows envia MIME errado, ex.: audio/mp4). */
-export function isMusicVideoFile(file: File): boolean {
+export function isProfileVideoFile(file: File): boolean {
   const ext = fileExtension(file.name);
   const mime = (file.type || "").toLowerCase().split(";")[0].trim();
 
@@ -95,34 +99,80 @@ export function isMusicVideoFile(file: File): boolean {
   if (VIDEO_MIMES.has(mime)) return true;
   if (mime.startsWith("video/")) return true;
 
-  // Arquivos grandes na faixa de música com .mp4 no MIME são vídeo, não áudio
   if (file.size > MUSIC_AUDIO_MAX_BYTES && (mime.includes("mp4") || mime === "application/octet-stream")) {
     return true;
   }
 
-  if (mime === "audio/x-m4a") return false;
   return false;
 }
+
+/** @deprecated use isProfileVideoFile */
+export const isMusicVideoFile = isProfileVideoFile;
 
 export function isMusicAudioFile(file: File): boolean {
   const mime = (file.type || "").toLowerCase().split(";")[0].trim();
   const ext = fileExtension(file.name);
 
-  if (isMusicVideoFile(file)) return false;
+  if (isProfileVideoFile(file)) return false;
   if (AUDIO_MIMES.has(mime)) return true;
   return ext === "mp3" || ext === "wav" || ext === "ogg" || ext === "webm" || ext === "m4a";
 }
 
-function resolveMusicContentType(file: File, isVideo: boolean): string {
+function resolveVideoContentType(file: File): string {
   const mime = (file.type || "").toLowerCase().split(";")[0].trim();
-  if (mime && (isVideo ? VIDEO_MIMES.has(mime) : AUDIO_MIMES.has(mime))) return mime;
+  if (mime && (VIDEO_MIMES.has(mime) || mime.startsWith("video/"))) return mime;
+  return "video/mp4";
+}
+
+function resolveMusicContentType(file: File, isVideo: boolean): string {
+  if (isVideo) return resolveVideoContentType(file);
+  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+  if (mime && AUDIO_MIMES.has(mime)) return mime;
   const ext = fileExtension(file.name);
-  if (isVideo) return "video/mp4";
   if (ext === "wav") return "audio/wav";
   if (ext === "ogg") return "audio/ogg";
   if (ext === "webm") return "audio/webm";
   if (ext === "m4a") return "audio/mp4";
   return "audio/mpeg";
+}
+
+function validateProfileVideoUpload(
+  file: File,
+  isPremium: boolean,
+  premiumRequiredMessage: string,
+): { ok: true; ext: string; contentType: string } | { ok: false; error: string } {
+  const maxBytes = isPremium ? PROFILE_VIDEO_MAX_BYTES_PREMIUM : PROFILE_VIDEO_MAX_BYTES_FREE;
+  if (file.size <= 0 || file.size > maxBytes) {
+    if (!isPremium && file.size > PROFILE_VIDEO_MAX_BYTES_FREE) {
+      return { ok: false, error: premiumRequiredMessage };
+    }
+    return { ok: false, error: `File exceeds the ${maxMb(maxBytes)}MB limit.` };
+  }
+  const ext = fileExtension(file.name) || "mp4";
+  return {
+    ok: true,
+    ext: ext === "mov" || ext === "m4v" ? "mp4" : ext,
+    contentType: resolveVideoContentType(file),
+  };
+}
+
+function validateImageUpload(
+  kind: ProfileAssetKind,
+  file: File,
+): { ok: true; ext: string; contentType: string } | { ok: false; error: string } {
+  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+  const maxBytes = MAX_BYTES[kind];
+  if (file.size <= 0 || file.size > maxBytes) {
+    return { ok: false, error: `File exceeds the ${maxMb(maxBytes)}MB limit.` };
+  }
+  if (!IMAGE_MIMES.has(mime)) {
+    return { ok: false, error: "Unsupported file type." };
+  }
+  const ext = EXT_BY_MIME[mime];
+  if (!ext) {
+    return { ok: false, error: "Unsupported file type." };
+  }
+  return { ok: true, ext, contentType: mime };
 }
 
 export function validateProfileAssetUpload(
@@ -132,8 +182,19 @@ export function validateProfileAssetUpload(
 ): { ok: true; ext: string; contentType: string } | { ok: false; error: string } {
   const isPremium = options?.isPremium === true;
 
+  if (kind === "background") {
+    if (isProfileVideoFile(file)) {
+      return validateProfileVideoUpload(
+        file,
+        isPremium,
+        "MP4 wallpaper above 10MB requires Premium (max 30MB).",
+      );
+    }
+    return validateImageUpload(kind, file);
+  }
+
   if (kind === "music") {
-    const isVideo = isMusicVideoFile(file);
+    const isVideo = isProfileVideoFile(file);
     const isAudio = isMusicAudioFile(file);
 
     if (!isVideo && !isAudio) {
@@ -141,25 +202,11 @@ export function validateProfileAssetUpload(
     }
 
     if (isVideo) {
-      const maxBytes = isPremium ? MUSIC_VIDEO_MAX_BYTES_PREMIUM : MUSIC_VIDEO_MAX_BYTES_FREE;
-      if (file.size <= 0 || file.size > maxBytes) {
-        if (!isPremium && file.size > MUSIC_VIDEO_MAX_BYTES_FREE) {
-          return {
-            ok: false,
-            error: "MP4 videos above 10MB require Premium (max 30MB).",
-          };
-        }
-        return {
-          ok: false,
-          error: `File exceeds the ${maxMb(maxBytes)}MB limit.`,
-        };
-      }
-      const ext = fileExtension(file.name) || "mp4";
-      return {
-        ok: true,
-        ext: ext === "mov" || ext === "m4v" ? "mp4" : ext,
-        contentType: resolveMusicContentType(file, true),
-      };
+      return validateProfileVideoUpload(
+        file,
+        isPremium,
+        "MP4 videos above 10MB require Premium (max 30MB).",
+      );
     }
 
     if (file.size <= 0 || file.size > MUSIC_AUDIO_MAX_BYTES) {
@@ -175,20 +222,5 @@ export function validateProfileAssetUpload(
     };
   }
 
-  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
-  const maxBytes = MAX_BYTES[kind];
-  if (file.size <= 0 || file.size > maxBytes) {
-    return { ok: false, error: `File exceeds the ${maxMb(maxBytes)}MB limit.` };
-  }
-
-  if (!IMAGE_MIMES.has(mime)) {
-    return { ok: false, error: "Unsupported file type." };
-  }
-
-  const ext = EXT_BY_MIME[mime];
-  if (!ext) {
-    return { ok: false, error: "Unsupported file type." };
-  }
-
-  return { ok: true, ext, contentType: mime };
+  return validateImageUpload(kind, file);
 }

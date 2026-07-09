@@ -16,6 +16,8 @@ import {
   type Profile,
 } from "@/lib/profile-storage";
 import { profileHasFullAccess } from "@/lib/profile-roles";
+import { isProfileVideoFile } from "@/lib/profile-upload-validation";
+import { isVideoMediaUrl } from "@/lib/media-url";
 import { PublicProfileView } from "@/components/PublicProfileView";
 import { DashboardOverviewPage } from "@/components/dashboard/DashboardOverviewPage";
 import { DashboardEstatisticasPage } from "@/components/dashboard/DashboardEstatisticasPage";
@@ -276,8 +278,21 @@ function Dashboard() {
     file: File | undefined,
   ) => {
     if (!file || !userId) return;
+    const isBgVideo = kind === "background" && isProfileVideoFile(file);
+    const isMusicVideo = kind === "music" && isProfileVideoFile(file);
     try {
-      toast.loading(kind === "music" ? "Uploading audio..." : kind === "music_art" ? "Uploading cover..." : "Uploading image...", { id: kind });
+      toast.loading(
+        kind === "music"
+          ? isMusicVideo
+            ? "Uploading video..."
+            : "Uploading audio..."
+          : kind === "music_art"
+            ? "Uploading cover..."
+            : isBgVideo
+              ? "Uploading video wallpaper..."
+              : "Uploading image...",
+        { id: kind },
+      );
       const url = await uploadProfileAsset(userId, kind, file, {
         isPremium: profile ? profileHasFullAccess(profile) : false,
       });
@@ -312,7 +327,15 @@ function Dashboard() {
           : p,
       );
       toast.success(
-        kind === "music" ? "Music uploaded" : kind === "music_art" ? "Cover uploaded" : "Image uploaded",
+        kind === "music"
+          ? isMusicVideo
+            ? "Video uploaded"
+            : "Music uploaded"
+          : kind === "music_art"
+            ? "Cover uploaded"
+            : isBgVideo
+              ? "Video wallpaper uploaded"
+              : "Image uploaded",
         { id: kind },
       );
     } catch (e) {
@@ -714,7 +737,7 @@ function Dashboard() {
 
       <input ref={avatarRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("avatar", e.target.files?.[0])} />
       <input ref={bannerRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("banner", e.target.files?.[0])} />
-      <input ref={bgRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("background", e.target.files?.[0])} />
+      <input ref={bgRef} type="file" accept="image/*,video/mp4,.mp4" hidden onChange={(e) => handleUpload("background", e.target.files?.[0])} />
       <input ref={innerBannerRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("inner_banner", e.target.files?.[0])} />
       <input ref={musicRef} type="file" accept="audio/*,video/mp4" hidden onChange={(e) => handleUpload("music", e.target.files?.[0])} />
       <input ref={musicArtRef} type="file" accept="image/*" hidden onChange={(e) => handleUpload("music_art", e.target.files?.[0])} />
@@ -2353,6 +2376,7 @@ function MediaUpload({ label, url, onPick, onRemove, shape, isMedia }: {
     shape === "circle"
       ? "aspect-square max-w-[140px] rounded-full"
       : "aspect-[3/1] w-full rounded-xl";
+  const isVideo = isVideoMediaUrl(url);
 
   return (
     <Field label={label} center={shape === "circle"}>
@@ -2370,6 +2394,15 @@ function MediaUpload({ label, url, onPick, onRemove, shape, isMedia }: {
                   <p className="text-xs font-medium">Music file uploaded</p>
                 </div>
               </div>
+            ) : isVideo ? (
+              <video
+                src={url}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="h-full w-full object-cover"
+              />
             ) : (
               <img src={url} alt={label} className="h-full w-full object-cover" />
             )

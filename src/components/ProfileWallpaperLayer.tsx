@@ -1,4 +1,5 @@
 import { imageObjectPosition } from "@/lib/image-position";
+import { isVideoMediaUrl } from "@/lib/media-url";
 
 type Props = {
   url: string | null | undefined;
@@ -11,7 +12,7 @@ type Props = {
 };
 
 /**
- * Wallpaper em tela cheia com object-fit: cover — igual no preview do dashboard e no perfil público.
+ * Wallpaper em tela cheia — imagem ou vídeo mp4 (Premium).
  * Sempre fixed na viewport para a posição bater com o site ao vivo.
  */
 export function ProfileWallpaperLayer({
@@ -24,6 +25,8 @@ export function ProfileWallpaperLayer({
   className = "",
 }: Props) {
   const hasBlur = blur > 0;
+  const objectPosition = imageObjectPosition(posX, posY);
+  const isVideo = isVideoMediaUrl(url);
 
   return (
     <div
@@ -36,13 +39,26 @@ export function ProfileWallpaperLayer({
       }}
     >
       {url ? (
-        <img
-          src={url}
-          alt=""
-          draggable={false}
-          className="h-full w-full object-cover"
-          style={{ objectPosition: imageObjectPosition(posX, posY) }}
-        />
+        isVideo ? (
+          <video
+            src={url}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="h-full w-full object-cover"
+            style={{ objectPosition }}
+          />
+        ) : (
+          <img
+            src={url}
+            alt=""
+            draggable={false}
+            className="h-full w-full object-cover"
+            style={{ objectPosition }}
+          />
+        )
       ) : null}
     </div>
   );

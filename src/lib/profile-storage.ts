@@ -258,7 +258,7 @@ export async function uploadProfileAsset(
   options?: ProfileUploadValidationOptions,
 ): Promise<string> {
   const isPremium =
-    kind === "music"
+    kind === "music" || kind === "background"
       ? await resolveUploadPremium(userId, options?.isPremium)
       : options?.isPremium === true;
 
