@@ -91,30 +91,31 @@ export const incrementProfileViewFn = createServerFn({ method: "POST" })
       return { ok: false as const, viewCount: null };
     }
 
-    const { error: eventError } = await supabaseAdmin
-      .from("profile_view_events")
-      .insert({ profile_id: data.profileId, visitor_id: data.visitorId });
-
-    if (!eventError) {
-      const { data: row, error: readError } = await supabaseAdmin
-        .from("profiles")
-        .select("view_count")
-        .eq("id", data.profileId)
-        .maybeSingle();
-      if (!readError && row) {
-        return { ok: true as const, viewCount: Number(row.view_count ?? 0) };
-      }
-      return { ok: true as const, viewCount: null };
-    }
-
     const { data: rpcData, error: rpcError } = await supabaseAdmin.rpc("increment_profile_view", {
       target_profile_id: data.profileId,
     });
+
     if (rpcError) {
-      console.error("[incrementProfileViewFn]", eventError.message, rpcError.message);
+      console.error("[incrementProfileViewFn] rpc", rpcError.message);
+      await supabaseAdmin
+        .from("profile_view_dedup")
+        .delete()
+        .eq("profile_id", data.profileId)
+        .eq("visitor_id", data.visitorId);
       return { ok: false as const, viewCount: null };
     }
 
+    const { error: eventError } = await supabaseAdmin.from("profile_view_events").insert({
+      profile_id: data.profileId,
+      visitor_id: data.visitorId,
+    });
+    if (eventError) {
+      console.warn("[incrementProfileViewFn] event audit", eventError.message);
+    }
+
     const viewCount = typeof rpcData === "number" ? rpcData : Number(rpcData);
-    return { ok: true as const, viewCount: Number.isFinite(viewCount) ? viewCount : null };
+    return {
+      ok: true as const,
+      viewCount: Number.isFinite(viewCount) ? viewCount : null,
+    };
   });
