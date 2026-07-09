@@ -33,18 +33,13 @@ import {
 import { fetchViewsLast7Days, type DailyViewStat } from "@/lib/profile-stats";
 import { DashboardAccountLayout } from "./DashboardAccountLayout";
 import { useI18n } from "@/i18n/LocaleProvider";
+import { formatViewCount } from "@/lib/format-view-count";
 
 type Props = {
   profile: Profile;
 };
 
 type PersonalizePanel = "midia" | "perfil" | "conexoes" | "redes";
-
-function formatViews(count: number): string {
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return count.toLocaleString("en-US");
-}
 
 export function ContaOverviewPanel({ profile }: Props) {
   const { t } = useI18n();
@@ -172,13 +167,13 @@ export function ContaOverviewPanel({ profile }: Props) {
                 </p>
                 <p className="mt-2 dash-t-caption text-white/40">
                   <span className="font-semibold text-white/80">
-                    {formatViews(profile.view_count ?? 0)}
+                    {formatViewCount(profile.view_count ?? 0)}
                   </span>{" "}
                   total views
                   {viewsLast7 > 0 && (
                     <span className="text-emerald-400/90">
                       {" "}
-                      · +{formatViews(viewsLast7)} in the last 7 days
+                      · +{formatViewCount(viewsLast7)} in the last 7 days
                     </span>
                   )}
                 </p>

@@ -15,6 +15,7 @@ import {
   uploadProfileAsset,
   type Profile,
 } from "@/lib/profile-storage";
+import { profileHasFullAccess } from "@/lib/profile-roles";
 import { PublicProfileView } from "@/components/PublicProfileView";
 import { DashboardOverviewPage } from "@/components/dashboard/DashboardOverviewPage";
 import { DashboardEstatisticasPage } from "@/components/dashboard/DashboardEstatisticasPage";
@@ -277,7 +278,9 @@ function Dashboard() {
     if (!file || !userId) return;
     try {
       toast.loading(kind === "music" ? "Uploading audio..." : kind === "music_art" ? "Uploading cover..." : "Uploading image...", { id: kind });
-      const url = await uploadProfileAsset(userId, kind, file);
+      const url = await uploadProfileAsset(userId, kind, file, {
+        isPremium: profile ? profileHasFullAccess(profile) : false,
+      });
       const field =
         kind === "avatar" ? "avatar_url"
         : kind === "banner" ? "banner_url"

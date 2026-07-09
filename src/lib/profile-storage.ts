@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { validateProfileAssetUpload } from "@/lib/profile-upload-validation";
+import { validateProfileAssetUpload, type ProfileUploadValidationOptions } from "@/lib/profile-upload-validation";
 import type { ProfileLabelsState } from "@/lib/profile-labels";
 
 export const DEFAULT_CARD_WIDTH = 600;
@@ -235,8 +235,9 @@ export async function uploadProfileAsset(
   userId: string,
   kind: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art" | "share_embed" | "page_favicon",
   file: File,
+  options?: ProfileUploadValidationOptions,
 ): Promise<string> {
-  const validation = validateProfileAssetUpload(kind, file);
+  const validation = validateProfileAssetUpload(kind, file, options);
   if (!validation.ok) {
     throw new Error(validation.error);
   }

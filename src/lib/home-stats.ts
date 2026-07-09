@@ -22,10 +22,10 @@ export function formatPlatformMetric(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+import { formatViewCount } from "@/lib/format-view-count";
+
 export function formatCreatorViews(count: number): string {
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return formatPlatformMetric(count);
+  return formatViewCount(count);
 }
 
 export async function fetchPlatformStats(): Promise<PlatformStats> {

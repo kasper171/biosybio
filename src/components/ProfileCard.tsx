@@ -28,6 +28,7 @@ import { AVATAR_FRAME_SCALE } from "@/lib/avatar-frames";
 import { ProfileRoleBadges } from "@/components/ProfileRoleBadges";
 import { ProfileLabelsRow } from "@/components/ProfileLabelsRow";
 import { normalizeRoleBadgesPlacement, type RoleBadgesPlacement } from "@/lib/profile-roles";
+import { formatViewCount } from "@/lib/format-view-count";
 import { cn } from "@/lib/utils";
 import { getSocialIconsRowStyle, getSocialIconsRowClassName, SOCIAL_ICONS_AFTER_BIO_GAP_CLASS } from "@/lib/social-icons";
 import { imageObjectPosition } from "@/lib/image-position";
@@ -701,14 +702,6 @@ function CardLayoutContent({
       )}
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-
-function formatViewCount(count: number): string {
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return count.toLocaleString("en-US");
 }
 
 type Props = {

@@ -16,16 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/lib/profile-storage";
 import { fetchProfileStatsBundle, type ProfileStatsBundle } from "@/lib/profile-stats";
 import { DashboardAccountLayout } from "./DashboardAccountLayout";
+import { formatViewCount } from "@/lib/format-view-count";
 
 type Props = {
   profile: Profile;
 };
-
-function formatViews(count: number): string {
-  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  return count.toLocaleString("en-US");
-}
 
 const chartTooltipStyle = {
   background: "#16161f",
@@ -69,13 +64,13 @@ export function ContaEstatisticasPanel({ profile }: Props) {
     {
       icon: TrendingUp,
       label: "Week",
-      value: loading ? "—" : formatViews(weekViews),
+      value: loading ? "—" : formatViewCount(weekViews),
       hint: stats?.peakDay7 ? `Peak ${stats.peakDay7.views} · ${stats.peakDay7.label}` : "No peak yet",
     },
     {
       icon: Calendar,
       label: "Month",
-      value: loading ? "—" : formatViews(monthViews),
+      value: loading ? "—" : formatViewCount(monthViews),
       hint: "Last 30 days",
     },
     {
@@ -87,7 +82,7 @@ export function ContaEstatisticasPanel({ profile }: Props) {
     {
       icon: Eye,
       label: "Avg/day",
-      value: loading ? "—" : formatViews(stats?.avgPerDay7 ?? 0),
+      value: loading ? "—" : formatViewCount(stats?.avgPerDay7 ?? 0),
       hint: "7-day basis",
     },
   ];
@@ -118,7 +113,7 @@ export function ContaEstatisticasPanel({ profile }: Props) {
             Total visits
           </p>
           <p className="mt-2 text-5xl font-bold tracking-tight text-white lg:text-6xl">
-            {loading ? "—" : formatViews(totalViews)}
+            {loading ? "—" : formatViewCount(totalViews)}
           </p>
           <p className="mt-2 dash-t-body text-white/45">
             @{profile.username} · since profile was created
