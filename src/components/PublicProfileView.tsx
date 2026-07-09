@@ -169,6 +169,7 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
           profile={liveProfile}
           onReveal={handleReveal}
           zIndex={isEditor ? 20 : 50}
+          showWallpaperBackground={wallpaperDelaySec <= 0}
         />
       )}
       <ProfileByosyBranding profile={liveProfile} />

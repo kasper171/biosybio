@@ -9,9 +9,16 @@ type Props = {
   profile: Profile;
   onReveal: () => void;
   zIndex?: number;
+  /** Wallpaper atrás do overlay só quando não há atraso configurado. */
+  showWallpaperBackground?: boolean;
 };
 
-export function TapToRevealOverlay({ profile, onReveal, zIndex = 50 }: Props) {
+export function TapToRevealOverlay({
+  profile,
+  onReveal,
+  zIndex = 50,
+  showWallpaperBackground = true,
+}: Props) {
   const { t } = useI18n();
   const blur = profile.tap_reveal_blur ?? 20;
   const brightness = profile.tap_reveal_brightness ?? 55;
@@ -26,14 +33,22 @@ export function TapToRevealOverlay({ profile, onReveal, zIndex = 50 }: Props) {
       style={{ zIndex }}
       aria-label={t("profile.revealAria")}
     >
-      <ProfileWallpaperLayer
-        url={profile.background_url}
-        fallbackColor={profile.background_color}
-        posX={profile.background_pos_x ?? 50}
-        posY={profile.background_pos_y ?? 50}
-        blur={blur}
-        brightness={brightness}
-      />
+      {showWallpaperBackground ? (
+        <ProfileWallpaperLayer
+          url={profile.background_url}
+          fallbackColor={profile.background_color}
+          posX={profile.background_pos_x ?? 50}
+          posY={profile.background_pos_y ?? 50}
+          blur={blur}
+          brightness={brightness}
+        />
+      ) : (
+        <div
+          aria-hidden
+          className="fixed inset-0"
+          style={{ backgroundColor: profile.background_color }}
+        />
+      )}
       <div aria-hidden className="pointer-events-none fixed inset-0 bg-black/45" />
 
       <div className="relative z-[1] flex max-w-sm flex-col items-center gap-4 text-center">

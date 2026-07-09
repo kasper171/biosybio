@@ -18,7 +18,13 @@ import {
 import { profileHasFullAccess } from "@/lib/profile-roles";
 import { isProfileVideoFile } from "@/lib/profile-upload-validation";
 import { isVideoMediaUrl } from "@/lib/media-url";
-import { BACKGROUND_REVEAL_DELAY_MAX_SEC } from "@/lib/background-reveal-delay";
+import {
+  BACKGROUND_REVEAL_DELAY_INPUT_STEP_SEC,
+  BACKGROUND_REVEAL_DELAY_MAX_SEC,
+  BACKGROUND_REVEAL_DELAY_SLIDER_STEP_SEC,
+  formatBackgroundRevealDelaySec,
+  normalizeBackgroundRevealDelaySec,
+} from "@/lib/background-reveal-delay";
 import { LoopVideo } from "@/components/LoopVideo";
 import { PublicProfileView } from "@/components/PublicProfileView";
 import { DashboardOverviewPage } from "@/components/dashboard/DashboardOverviewPage";
@@ -1110,19 +1116,13 @@ function MidiaPanel({
           display={`${profile.background_brightness ?? 100}%`}
         />
         {profile.background_url && tapRevealFlow && (
-          <SliderField
+          <RevealDelayField
             label={t("dashboard.midia.wallpaper.revealDelay")}
-            min={0}
-            max={BACKGROUND_REVEAL_DELAY_MAX_SEC}
-            step={0.5}
             value={profile.background_reveal_delay_sec ?? 0}
             onChange={(v) => update("background_reveal_delay_sec", v)}
-            display={
-              (profile.background_reveal_delay_sec ?? 0) <= 0
-                ? t("dashboard.midia.wallpaper.revealDelayImmediate")
-                : t("dashboard.midia.wallpaper.revealDelaySeconds", {
-                    seconds: profile.background_reveal_delay_sec ?? 0,
-                  })
+            immediateLabel={t("dashboard.midia.wallpaper.revealDelayImmediate")}
+            secondsLabel={(seconds) =>
+              t("dashboard.midia.wallpaper.revealDelaySeconds", { seconds })
             }
           />
         )}
@@ -2425,6 +2425,63 @@ function roundToStep(value: number, step: number): number {
   const decimals = step.toString().includes(".") ? step.toString().split(".")[1]!.length : 0;
   const snapped = Math.round(value / step) * step;
   return Number(snapped.toFixed(decimals));
+}
+
+function RevealDelayField({
+  label,
+  value,
+  onChange,
+  immediateLabel,
+  secondsLabel,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  immediateLabel: string;
+  secondsLabel: (seconds: string) => string;
+}) {
+  const safeValue = normalizeBackgroundRevealDelaySec(value);
+  const display =
+    safeValue <= 0
+      ? immediateLabel
+      : secondsLabel(formatBackgroundRevealDelaySec(safeValue));
+
+  const emit = (raw: number) => {
+    if (!Number.isFinite(raw)) return;
+    onChange(normalizeBackgroundRevealDelaySec(Math.min(BACKGROUND_REVEAL_DELAY_MAX_SEC, Math.max(0, raw))));
+  };
+
+  return (
+    <Field label={`${label} — ${display}`}>
+      <div className="flex items-center gap-3">
+        <div className="biosy-range-wrap min-w-0 flex-1 py-1">
+          <input
+            type="range"
+            min={0}
+            max={BACKGROUND_REVEAL_DELAY_MAX_SEC}
+            step={BACKGROUND_REVEAL_DELAY_SLIDER_STEP_SEC}
+            value={safeValue}
+            onInput={(e) => emit(Number(e.currentTarget.value))}
+            onChange={(e) => emit(Number(e.currentTarget.value))}
+            className="biosy-range-input w-full"
+          />
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <input
+            type="number"
+            min={0}
+            max={BACKGROUND_REVEAL_DELAY_MAX_SEC}
+            step={BACKGROUND_REVEAL_DELAY_INPUT_STEP_SEC}
+            value={safeValue}
+            onChange={(e) => emit(Number(e.target.value))}
+            className={`${panelInputClass} w-[5.5rem] px-2 py-1.5 text-center tabular-nums`}
+            aria-label={label}
+          />
+          <span className="text-xs text-white/45">s</span>
+        </div>
+      </div>
+    </Field>
+  );
 }
 
 function SliderField({ label, min, max, step, value, onChange, display }: {
