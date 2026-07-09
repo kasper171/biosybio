@@ -1,4 +1,5 @@
 import type { Profile } from "@/lib/profile-storage";
+import { cardGlassNeedsStableStacking } from "@/lib/card-glass";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 import { groupBlocksForLayout } from "@/lib/profile-blocks";
 import { ProfileBlockRenderer } from "@/components/blocks/ProfileBlockRenderer";
@@ -62,6 +63,8 @@ export function ProfileBlocksSection({
 
   const rows = groupBlocksForLayout(blocks);
   const gapClass = placement === "inside" ? "mt-4 space-y-3" : "mt-4 space-y-4";
+  const glassStable = cardGlassNeedsStableStacking(profile);
+  const useRevealMotion = animate && !glassStable;
 
   return (
     <div className={gapClass}>
@@ -69,7 +72,7 @@ export function ProfileBlocksSection({
         const rowKey = row.map((b) => b.id).join("-");
         const node = renderRow(row, profile, placement);
 
-        if (!animate || !cardInitial || !cardAnimate || !cardTransition) {
+        if (!useRevealMotion || !cardInitial || !cardAnimate || !cardTransition) {
           return <div key={rowKey}>{node}</div>;
         }
 

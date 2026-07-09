@@ -5,6 +5,12 @@ import { resolveMusicCardTitle } from "@/lib/profile-music";
 import { useProfileMusic } from "@/contexts/ProfileMusicContext";
 import { MusicVolumeControl } from "@/components/MusicVolumeControl";
 import { buildCardBorderChrome, normalizeCardBorderStyle } from "@/lib/card-border";
+import {
+  cardGlassClass,
+  cardGlassSurfaceLayerStyle,
+  cardSurfaceFillStyle,
+  isCardGlassEnabled,
+} from "@/lib/card-glass";
 import { getDiscordMutedStyle, getDiscordTitleStyle, hexToRgba } from "@/lib/profile-colors";
 
 type Props = {
@@ -77,7 +83,14 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
   const titleStyle = getDiscordTitleStyle(profile);
   const mutedStyle = getDiscordMutedStyle(profile);
   const iconColor = profile.icon_color ?? "rgba(255,255,255,0.85)";
-  const cardBlur = Number(profile.card_blur ?? 0) || 0;
+  const glassEnabled = isCardGlassEnabled(profile);
+  const surfaceProps = {
+    className: cardGlassClass(profile),
+    style: {
+      ...cardGlassSurfaceLayerStyle(chrome.innerRadius),
+      ...cardSurfaceFillStyle(profile, glassEnabled),
+    },
+  };
 
   return (
     <div
@@ -90,17 +103,8 @@ export function MusicPlayerCard({ profile, className = "" }: Props) {
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            borderRadius: chrome.innerRadius,
-            background: chrome.surfaceBg,
-            ...(cardBlur > 0
-              ? {
-                  backdropFilter: `blur(${cardBlur}px)`,
-                  WebkitBackdropFilter: `blur(${cardBlur}px)`,
-                }
-              : {}),
-          }}
+          className={`pointer-events-none absolute inset-0${surfaceProps.className ? ` ${surfaceProps.className}` : ""}`}
+          style={surfaceProps.style}
         />
 
         <div className="relative z-10 flex items-center gap-3 sm:gap-4 pointer-events-auto">

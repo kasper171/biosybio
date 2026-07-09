@@ -28,6 +28,7 @@ import { FaGlobe } from "react-icons/fa";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import { ProfileWallpaperLayer } from "@/components/ProfileWallpaperLayer";
+import { cardGlassNeedsStableStacking } from "@/lib/card-glass";
 
 type Props = {
   profile: Profile;
@@ -88,6 +89,8 @@ export function ProfilePageContent({
   const sharedRevealAnimate = cardAnimate;
   const sharedRevealTransition = cardTransition;
   const sharedRevealDelaySec = 0;
+  const glassStable = cardGlassNeedsStableStacking(profile);
+  const useRevealMotion = animate && !glassStable;
 
   const cardLayout = profile.card_layout ?? DEFAULT_CARD_LAYOUT;
   const { inside: insideBlocks, outside: outsideBlocks } = splitBlocksByPlacement(blocks);
@@ -304,7 +307,7 @@ export function ProfilePageContent({
     </>
   );
 
-  const mainColumnAnimated = animate ? (
+  const mainColumnAnimated = useRevealMotion ? (
     <motion.div
       key={`main-col-${animKey}`}
       initial={sharedRevealInitial}
@@ -342,7 +345,7 @@ export function ProfilePageContent({
           gap: HOTEL_BESIDE_GAP_PX,
         }}
       >
-        {animate
+        {useRevealMotion
           ? hotelCardsOutside.map((card, index) => (
               <motion.div
                 key={`hotel-beside-${animKey}-${index}`}
@@ -431,7 +434,7 @@ export function ProfilePageContent({
                 gap: HOTEL_BELOW_GAP_PX,
               }}
             >
-              {animate
+              {useRevealMotion
                 ? hotelCardsOutside.map((card, index) => (
                     <motion.div
                       key={`hotel-below-${animKey}-${index}`}
@@ -468,6 +471,7 @@ export function ProfilePageContent({
           <ProfileCommentsSection
             profileId={profile.id}
             enabled={profile.comments_enabled !== false}
+            cardGlassEnabled={profile.card_glass_enabled === true}
           />
         </div>
       </div>

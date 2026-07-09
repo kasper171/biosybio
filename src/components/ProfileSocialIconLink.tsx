@@ -5,6 +5,7 @@ import {
   resolveSocialIconBloomColor,
 } from "@/lib/social-icons";
 import type { Profile } from "@/lib/profile-storage";
+import { isCardGlassEnabled } from "@/lib/card-glass";
 import type { ComponentType, MouseEvent, ReactNode, SVGProps } from "react";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
@@ -55,6 +56,7 @@ export function ProfileSocialIconLink({
   onNavigate,
 }: ProfileSocialIconLinkProps) {
   const logo = profile.social_icon_style === "logo";
+  const glassEnabled = isCardGlassEnabled(profile);
   const { iconPx, boxPx } = getSocialIconDimensions(profile, compact);
   const bloomColor = resolveSocialIconBloomColor(profile, iconColor);
   const layoutW = logo ? iconPx : boxPx;
@@ -78,7 +80,8 @@ export function ProfileSocialIconLink({
       title={title}
       onClick={onNavigate}
       className={cn(
-        "inline-flex shrink-0 flex-col items-center overflow-visible transition hover:scale-105 [isolation:isolate]",
+        "inline-flex shrink-0 flex-col items-center overflow-visible transition hover:scale-105",
+        !glassEnabled && "[isolation:isolate]",
         showTitle ? "gap-0.5" : "",
       )}
     >
@@ -87,7 +90,12 @@ export function ProfileSocialIconLink({
           iconNode
         ) : (
           <span
-            className="inline-flex items-center justify-center overflow-visible rounded-xl border border-white/10 bg-white/5 transition hover:bg-white/10"
+            className={cn(
+              "inline-flex items-center justify-center overflow-visible rounded-xl border transition",
+              glassEnabled
+                ? "card-glass border-white/15"
+                : "border-white/10 bg-white/5 hover:bg-white/10",
+            )}
             style={{ width: boxPx, height: boxPx }}
           >
             <SocialIconWithGlow

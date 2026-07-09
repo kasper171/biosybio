@@ -30,6 +30,13 @@ import { ProfileLabelsRow } from "@/components/ProfileLabelsRow";
 import { normalizeRoleBadgesPlacement, type RoleBadgesPlacement } from "@/lib/profile-roles";
 import { formatViewCount } from "@/lib/format-view-count";
 import { cn } from "@/lib/utils";
+import {
+  cardGlassClass,
+  cardGlassNeedsStableStacking,
+  cardGlassSurfaceLayerStyle,
+  cardSurfaceFillStyle,
+  isCardGlassEnabled,
+} from "@/lib/card-glass";
 import { getSocialIconsRowStyle, getSocialIconsRowClassName, SOCIAL_ICONS_AFTER_BIO_GAP_CLASS } from "@/lib/social-icons";
 import { imageObjectPosition } from "@/lib/image-position";
 
@@ -375,6 +382,7 @@ function CardLayoutContent({
   const mutedStyle = getMutedTextStyle(profile);
   const mutedGlow = getTextGlowStyle(profile, 0.75, "muted");
   const badgeStyle = getBadgeStyle(profile);
+  const glassEnabled = isCardGlassEnabled(profile);
   const iconStyle = getIconColorStyle(profile);
   const dividerStyle = getDividerStyle(profile);
   const nameTextEffect = normalizeTextAnimationId(profile.name_text_animation);
@@ -395,9 +403,12 @@ function CardLayoutContent({
     <>
       {profile.show_public_uid !== false && profile.public_uid != null && (
         <div
-          className="absolute left-3 top-3 z-[10] flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium backdrop-blur-sm"
+          className={cn(
+            "absolute left-3 top-3 z-[10] flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
+            glassEnabled ? "card-glass" : "backdrop-blur-sm",
+          )}
           title="UID"
-          style={badgeStyle}
+          style={glassEnabled ? { color: badgeStyle.color } : badgeStyle}
         >
           <Hash className="h-3.5 w-3.5 shrink-0" aria-hidden style={iconStyle} />
           <span>{profile.public_uid.toLocaleString("en-US")}</span>
@@ -405,9 +416,12 @@ function CardLayoutContent({
       )}
       {profile.show_view_count !== false && (
         <div
-          className="absolute right-3 top-3 z-[10] flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium backdrop-blur-sm"
+          className={cn(
+            "absolute right-3 top-3 z-[10] flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
+            glassEnabled ? "card-glass" : "backdrop-blur-sm",
+          )}
           title="Views"
-          style={badgeStyle}
+          style={glassEnabled ? { color: badgeStyle.color } : badgeStyle}
         >
           <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden style={iconStyle} />
           <span>{formatViewCount(profile.view_count ?? 0)}</span>
@@ -824,22 +838,12 @@ export function ProfileCard({
   const bannerTotalH = bannerStripH + BANNER_BEHIND_AVATAR_PX;
   const nameTextEffect = normalizeTextAnimationId(profile.name_text_animation);
   const bioTextEffect = normalizeTextAnimationId(profile.bio_text_animation);
+  const glassEnabled = isCardGlassEnabled(profile);
+  const glassStable = cardGlassNeedsStableStacking(profile);
 
-  // Blur fica dentro do Tilt para acompanhar tilt + hover lift
-  const glassEnabled = profile.card_glass_enabled === true;
-  const blurLayerStyle: CSSProperties = {
-    position: "absolute",
-    inset: 0,
-    zIndex: 0,
-    pointerEvents: "none",
-    borderRadius: innerRadius,
-    ...(glassEnabled
-      ? {}
-      : {
-          background: hexToRgba(profile.card_color, profile.card_opacity),
-          backdropFilter: `blur(${profile.card_blur}px)`,
-          WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
-        }),
+  const surfaceLayerStyle: CSSProperties = {
+    ...cardGlassSurfaceLayerStyle(radius),
+    ...cardSurfaceFillStyle(profile, glassEnabled),
   };
 
   // Frame: borda CSS (tracejada etc.) fica aqui; conteúdo interno não pode ter a mesma altura fixa
@@ -880,26 +884,39 @@ export function ProfileCard({
         position: "relative",
         width: "100%",
         maxWidth: (profile.card_width ?? DEFAULT_CARD_WIDTH) + "px",
-        // Hover lift no wrapper externo — o Tilt fica dentro e cuida só do 3D
-        transition: "transform 400ms cubic-bezier(0.03, 0.98, 0.52, 0.99)",
-        transform: profile.effect_hover && hovering ? "translateY(-6px)" : undefined,
+        transition: glassStable ? undefined : "transform 400ms cubic-bezier(0.03, 0.98, 0.52, 0.99)",
+        transform: !glassStable && profile.effect_hover && hovering ? "translateY(-6px)" : undefined,
       }}
     >
-      {/* Tilt: react-parallax-tilt — cuida só da rotação 3D */}
-      <Tilt
-        tiltEnable={profile.effect_tilt ?? false}
-        tiltMaxAngleX={(profile.effect_tilt_strength ?? 5) * 2}
-        tiltMaxAngleY={(profile.effect_tilt_strength ?? 5) * 2.4}
-        perspective={800}
-        transitionEasing="cubic-bezier(0.17, 0.67, 0.35, 1)"
-        transitionSpeed={700}
-        scale={profile.effect_tilt ? 1 + (profile.effect_tilt_strength ?? 5) * 0.003 : 1}
-        glareEnable={false}
-        reset={true}
-        onEnter={() => setHovering(true)}
-        onLeave={() => setHovering(false)}
-        style={{ width: "100%", ...(enforceCardHeight ? { height: cardH } : {}) }}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          ...(enforceCardHeight ? { height: cardH } : { minHeight: cardH }),
+        }}
       >
+        {/* Superfície fora do Tilt — backdrop-filter amostra wallpaper/overlays atrás */}
+        <div aria-hidden className={cardGlassClass(profile)} style={surfaceLayerStyle} />
+        <Tilt
+          tiltEnable={profile.effect_tilt ?? false}
+          tiltMaxAngleX={(profile.effect_tilt_strength ?? 5) * 2}
+          tiltMaxAngleY={(profile.effect_tilt_strength ?? 5) * 2.4}
+          perspective={800}
+          transitionEasing="cubic-bezier(0.17, 0.67, 0.35, 1)"
+          transitionSpeed={700}
+          scale={profile.effect_tilt ? 1 + (profile.effect_tilt_strength ?? 5) * 0.003 : 1}
+          glareEnable={false}
+          reset={true}
+          onEnter={() => setHovering(true)}
+          onLeave={() => setHovering(false)}
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: "100%",
+            background: "transparent",
+            ...(enforceCardHeight ? { height: cardH } : {}),
+          }}
+        >
         {/* Frame: border-radius + box-shadow (borda sólida + glow externo) */}
         <div style={frameStyle} className={borderChrome.className}>
           {/* GlowingEffect: efeito de borda animado — só quando effect_border_glow está ativo */}
@@ -916,8 +933,6 @@ export function ProfileCard({
 
           {/* Conteúdo: overflow:hidden para clips do banner */}
           <div style={contentWrapStyle}>
-            {/* Blur acompanha tilt + hover porque está DENTRO do Tilt */}
-            <div aria-hidden className={glassEnabled ? "card-glass" : undefined} style={blurLayerStyle} />
             <CardLayoutContent
               profile={profile}
               layout={profile.card_layout ?? DEFAULT_CARD_LAYOUT}
@@ -944,6 +959,7 @@ export function ProfileCard({
           </div>
         </div>
       </Tilt>
+      </div>
     </div>
   );
 }

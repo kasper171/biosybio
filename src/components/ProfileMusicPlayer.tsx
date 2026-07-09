@@ -2,8 +2,15 @@ import { useState } from "react";
 import { Music2, Pause, Play, X } from "lucide-react";
 import { useProfileMusic } from "@/contexts/ProfileMusicContext";
 import { MusicVolumeControl } from "@/components/MusicVolumeControl";
+import { isCardGlassEnabled } from "@/lib/card-glass";
+import type { Profile } from "@/lib/profile-storage";
 
-export function ProfileMusicPlayerFloating() {
+type Props = {
+  profile?: Pick<Profile, "card_glass_enabled">;
+};
+
+export function ProfileMusicPlayerFloating({ profile }: Props) {
+  const glassEnabled = isCardGlassEnabled(profile);
   const {
     trackTitle,
     seekMin,
@@ -24,7 +31,11 @@ export function ProfileMusicPlayerFloating() {
     <div className="fixed bottom-4 right-4 z-[60]">
       <div className="flex flex-col items-end gap-2">
         {open && (
-          <div className="w-[min(320px,calc(100vw-1rem))] rounded-lg border border-white/20 bg-black/55 px-2 py-1.5 text-white backdrop-blur-md">
+          <div
+            className={`w-[min(320px,calc(100vw-1rem))] rounded-lg border border-white/20 px-2 py-1.5 text-white ${
+              glassEnabled ? "card-glass" : "bg-black/55 backdrop-blur-md"
+            }`}
+          >
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -77,9 +88,9 @@ export function ProfileMusicPlayerFloating() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className={`grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/40 text-white shadow-lg backdrop-blur-sm transition hover:scale-105 hover:bg-black/55 ${
-            isPlaying ? "animate-[biosy-music-pulse_1s_ease-in-out_infinite]" : ""
-          }`}
+          className={`grid h-11 w-11 place-items-center rounded-full border border-white/20 text-white shadow-lg transition hover:scale-105 ${
+            glassEnabled ? "card-glass" : "bg-black/40 backdrop-blur-sm hover:bg-black/55"
+          } ${isPlaying ? "animate-[biosy-music-pulse_1s_ease-in-out_infinite]" : ""}`}
           title="Open music player"
         >
           <Music2 className="h-5 w-5" />

@@ -89,7 +89,9 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
   ) : null;
 
   const musicPlayerUi =
-    showContent && hasMusic && !musicCardMode ? <ProfileMusicPlayerFloating /> : null;
+    showContent && hasMusic && !musicCardMode ? (
+      <ProfileMusicPlayerFloating profile={liveProfile} />
+    ) : null;
 
   const previewRootRef = useRef<HTMLDivElement>(null);
 

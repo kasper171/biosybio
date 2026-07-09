@@ -194,7 +194,7 @@ export const enDashboard: MessageTree = {
     blur: "Blur",
     cardGlass: "Glass effect",
     cardGlassHint:
-      "Professional glassmorphism on the card surface. Overrides card color, opacity and blur while active.",
+      "Glassmorphism on the card surface and all bio mini-cards. Overrides card color/opacity/blur while active. Blur needs a visible wallpaper or overlay behind it to be noticeable.",
     borderRadius: "Border radius",
     borderStyle: "Border style",
     cardWidth: "Card width",

@@ -193,7 +193,7 @@ export const esDashboard: MessageTree = {
     blur: "Desenfoque",
     cardGlass: "Efecto glass",
     cardGlassHint:
-      "Glassmorphism profesional en la superficie del card. Reemplaza color, opacidad y blur del card mientras está activo.",
+      "Glassmorphism en la superficie del card y en todos los mini-cards de la bio. Reemplaza color/opacidad/blur del card mientras está activo. El blur necesita wallpaper u overlay visible detrás para notarse.",
     borderRadius: "Radio del borde",
     borderStyle: "Estilo del borde",
     cardWidth: "Ancho de tarjeta",

@@ -2,8 +2,16 @@ import type { CSSProperties } from "react";
 import { motion } from "motion/react";
 import type { Profile } from "@/lib/profile-storage";
 import {
-  buildCardSurfaceChrome,
+  buildCardBorderChrome,
 } from "@/lib/card-border";
+import {
+  cardGlassClass,
+  cardGlassIsolationClass,
+  cardGlassNeedsStableStacking,
+  cardGlassSurfaceLayerStyle,
+  cardSurfaceFillStyle,
+  isCardGlassEnabled,
+} from "@/lib/card-glass";
 import {
   getHotelBesideFrameStyle,
   getHotelBelowFrameStyle,
@@ -40,16 +48,16 @@ type Props = {
   belowSlot?: HotelBelowSlot;
 };
 
-function getCardChrome(
+function getCardBorderChrome(
   profile: Profile,
   size: HotelCardSize,
   shape: HotelCardShape,
   borderRadius?: number,
-): { style: CSSProperties; className: string } {
+) {
   const bw = Number(profile.card_border_width ?? 0);
   const bc = profile.card_border_color ?? "#ffffff";
   const radius = borderRadius ?? getHotelCardBorderRadius(size, shape);
-  return buildCardSurfaceChrome({
+  return buildCardBorderChrome({
     borderWidth: bw,
     borderColor: bc,
     borderRadius: radius,
@@ -57,8 +65,6 @@ function getCardChrome(
     glowEnabled: Boolean(profile.effect_glow),
     glowColor: profile.effect_glow_color ?? profile.card_border_color,
     glowSize: profile.effect_glow_size ?? 24,
-    background: hexToRgba(profile.card_color, profile.card_opacity),
-    backdropBlur: profile.card_blur,
   });
 }
 
@@ -74,16 +80,19 @@ function HotelBorderLabel({
   compact?: boolean;
 }) {
   const label = getHotelPlatformLabel(data);
+  const glassEnabled = isCardGlassEnabled(profile);
   const bg = hexToRgba(profile.card_color, Math.min(0.95, profile.card_opacity + 0.12));
 
   return (
     <span
       aria-hidden
-      className={`pointer-events-none absolute top-0 z-[5] max-w-[calc(100%-10px)] truncate rounded-full border border-white/[0.1] px-1.5 py-px font-medium leading-none text-white/50 backdrop-blur-sm tracking-wide ${
+      className={`pointer-events-none absolute top-0 z-[5] max-w-[calc(100%-10px)] truncate rounded-full border border-white/[0.1] px-1.5 py-px font-medium leading-none tracking-wide text-white/50 ${
+        glassEnabled ? "card-glass" : "backdrop-blur-sm"
+      } ${
         align === "center" ? "left-1/2 -translate-x-1/2 -translate-y-1/2" : "left-2 -translate-y-1/2"
       }`}
       style={{
-        background: bg,
+        ...(glassEnabled ? {} : { background: bg }),
         fontSize: compact ? HOTEL_BORDER_LABEL_SIZE.compact : HOTEL_BORDER_LABEL_SIZE.default,
       }}
     >
@@ -287,20 +296,36 @@ export function HotelProfileCard({
   // Garante 1 única configuração de arredondamento (a do card principal)
   const frameStyleSynced = { ...frameStyle, borderRadius: mainRadius };
   const chromeShape = layout.shape;
-  const chrome =
+  const borderChrome =
     variant === "outside"
-      ? getCardChrome(
+      ? getCardBorderChrome(
           profile,
           layout.size,
           chromeShape,
           besideSlot || belowSlot ? mainRadius : undefined,
         )
       : null;
+  const glassEnabled = isCardGlassEnabled(profile);
+  const glassStable = cardGlassNeedsStableStacking(profile);
 
   const labelAlign = besideSlot ? "center" : "start";
   const labelCompact = besideSlot?.slotCount === 2;
 
-  const inner = (
+  const inner = glassStable ? (
+    <div
+      className={`group relative h-full w-full overflow-hidden transition duration-300 hover:brightness-[1.03] ${
+        variant === "inside" ? "rounded-[inherit]" : ""
+      }`}
+    >
+      <HotelCardContent
+        data={data}
+        profile={profile}
+        layout={layout}
+        besideSlot={besideSlot}
+        belowSlot={belowSlot}
+      />
+    </div>
+  ) : (
     <motion.div
       className={`group relative h-full w-full overflow-hidden transition duration-300 hover:brightness-[1.03] ${
         variant === "inside" ? "rounded-[inherit]" : ""
@@ -327,33 +352,26 @@ export function HotelProfileCard({
     />
   );
 
-  if (variant === "outside" && chrome) {
-    const cardBlur = Number(profile.card_blur ?? 0);
-    const { backdropFilter, WebkitBackdropFilter, ...chromeWithoutBlur } = chrome.style;
-
+  if (variant === "outside" && borderChrome) {
     return (
-      <div className={`relative isolate ${className}`} style={frameStyleSynced}>
+      <div className={`relative ${cardGlassIsolationClass(profile)} ${className}`} style={frameStyleSynced}>
         {borderLabel}
         <div
-          className={`relative h-full w-full overflow-hidden ${chrome.className}`}
+          className={`relative h-full w-full ${borderChrome.className}`}
           style={{
-            ...chromeWithoutBlur,
+            ...borderChrome.style,
             borderRadius: mainRadius,
           }}
         >
-          {cardBlur > 0 ? (
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{
-                borderRadius: mainRadius,
-                backdropFilter: backdropFilter ?? `blur(${cardBlur}px)`,
-                WebkitBackdropFilter:
-                  WebkitBackdropFilter ?? backdropFilter ?? `blur(${cardBlur}px)`,
-              }}
-            />
-          ) : null}
-          <div className="relative z-10 h-full w-full">{inner}</div>
+          <div
+            aria-hidden
+            className={cardGlassClass(profile)}
+            style={{
+              ...cardGlassSurfaceLayerStyle(mainRadius),
+              ...cardSurfaceFillStyle(profile, glassEnabled),
+            }}
+          />
+          <div className="relative z-10 h-full w-full overflow-hidden">{inner}</div>
         </div>
       </div>
     );

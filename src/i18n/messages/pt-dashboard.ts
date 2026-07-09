@@ -193,7 +193,7 @@ export const ptDashboard: MessageTree = {
     blur: "Desfoque",
     cardGlass: "Efeito glass",
     cardGlassHint:
-      "Glassmorphism profissional na superfície do card. Substitui cor, opacidade e blur do card enquanto ativo.",
+      "Glassmorphism na superfície do card e em todos os mini-cards da bio. Substitui cor/opacidade/blur do card enquanto ativo. O blur precisa de wallpaper ou overlay visível atrás para ser perceptível.",
     borderRadius: "Raio da borda",
     borderStyle: "Estilo da borda",
     cardWidth: "Largura do card",

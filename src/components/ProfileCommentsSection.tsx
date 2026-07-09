@@ -16,9 +16,10 @@ type CommentRow = {
 type Props = {
   profileId: string;
   enabled: boolean;
+  cardGlassEnabled?: boolean;
 };
 
-export function ProfileCommentsSection({ profileId, enabled }: Props) {
+export function ProfileCommentsSection({ profileId, enabled, cardGlassEnabled = false }: Props) {
   const [comments, setComments] = useState<CommentRow[]>([]);
   const [idx, setIdx] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -179,7 +180,11 @@ export function ProfileCommentsSection({ profileId, enabled }: Props) {
         )}
 
         {formOpen && (
-          <div className="mx-auto mt-2 max-w-md rounded-lg border border-white/15 bg-black/50 p-2 text-left backdrop-blur-sm">
+          <div
+            className={`mx-auto mt-2 max-w-md rounded-lg border border-white/15 p-2 text-left ${
+              cardGlassEnabled ? "card-glass" : "bg-black/50 backdrop-blur-sm"
+            }`}
+          >
             {!currentUserId && (
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs text-white/65">Sign in to comment.</p>

@@ -5,6 +5,13 @@ import {
   buildCardBorderChrome,
 } from "@/lib/card-border";
 import {
+  cardGlassClass,
+  cardGlassIsolationClass,
+  cardGlassSurfaceLayerStyle,
+  cardSurfaceFillStyle,
+  isCardGlassEnabled,
+} from "@/lib/card-glass";
+import {
   getDiscordBodyStyle,
   getDiscordMutedStyle,
   getDiscordTitleStyle,
@@ -243,19 +250,19 @@ export function DiscordPresenceCard({
       ? outsideBorderChrome.style
       : undefined;
 
+  const outsideGlassEnabled = Boolean(profileTheme && isCardGlassEnabled(profileTheme));
+
   const outsideSurfaceStyle: CSSProperties | undefined =
     variant === "outside" && profileTheme
       ? {
-          background: hexToRgba(profileTheme.card_color, profileTheme.card_opacity),
-          backdropFilter: `blur(${profileTheme.card_blur}px)`,
-          WebkitBackdropFilter: `blur(${profileTheme.card_blur}px)`,
-          borderRadius: outsideBr,
+          ...cardGlassSurfaceLayerStyle(outsideBr),
+          ...cardSurfaceFillStyle(profileTheme, outsideGlassEnabled),
         }
       : undefined;
 
   const rootClass =
     variant === "outside"
-      ? "relative isolate box-border w-full max-w-full min-w-0"
+      ? `relative box-border w-full max-w-full min-w-0 ${cardGlassIsolationClass(profileTheme)}`
       : "w-full";
 
   const contentClass =
@@ -456,8 +463,13 @@ export function DiscordPresenceCard({
   if (variant === "outside") {
     return (
       <div className={cn(rootClass, outsideBorderChrome?.className)} style={outsideShellStyle}>
-        <div className={contentClass} style={outsideSurfaceStyle}>
-          {cardBody}
+        <div className="relative" style={{ borderRadius: outsideBr }}>
+          <div
+            aria-hidden
+            className={cardGlassClass(profileTheme)}
+            style={outsideSurfaceStyle}
+          />
+          <div className={contentClass}>{cardBody}</div>
         </div>
       </div>
     );
