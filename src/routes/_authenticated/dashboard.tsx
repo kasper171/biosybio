@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,8 +129,20 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
               ? "templates"
               : undefined,
   }),
-  component: Dashboard,
+  component: DashboardLayout,
 });
+
+function DashboardLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAlbumSubRoute =
+    pathname === "/dashboard/album" || pathname === "/dashboard/estilo";
+
+  if (isAlbumSubRoute) {
+    return <Outlet />;
+  }
+
+  return <DashboardIndex />;
+}
 
 function isPanelKey(value: unknown): value is PanelKey {
   return (
@@ -153,7 +165,7 @@ function isPanelKey(value: unknown): value is PanelKey {
 const TOOLS_PANEL_WIDTH = 360;
 const TOOLS_OPEN_STORAGE_KEY = "biosy-editor-tools-open";
 
-function Dashboard() {
+function DashboardIndex() {
   const { t } = useI18n();
   const personalizePanels = usePersonalizePanels();
   const { view, panel: panelFromSearch, section } = Route.useSearch();

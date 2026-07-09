@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { getInitialLocale, writeStoredLocale } from "@/i18n/locale-storage";
 import { interpolate, resolveMessage } from "@/i18n/resolve";
 import { messages } from "@/i18n/messages";
-import type { Locale, TranslateParams } from "@/i18n/types";
+import { DEFAULT_LOCALE, type Locale, type TranslateParams } from "@/i18n/types";
 import { preloadAllLocaleFlags } from "@/lib/locale-flag-assets";
 
 type I18nContextValue = {
@@ -14,11 +14,15 @@ type I18nContextValue = {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     writeStoredLocale(next);
+  }, []);
+
+  useEffect(() => {
+    setLocaleState(getInitialLocale());
   }, []);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { cleanUsername } from "@/lib/username";
 import { ensureLivePublicTemplateIfEnabled } from "@/lib/profile-template";
 import { normalizeProfile } from "@/lib/normalize-profile";

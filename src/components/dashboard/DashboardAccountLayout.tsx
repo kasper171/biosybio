@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import {
@@ -64,7 +64,7 @@ type NavLink = {
   id: string;
   label: string;
   icon: LucideIcon;
-  to: "/dashboard";
+  to: "/dashboard" | "/dashboard/estilo" | "/dashboard/album";
   search?: {
     view?: "personalizar";
     panel?: PersonalizePanelKey;
@@ -122,6 +122,7 @@ export function DashboardAccountLayout({
   overlay = false,
 }: Props) {
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { t } = useI18n();
   const personalizePanels = usePersonalizePanels();
   const [textScale, setTextScale] = useState<DashboardTextScale>(DASHBOARD_TEXT_SCALE_DEFAULT);
@@ -165,14 +166,14 @@ export function DashboardAccountLayout({
         label: "Estilo",
         icon: LayoutGrid,
         to: "/dashboard/estilo",
-        active: false,
+        active: pathname === "/dashboard/estilo",
       },
       {
         id: "album-studio",
         label: "Studio Álbum",
         icon: Layers,
         to: "/dashboard/album",
-        active: false,
+        active: pathname === "/dashboard/album",
       },
       {
         id: "privacidade",
@@ -191,7 +192,7 @@ export function DashboardAccountLayout({
         active: activeSection === "miscellaneous",
       },
     ],
-    [activeSection, t],
+    [activeSection, pathname, t],
   );
 
   const painelLink = contaLinks[0]!;

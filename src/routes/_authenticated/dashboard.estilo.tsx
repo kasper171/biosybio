@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProfileStylePicker } from "@/features/album/components/style/ProfileStylePicker";
+import { DashboardAlbumRouteLayout } from "@/features/album/components/DashboardAlbumRouteLayout";
 import "@/features/album/styles/album.css";
 
 export const Route = createFileRoute("/_authenticated/dashboard/estilo")({
@@ -7,5 +8,9 @@ export const Route = createFileRoute("/_authenticated/dashboard/estilo")({
 });
 
 function EstiloPage() {
-  return <ProfileStylePicker />;
+  return (
+    <DashboardAlbumRouteLayout>
+      <ProfileStylePicker />
+    </DashboardAlbumRouteLayout>
+  );
 }
