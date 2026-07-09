@@ -47,6 +47,7 @@ export const PUBLIC_PROFILE_SELECT = [
   "card_color",
   "card_opacity",
   "card_blur",
+  "card_glass_enabled",
   "card_border_color",
   "card_border_width",
   "card_border_radius",

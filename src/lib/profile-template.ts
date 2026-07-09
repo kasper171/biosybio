@@ -36,6 +36,7 @@ export type ProfileTheme = {
   card_color: string;
   card_opacity: number;
   card_blur: number;
+  card_glass_enabled: boolean;
   card_border_color: string;
   card_border_width: number;
   card_border_radius: number;
@@ -125,6 +126,7 @@ export function extractThemeFromProfile(profile: Profile): ProfileTheme {
     card_color: profile.card_color,
     card_opacity: profile.card_opacity,
     card_blur: profile.card_blur,
+    card_glass_enabled: profile.card_glass_enabled === true,
     card_border_color: profile.card_border_color,
     card_border_width: profile.card_border_width,
     card_border_radius: profile.card_border_radius,

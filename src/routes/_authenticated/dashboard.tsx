@@ -427,6 +427,7 @@ function Dashboard() {
         card_color: profile.card_color,
         card_opacity: profile.card_opacity,
         card_blur: profile.card_blur,
+        card_glass_enabled: profile.card_glass_enabled === true,
         card_border_color: profile.card_border_color,
         card_border_width: profile.card_border_width,
         card_border_radius: profile.card_border_radius,
@@ -1335,6 +1336,7 @@ function AparenciaPanel({
   blocks: import("@/lib/profile-blocks").ProfileBlock[];
   minCardHeight: number;
 }) {
+  const { t } = useI18n();
   const borderStyle = profile.card_border_style ?? "solid";
   const isCustomBorder = borderStyle !== "solid";
   const cardHeight = clampCardHeight(profile, profile.card_height ?? DEFAULT_CARD_HEIGHT, blocks);
@@ -1361,6 +1363,16 @@ function AparenciaPanel({
       </div>
       <SliderField label="Card opacity" min={0} max={1} step={0.05} value={profile.card_opacity} onChange={(v) => update("card_opacity", v)} display={`${Math.round(profile.card_opacity * 100)}%`} />
       <SliderField label="Blur" min={0} max={40} step={1} value={profile.card_blur} onChange={(v) => update("card_blur", v)} display={`${profile.card_blur}px`} />
+      <ToggleField
+        label={t("dashboard.aparencia.cardGlass")}
+        checked={!!profile.card_glass_enabled}
+        onChange={(v) => update("card_glass_enabled", v)}
+      />
+      {profile.card_glass_enabled && (
+        <p className="text-[11px] leading-relaxed text-white/40">
+          {t("dashboard.aparencia.cardGlassHint")}
+        </p>
+      )}
       <SliderField label="Border radius" min={0} max={40} step={1} value={profile.card_border_radius} onChange={(v) => update("card_border_radius", v)} display={`${profile.card_border_radius}px`} />
 
       <BorderStylePicker value={borderStyle} onChange={(v) => update("card_border_style", v)} />

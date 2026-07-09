@@ -192,6 +192,9 @@ export const enDashboard: MessageTree = {
     cardColor: "Card color",
     cardOpacity: "Card opacity",
     blur: "Blur",
+    cardGlass: "Glass effect",
+    cardGlassHint:
+      "Professional glassmorphism on the card surface. Overrides card color, opacity and blur while active.",
     borderRadius: "Border radius",
     borderStyle: "Border style",
     cardWidth: "Card width",

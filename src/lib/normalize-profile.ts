@@ -28,6 +28,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     card_width: Number(p.card_width ?? DEFAULT_CARD_WIDTH) || DEFAULT_CARD_WIDTH,
     card_height: Number(p.card_height ?? DEFAULT_CARD_HEIGHT) || DEFAULT_CARD_HEIGHT,
     card_opacity: Number(p.card_opacity) ?? 0.7,
+    card_glass_enabled: p.card_glass_enabled === true,
     effect_glow_size: Number(p.effect_glow_size) || 24,
     effect_glow_color: p.effect_glow_color ?? p.card_border_color ?? "#ff2d7a",
     effect_border_glow: p.effect_border_glow === true,

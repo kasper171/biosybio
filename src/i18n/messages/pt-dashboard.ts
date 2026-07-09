@@ -191,6 +191,9 @@ export const ptDashboard: MessageTree = {
     cardColor: "Cor do card",
     cardOpacity: "Opacidade do card",
     blur: "Desfoque",
+    cardGlass: "Efeito glass",
+    cardGlassHint:
+      "Glassmorphism profissional na superfície do card. Substitui cor, opacidade e blur do card enquanto ativo.",
     borderRadius: "Raio da borda",
     borderStyle: "Estilo da borda",
     cardWidth: "Largura do card",

@@ -826,15 +826,20 @@ export function ProfileCard({
   const bioTextEffect = normalizeTextAnimationId(profile.bio_text_animation);
 
   // Blur fica dentro do Tilt para acompanhar tilt + hover lift
+  const glassEnabled = profile.card_glass_enabled === true;
   const blurLayerStyle: CSSProperties = {
     position: "absolute",
     inset: 0,
     zIndex: 0,
     pointerEvents: "none",
-    background: hexToRgba(profile.card_color, profile.card_opacity),
-    backdropFilter: `blur(${profile.card_blur}px)`,
-    WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
     borderRadius: innerRadius,
+    ...(glassEnabled
+      ? {}
+      : {
+          background: hexToRgba(profile.card_color, profile.card_opacity),
+          backdropFilter: `blur(${profile.card_blur}px)`,
+          WebkitBackdropFilter: `blur(${profile.card_blur}px)`,
+        }),
   };
 
   // Frame: borda CSS (tracejada etc.) fica aqui; conteúdo interno não pode ter a mesma altura fixa
@@ -912,7 +917,7 @@ export function ProfileCard({
           {/* Conteúdo: overflow:hidden para clips do banner */}
           <div style={contentWrapStyle}>
             {/* Blur acompanha tilt + hover porque está DENTRO do Tilt */}
-            <div aria-hidden style={blurLayerStyle} />
+            <div aria-hidden className={glassEnabled ? "card-glass" : undefined} style={blurLayerStyle} />
             <CardLayoutContent
               profile={profile}
               layout={profile.card_layout ?? DEFAULT_CARD_LAYOUT}

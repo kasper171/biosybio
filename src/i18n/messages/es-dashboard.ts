@@ -191,6 +191,9 @@ export const esDashboard: MessageTree = {
     cardColor: "Color de tarjeta",
     cardOpacity: "Opacidad de tarjeta",
     blur: "Desenfoque",
+    cardGlass: "Efecto glass",
+    cardGlassHint:
+      "Glassmorphism profesional en la superficie del card. Reemplaza color, opacidad y blur del card mientras está activo.",
     borderRadius: "Radio del borde",
     borderStyle: "Estilo del borde",
     cardWidth: "Ancho de tarjeta",

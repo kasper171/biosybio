@@ -25,6 +25,7 @@ export type Database = {
           banner_url: string | null
           bio: string
           card_blur: number
+          card_glass_enabled: boolean
           card_border_color: string
           card_border_radius: number
           card_border_style: string
@@ -95,6 +96,7 @@ export type Database = {
           banner_url?: string | null
           bio?: string
           card_blur?: number
+          card_glass_enabled?: boolean
           card_border_color?: string
           card_border_radius?: number
           card_border_style?: string
@@ -165,6 +167,7 @@ export type Database = {
           banner_url?: string | null
           bio?: string
           card_blur?: number
+          card_glass_enabled?: boolean
           card_border_color?: string
           card_border_radius?: number
           card_border_style?: string

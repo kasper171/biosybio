@@ -67,6 +67,7 @@ function buildTemplatePreviewProfile(template: ProfileTemplateWithAuthor): Profi
     card_color: t.card_color,
     card_opacity: t.card_opacity,
     card_blur: t.card_blur,
+    card_glass_enabled: t.card_glass_enabled === true,
     card_border_color: t.card_border_color,
     card_border_width: t.card_border_width,
     card_border_radius: t.card_border_radius,

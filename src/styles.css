@@ -2322,6 +2322,23 @@ html, body {
   transform-style: preserve-3d;
 }
 
+/* Glassmorphism profissional — superfície do card de bio (ProfileCard blur layer) */
+.card-glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .card-glass {
+    background: rgba(20, 20, 25, 0.85);
+  }
+}
+
 /* Efeito de entrada externo: nunca anima o card (mantem backdrop-filter) */
 .biosy-entry-overlay {
   position: absolute;

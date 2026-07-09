@@ -54,6 +54,8 @@ export type Profile = {
   card_color: string;
   card_opacity: number;
   card_blur: number;
+  /** Glassmorphism profissional na superfície do card de bio */
+  card_glass_enabled: boolean;
   card_border_color: string;
   card_border_width: number;
   card_border_radius: number;
