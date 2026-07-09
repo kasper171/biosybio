@@ -1,10 +1,7 @@
-import { useState } from "react";
-import type { AlbumBlock, AlbumBlockType, AlbumConnectionsRow, AlbumTheme } from "@/features/album/types/album.types";
+import type { AlbumBlock, AlbumBlockType } from "@/features/album/types/album.types";
 import { AlbumBlockPalette } from "@/features/album/components/editor/AlbumBlockPalette";
 import { getAlbumBlockDef } from "@/features/album/registry/blockRegistry";
 import { albumCreateBlockId } from "@/features/album/lib/album-grid-utils";
-import { useAlbumBlockResize } from "@/features/album/hooks/useAlbumBlockResize";
-import { useAlbumI18n } from "@/features/album/i18n/album-messages";
 
 type Props = {
   blocks: AlbumBlock[];
@@ -14,10 +11,6 @@ type Props = {
 };
 
 export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSelect }: Props) {
-  const { t } = useAlbumI18n();
-  const { applyPreset, presets } = useAlbumBlockResize(onBlocksChange);
-  const selected = blocks.find((b) => b.id === selectedId);
-
   const addBlock = (type: AlbumBlockType) => {
     const def = getAlbumBlockDef(type);
     if (!def) return;
@@ -37,39 +30,17 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <AlbumBlockPalette onAdd={addBlock} />
-      {selected ? (
-        <div className="album-editor__presets">
-          <p className="album-editor__presets-title">{t("album.editor.size")}</p>
-          <div className="album-editor__presets-row">
-            {Object.entries(presets).map(([key, preset]) => (
-              <button
-                key={key}
-                type="button"
-                className="album-editor__preset-btn"
-                onClick={() => applyPreset(selected.id, key)}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      {selectedId ? (
+        <p className="text-xs leading-relaxed text-white/40">
+          Clique no bloco para selecionar. Arraste para mover. Os tamanhos aparecem no bloco selecionado.
+        </p>
+      ) : (
+        <p className="text-xs leading-relaxed text-white/40">
+          Adicione um bloco ou clique em um existente no preview para editar tamanho e posição.
+        </p>
+      )}
     </div>
   );
 }
-
-export function useAlbumEditorSelection() {
-  return useState<string | null>(null);
-}
-
-export type AlbumEditorPreviewProps = {
-  blocks: AlbumBlock[];
-  theme: AlbumTheme;
-  userId: string;
-  connections: AlbumConnectionsRow | null;
-  onBlocksChange: (blocks: AlbumBlock[]) => void;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-};

@@ -12,6 +12,7 @@ import {
 } from "@/features/album/lib/album-grid-utils";
 import { AlbumBlockShell } from "@/features/album/components/editor/AlbumBlockShell";
 import { releaseAlbumBlockMedia } from "@/features/album/lib/album-block-media";
+import { useAlbumBlockResize } from "@/features/album/hooks/useAlbumBlockResize";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -38,6 +39,8 @@ export function AlbumGrid({
   onSelect,
   onLayoutChange,
 }: Props) {
+  const { applyPreset } = useAlbumBlockResize(onLayoutChange ?? (() => {}));
+
   const layouts = useMemo(() => {
     const lg = albumBlocksToLayout(blocks);
     return { lg, md: lg, sm: lg.map((item) => ({ ...item, x: 0, w: 1 })) };
@@ -51,7 +54,7 @@ export function AlbumGrid({
         <div className="album-empty-state__glow" aria-hidden />
         <p className="album-empty-state__title">Seu álbum está vazio</p>
         <p className="album-empty-state__desc">
-          Arraste blocos da paleta ou clique em um tipo para começar a montar seu layout.
+          Adicione blocos na paleta ou clique em um tipo para começar a montar seu layout.
         </p>
       </div>
     );
@@ -71,7 +74,6 @@ export function AlbumGrid({
         isResizable={isEdit}
         compactType="vertical"
         preventCollision={false}
-        draggableHandle=".album-block-drag-handle"
         onLayoutChange={(_current: Layout[], allLayouts) => {
           if (!isEdit || !onLayoutChange) return;
           const lg = allLayouts.lg ?? _current;
@@ -107,14 +109,14 @@ export function AlbumGrid({
           return (
             <div key={block.id}>
               <AlbumBlockShell
-                block={block}
-                labelKey={def.labelKey}
                 selected={isSelected}
                 onSelect={() => onSelect?.(block.id)}
                 onRemove={() => {
                   void releaseAlbumBlockMedia(block);
                   onLayoutChange?.(blocks.filter((b) => b.id !== block.id));
+                  if (isSelected) onSelect?.(null);
                 }}
+                onApplyPreset={(key) => applyPreset(block.id, key)}
               >
                 <Editor
                   block={block as never}

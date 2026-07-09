@@ -8,6 +8,10 @@ import type {
   AlbumTheme,
   ProfileDisplayStyle,
 } from "@/features/album/types/album.types";
+import type { Profile } from "@/lib/profile-storage";
+import { normalizeProfile } from "@/lib/normalize-profile";
+import { attachProfileRoles } from "@/lib/profile-roles";
+import { resolveAlbumConnections } from "@/features/album/lib/resolve-album-connections";
 import { albumBlockSchema, albumThemeSchema } from "@/features/album/lib/security/album-layout-schema";
 
 import {
@@ -15,15 +19,13 @@ import {
   albumProfileIsPublic,
 } from "@/features/album/lib/security/album-profile-visibility.server";
 
-const PROFILE_META_SELECT =
-  "id, username, display_name, avatar_url, show_username, show_view_count, show_public_uid, view_count, public_uid";
-
 export type AlbumPublicPayload = {
   style: ProfileDisplayStyle;
   meta: AlbumPublicProfileMeta;
+  profile: Profile;
   layout: AlbumBlock[];
   theme: AlbumTheme;
-  connections: AlbumConnectionsRow | null;
+  connections: AlbumConnectionsRow;
 };
 
 function parseLayout(raw: unknown): AlbumBlock[] {
@@ -49,21 +51,23 @@ export async function fetchAlbumPublicProfile(username: string): Promise<AlbumPu
   const clean = username.trim().toLowerCase();
   if (!clean) return null;
 
-  const { data: profile, error: profileError } = await supabaseAdmin
+  const { data: profileRow, error: profileError } = await supabaseAdmin
     .from("profiles")
-    .select(PROFILE_META_SELECT)
+    .select("*")
     .eq("username", clean)
     .maybeSingle();
 
-  if (profileError || !profile) return null;
+  if (profileError || !profileRow) return null;
 
-  if (!albumProfileIsPublic(profile as Parameters<typeof albumProfileIsPublic>[0])) {
+  if (!albumProfileIsPublic(profileRow as Parameters<typeof albumProfileIsPublic>[0])) {
     return null;
   }
 
-  const userId = profile.id as string;
+  const userId = profileRow.id as string;
+  const normalized = normalizeProfile(profileRow as Record<string, unknown>);
+  const profileWithRoles = await attachProfileRoles(normalized);
 
-  const [{ data: styleRow }, { data: layoutRow }, { data: connections }] = await Promise.all([
+  const [{ data: styleRow }, { data: layoutRow }, { data: albumConnectionsRow }] = await Promise.all([
     supabaseAdmin.from("profile_display_styles").select("style").eq("user_id", userId).maybeSingle(),
     supabaseAdmin.from("album_layouts").select("layout, theme").eq("user_id", userId).maybeSingle(),
     supabaseAdmin.from("album_connections").select("*").eq("user_id", userId).maybeSingle(),
@@ -72,7 +76,9 @@ export async function fetchAlbumPublicProfile(username: string): Promise<AlbumPu
   const style = (styleRow?.style ?? "card") as ProfileDisplayStyle;
   if (style !== "album") return null;
 
-  const visibleProfile = albumApplyVisibilityMeta(profile as Parameters<typeof albumApplyVisibilityMeta>[0]);
+  const visibleProfile = albumApplyVisibilityMeta(
+    profileWithRoles as Parameters<typeof albumApplyVisibilityMeta>[0],
+  );
 
   const showUsername = visibleProfile.show_username !== false;
   const showViewCount = visibleProfile.show_view_count !== false;
@@ -87,12 +93,15 @@ export async function fetchAlbumPublicProfile(username: string): Promise<AlbumPu
     viewCount: showViewCount ? Number(visibleProfile.view_count ?? 0) : 0,
   };
 
+  const connections = resolveAlbumConnections(profileWithRoles, albumConnectionsRow as AlbumConnectionsRow | null);
+
   return {
     style,
     meta,
+    profile: visibleProfile as Profile,
     layout: parseLayout(layoutRow?.layout),
     theme: parseTheme(layoutRow?.theme),
-    connections: (connections as AlbumConnectionsRow | null) ?? null,
+    connections,
   };
 }
 

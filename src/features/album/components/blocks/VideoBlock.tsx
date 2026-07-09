@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Film, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import type { AlbumBlockEditorProps, AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
 import { uploadAlbumMediaFile } from "@/features/album/services/albumSupabaseService";
 
@@ -8,26 +8,30 @@ type EditorProps = AlbumBlockEditorProps<"video">;
 export function VideoBlockEditor({ block, onChange }: EditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  if (block.data.url) {
+    return (
+      <video
+        src={block.data.url}
+        className="h-full w-full object-cover"
+        controls
+        muted
+        playsInline
+        draggable={false}
+      />
+    );
+  }
+
   return (
-    <div className="flex h-full flex-col gap-2 p-3">
-      {block.data.url ? (
-        <video
-          src={block.data.url}
-          className="max-h-full flex-1 rounded-xl object-cover"
-          controls
-          muted
-          playsInline
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] text-white/50 transition hover:border-[oklch(0.65_0.28_0)] hover:text-white"
-        >
-          <Upload className="h-5 w-5" />
-          <span className="text-xs">Enviar vídeo (mp4/webm)</span>
-        </button>
-      )}
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        inputRef.current?.click();
+      }}
+      className="flex h-full w-full flex-col items-center justify-center gap-2 bg-white/[0.03] text-white/40 transition hover:text-white/70"
+    >
+      <Upload className="h-5 w-5" />
+      <span className="text-xs">Enviar vídeo</span>
       <input
         ref={inputRef}
         type="file"
@@ -51,28 +55,23 @@ export function VideoBlockEditor({ block, onChange }: EditorProps) {
           });
         }}
       />
-    </div>
+    </button>
   );
 }
 
 export function VideoBlockPublic({ block }: AlbumBlockPublicProps<"video">) {
-  if (!block.data.url) {
-    return (
-      <div className="flex h-full items-center justify-center text-white/25">
-        <Film className="h-8 w-8" />
-      </div>
-    );
-  }
+  if (!block.data.url) return null;
   return (
     <video
       src={block.data.url}
       poster={block.data.posterUrl}
-      className="h-full w-full rounded-[inherit] object-cover"
+      className="h-full w-full object-cover"
       controls={!block.data.autoplay}
       autoPlay={block.data.autoplay}
       muted={block.data.muted ?? true}
       loop={block.data.loop}
       playsInline
+      draggable={false}
     />
   );
 }

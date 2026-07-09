@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronRight, Eye, PanelLeftClose, Save, Share2 } from "lucide-react";
@@ -15,11 +15,11 @@ import { AlbumGrid } from "@/features/album/components/editor/AlbumGrid";
 import { AlbumLayoutToolsPanel } from "@/features/album/components/editor/AlbumLayoutToolsPanel";
 import { AlbumThemePanel } from "@/features/album/components/editor/AlbumThemePanel";
 import { AlbumConnectionsPanel } from "@/features/album/components/editor/AlbumConnectionsPanel";
+import { AlbumStudioLayout } from "@/features/album/components/public/AlbumProfileSidebar";
 import { AlbumI18nProvider, useAlbumI18n } from "@/features/album/i18n/album-messages";
 import { useAlbumLayout } from "@/features/album/hooks/useAlbumLayout";
 import { useAlbumStudioPanels } from "@/features/album/hooks/useAlbumStudioPanels";
-import { fetchAlbumConnectionsClient } from "@/features/album/services/albumSupabaseService";
-import type { AlbumConnectionsRow } from "@/features/album/types/album.types";
+import { resolveAlbumConnections } from "@/features/album/lib/resolve-album-connections";
 import { albumPageStyle } from "@/features/album/lib/effects/album-profile-colors";
 
 const TOOLS_PANEL_WIDTH = 360;
@@ -34,7 +34,7 @@ type Props = {
 };
 
 function AlbumPersonalizarShellInner({
-  profile,
+  profile: profileProp,
   textScale,
   toolsOpen,
   setToolsPanelOpen,
@@ -45,14 +45,13 @@ function AlbumPersonalizarShellInner({
   const { t: albumT } = useAlbumI18n();
   const albumPanels = useAlbumStudioPanels();
   const { layout, theme, setLayout, setTheme, saving, flushSave } = useAlbumLayout();
-  const [connections, setConnections] = useState<AlbumConnectionsRow | null>(null);
+  const [profile, setProfile] = useState(profileProp);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
 
-  useEffect(() => {
-    void fetchAlbumConnectionsClient(profile.id)
-      .then(setConnections)
-      .catch(() => setConnections(null));
-  }, [profile.id]);
+  const connections = useMemo(() => resolveAlbumConnections(profile), [profile]);
+
+  const updateProfile = <K extends keyof Profile>(k: K, v: Profile[K]) =>
+    setProfile((p) => ({ ...p, [k]: v }));
 
   const panelLabel =
     albumPanels.find((p) => p.key === openPanel)?.label ?? albumT("album.studio.tabLayout");
@@ -82,16 +81,18 @@ function AlbumPersonalizarShellInner({
       >
         <div className="album-public-view min-h-full">
           <div className="album-public-view__inner px-4 py-8 lg:px-8">
-            <AlbumGrid
-              blocks={layout}
-              theme={theme}
-              mode="edit"
-              userId={profile.id}
-              connections={connections}
-              selectedId={selectedBlockId}
-              onSelect={setSelectedBlockId}
-              onLayoutChange={setLayout}
-            />
+            <AlbumStudioLayout profile={profile} theme={theme}>
+              <AlbumGrid
+                blocks={layout}
+                theme={theme}
+                mode="edit"
+                userId={profile.id}
+                connections={connections}
+                selectedId={selectedBlockId}
+                onSelect={setSelectedBlockId}
+                onLayoutChange={setLayout}
+              />
+            </AlbumStudioLayout>
           </div>
         </div>
       </motion.div>
@@ -145,7 +146,11 @@ function AlbumPersonalizarShellInner({
                 <AlbumThemePanel theme={theme} onChange={setTheme} />
               ) : null}
               {openPanel === "album-connections" ? (
-                <AlbumConnectionsPanel userId={profile.id} />
+                <AlbumConnectionsPanel
+                  profile={profile}
+                  update={updateProfile}
+                  onBatchUpdate={(patch) => setProfile((p) => ({ ...p, ...patch }))}
+                />
               ) : null}
             </motion.div>
           </AnimatePresence>

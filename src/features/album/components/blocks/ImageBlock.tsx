@@ -1,8 +1,7 @@
 import { useRef } from "react";
-import { ImageIcon, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import type { AlbumBlockEditorProps, AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
 import { uploadAlbumMediaFile } from "@/features/album/services/albumSupabaseService";
-import { albumSanitizePlainText } from "@/features/album/lib/security/album-sanitize";
 
 type EditorProps = AlbumBlockEditorProps<"image">;
 
@@ -24,24 +23,29 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
     }
   };
 
+  if (block.data.url) {
+    return (
+      <img
+        src={block.data.url}
+        alt=""
+        className="h-full w-full object-cover"
+        style={{ objectFit: block.data.objectFit ?? "cover" }}
+        draggable={false}
+      />
+    );
+  }
+
   return (
-    <div className="flex h-full flex-col gap-2 p-3">
-      {block.data.url ? (
-        <img
-          src={block.data.url}
-          alt={block.data.alt ?? ""}
-          className="max-h-[55%] flex-1 rounded-xl object-cover"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] text-white/50 transition hover:border-[oklch(0.65_0.28_0)] hover:text-white"
-        >
-          <Upload className="h-5 w-5" />
-          <span className="text-xs">Enviar imagem</span>
-        </button>
-      )}
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        inputRef.current?.click();
+      }}
+      className="flex h-full w-full flex-col items-center justify-center gap-2 bg-white/[0.03] text-white/40 transition hover:text-white/70"
+    >
+      <Upload className="h-5 w-5" />
+      <span className="text-xs">Enviar imagem</span>
       <input
         ref={inputRef}
         type="file"
@@ -52,31 +56,20 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
           if (f) void onFile(f);
         }}
       />
-      <input
-        value={block.data.alt ?? ""}
-        onChange={(e) => onChange({ ...block.data, alt: albumSanitizePlainText(e.target.value, 200) })}
-        placeholder="Texto alternativo"
-        className="rounded-lg border border-white/10 bg-black/30 px-2 py-1 text-xs text-white"
-      />
-    </div>
+    </button>
   );
 }
 
 export function ImageBlockPublic({ block }: AlbumBlockPublicProps<"image">) {
-  if (!block.data.url) {
-    return (
-      <div className="flex h-full items-center justify-center text-white/25">
-        <ImageIcon className="h-8 w-8" />
-      </div>
-    );
-  }
+  if (!block.data.url) return null;
   return (
     <img
       src={block.data.url}
-      alt={block.data.alt ?? ""}
-      className="h-full w-full rounded-[inherit] object-cover"
+      alt=""
+      className="h-full w-full object-cover"
       style={{ objectFit: block.data.objectFit ?? "cover" }}
       loading="lazy"
+      draggable={false}
     />
   );
 }

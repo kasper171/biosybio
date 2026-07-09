@@ -49,8 +49,10 @@ export const albumMessagesPt = {
       glowSize: "Intensidade do glow",
     },
     connections: {
-      title: "Conexões do Álbum",
-      subtitle: "Vincule contas separadas do Card Normal.",
+      title: "Conexões",
+      subtitle: "Mesmas conexões do Card Normal — não precisa vincular de novo.",
+      sharedNote:
+        "Conexões compartilhadas com o Card Normal — vincule uma vez e funciona nos dois estilos.",
       discord: "Discord",
       habbo: "Habbo",
       habblet: "Habblet",
