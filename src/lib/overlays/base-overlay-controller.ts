@@ -1,7 +1,9 @@
 import type { OverlayController } from "@/lib/overlays/types";
 
 const DEFAULT_OPACITY = 0.08;
-const MAX_DPR = 2;
+/** Renderiza em resolução reduzida e upscale via CSS — menos custo de putImageData. */
+const RENDER_SCALE = 0.75;
+const MAX_DPR = 1;
 
 export abstract class BaseOverlayController implements OverlayController {
   protected canvas: HTMLCanvasElement | null = null;
@@ -11,8 +13,10 @@ export abstract class BaseOverlayController implements OverlayController {
   private lastFrameAt = 0;
   private opacity = DEFAULT_OPACITY;
   private resizeObserver: ResizeObserver | null = null;
+  private bufferWidth = 1;
+  private bufferHeight = 1;
 
-  protected frameIntervalMs = 80;
+  protected frameIntervalMs = 50;
 
   protected abstract renderFrame(
     ctx: CanvasRenderingContext2D,
@@ -27,16 +31,24 @@ export abstract class BaseOverlayController implements OverlayController {
 
     const canvas = document.createElement("canvas");
     canvas.setAttribute("aria-hidden", "true");
-    canvas.style.position = "absolute";
-    canvas.style.inset = "0";
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
-    canvas.style.pointerEvents = "none";
-    canvas.style.opacity = String(this.opacity);
+    Object.assign(canvas.style, {
+      position: "absolute",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      pointerEvents: "none",
+      opacity: String(this.opacity),
+      willChange: "opacity, transform",
+      transform: "translateZ(0)",
+      imageRendering: "auto",
+    });
 
     container.appendChild(canvas);
     this.canvas = canvas;
-    this.ctx = canvas.getContext("2d", { alpha: true });
+    this.ctx = canvas.getContext("2d", {
+      alpha: true,
+      desynchronized: true,
+    } as CanvasRenderingContext2DSettings);
 
     this.syncCanvasSize();
     this.resizeObserver = new ResizeObserver(() => this.syncCanvasSize());
@@ -68,16 +80,8 @@ export abstract class BaseOverlayController implements OverlayController {
     }
   }
 
-  protected getLogicalSize(): { width: number; height: number; dpr: number } {
-    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-    if (!this.canvas) {
-      return { width: 1, height: 1, dpr };
-    }
-    return {
-      width: Math.max(1, Math.floor(this.canvas.width / dpr)),
-      height: Math.max(1, Math.floor(this.canvas.height / dpr)),
-      dpr,
-    };
+  protected getBufferSize(): { width: number; height: number } {
+    return { width: this.bufferWidth, height: this.bufferHeight };
   }
 
   private handleWindowResize = (): void => {
@@ -86,20 +90,22 @@ export abstract class BaseOverlayController implements OverlayController {
 
   private syncCanvasSize(): void {
     if (!this.canvas || !this.ctx || !this.container) return;
-    const width = Math.max(1, Math.floor(this.container.clientWidth || window.innerWidth));
-    const height = Math.max(1, Math.floor(this.container.clientHeight || window.innerHeight));
-    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-    this.canvas.width = Math.floor(width * dpr);
-    this.canvas.height = Math.floor(height * dpr);
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.renderFrame(this.ctx, width, height, performance.now());
+    const displayWidth = Math.max(1, Math.floor(this.container.clientWidth || window.innerWidth));
+    const displayHeight = Math.max(1, Math.floor(this.container.clientHeight || window.innerHeight));
+    const scale = RENDER_SCALE * MAX_DPR;
+    this.bufferWidth = Math.max(1, Math.floor(displayWidth * scale));
+    this.bufferHeight = Math.max(1, Math.floor(displayHeight * scale));
+    this.canvas.width = this.bufferWidth;
+    this.canvas.height = this.bufferHeight;
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.renderFrame(this.ctx, this.bufferWidth, this.bufferHeight, performance.now());
   }
 
   private tick = (timestamp: number): void => {
     if (!this.ctx || !this.canvas) return;
 
     if (timestamp - this.lastFrameAt >= this.frameIntervalMs) {
-      const { width, height } = this.getLogicalSize();
+      const { width, height } = this.getBufferSize();
       this.renderFrame(this.ctx, width, height, timestamp);
       this.lastFrameAt = timestamp;
     }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { createOverlayController } from "@/lib/overlays/overlay-registry";
-import type { ProfileOverlayType } from "@/lib/overlays/types";
+import type { OverlayRuntimeOptions, ProfileOverlayType } from "@/lib/overlays/types";
 import type { OverlayController } from "@/lib/overlays/types";
 
 const HOST_Z_INDEX = 9999;
@@ -8,15 +8,11 @@ const HOST_Z_INDEX = 9999;
 export type ProfileOverlayScope = "viewport" | "preview";
 
 type Options = {
-  /** preview = só o container do preview (studio). viewport = página pública inteira. */
   scope?: ProfileOverlayScope;
   containerRef?: RefObject<HTMLElement | null>;
+  runtime?: OverlayRuntimeOptions;
 };
 
-/**
- * Monta overlay visual isolado (fora da árvore de conteúdo do perfil).
- * No studio usa o container do preview; na página pública cobre o viewport.
- */
 export function useProfileOverlay(
   activeType: ProfileOverlayType | null,
   cssOpacity: number,
@@ -26,6 +22,7 @@ export function useProfileOverlay(
   const hostRef = useRef<HTMLDivElement | null>(null);
   const scope = options?.scope ?? "viewport";
   const containerRef = options?.containerRef;
+  const runtime = options?.runtime;
   const [containerEl, setContainerEl] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -55,13 +52,15 @@ export function useProfileOverlay(
       height: isPreview ? "100%" : "100vh",
       pointerEvents: "none",
       zIndex: String(HOST_Z_INDEX),
+      willChange: "opacity",
+      transform: "translateZ(0)",
     });
 
     const mountTarget = isPreview ? containerEl! : document.body;
     mountTarget.appendChild(host);
     hostRef.current = host;
 
-    const controller = createOverlayController(activeType);
+    const controller = createOverlayController(activeType, runtime);
     controller.mount(host);
     controller.setOpacity(cssOpacity);
     controllerRef.current = controller;
@@ -72,9 +71,15 @@ export function useProfileOverlay(
       controllerRef.current = null;
       hostRef.current = null;
     };
-  }, [activeType, scope, containerEl]);
+  }, [activeType, scope, containerEl, runtime?.color, runtime?.spacing]);
 
   useEffect(() => {
     controllerRef.current?.setOpacity(cssOpacity);
   }, [cssOpacity]);
+
+  useEffect(() => {
+    if (!runtime) return;
+    controllerRef.current?.setColor?.(runtime.color);
+    controllerRef.current?.setSpacing?.(runtime.spacing);
+  }, [runtime?.color, runtime?.spacing]);
 }

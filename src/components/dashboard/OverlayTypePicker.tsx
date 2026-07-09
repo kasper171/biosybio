@@ -1,18 +1,29 @@
 import { useEffect, useRef } from "react";
-import type { ProfileOverlayType } from "@/lib/overlays/types";
+import {
+  PROFILE_OVERLAY_TYPES,
+  isStaticOverlayType,
+  type ProfileOverlayType,
+} from "@/lib/overlays/types";
 import { DenseNoiseFrameCycler } from "@/lib/overlays/dense-noise-frame-cache";
+import {
+  applyStaticTextureStyles,
+} from "@/lib/overlays/static-texture-styles";
 import {
   drawGrain,
   drawScanlines,
   drawSparse,
   scanlineOffsetFromTime,
 } from "@/lib/overlays/overlay-draw";
+import {
+  OVERLAY_COLOR_DEFAULT,
+  OVERLAY_SPACING_DEFAULT,
+} from "@/lib/overlays/profile-overlays";
 import { cn } from "@/lib/utils";
 
 const PREVIEW_SIZE = 72;
-const PREVIEW_INTERVAL_MS = 80;
+const PREVIEW_INTERVAL_MS = 50;
 
-function renderPreviewFrame(
+function renderAnimatedPreview(
   ctx: CanvasRenderingContext2D,
   type: ProfileOverlayType,
   size: number,
@@ -32,25 +43,64 @@ function renderPreviewFrame(
     case "film-grain":
       drawGrain(ctx, size, size, 0.08);
       break;
+    default:
+      break;
   }
+}
+
+function StaticPreview({
+  type,
+  color = OVERLAY_COLOR_DEFAULT,
+  spacing = OVERLAY_SPACING_DEFAULT,
+}: {
+  type: ProfileOverlayType;
+  color?: string;
+  spacing?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !isStaticOverlayType(type)) return;
+    applyStaticTextureStyles(el, type, color, spacing);
+  }, [type, color, spacing]);
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className="h-[72px] w-[72px] shrink-0 rounded-md bg-black/40"
+      style={{ opacity: 0.55 }}
+    />
+  );
 }
 
 type PreviewProps = {
   type: ProfileOverlayType;
   className?: string;
   opacity?: number;
+  color?: string;
+  spacing?: number;
 };
 
-export function OverlayPreviewCanvas({ type, className, opacity = 0.35 }: PreviewProps) {
+export function OverlayPreviewCanvas({
+  type,
+  className,
+  opacity = 0.35,
+  color,
+  spacing,
+}: PreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const denseCyclerRef = useRef(new DenseNoiseFrameCycler());
 
   useEffect(() => {
+    if (isStaticOverlayType(type)) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true } as CanvasRenderingContext2DSettings);
     if (!ctx) return;
 
     canvas.width = PREVIEW_SIZE;
@@ -59,29 +109,37 @@ export function OverlayPreviewCanvas({ type, className, opacity = 0.35 }: Previe
 
     const tick = (timestamp: number) => {
       if (timestamp - lastFrameRef.current >= PREVIEW_INTERVAL_MS) {
-        renderPreviewFrame(ctx, type, PREVIEW_SIZE, timestamp, denseCyclerRef.current);
+        renderAnimatedPreview(ctx, type, PREVIEW_SIZE, timestamp, denseCyclerRef.current);
         lastFrameRef.current = timestamp;
       }
       rafRef.current = window.requestAnimationFrame(tick);
     };
 
-    renderPreviewFrame(ctx, type, PREVIEW_SIZE, performance.now(), denseCyclerRef.current);
+    renderAnimatedPreview(ctx, type, PREVIEW_SIZE, performance.now(), denseCyclerRef.current);
     rafRef.current = window.requestAnimationFrame(tick);
 
     return () => {
-      if (rafRef.current !== null) {
-        window.cancelAnimationFrame(rafRef.current);
-      }
+      if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
       denseCyclerRef.current.reset();
     };
   }, [type]);
+
+  if (isStaticOverlayType(type)) {
+    return (
+      <StaticPreview
+        type={type}
+        color={color}
+        spacing={spacing}
+      />
+    );
+  }
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden
       className={cn("block h-[72px] w-[72px] rounded-md bg-black/40", className)}
-      style={{ opacity }}
+      style={{ opacity, transform: "translateZ(0)" }}
     />
   );
 }
@@ -90,19 +148,20 @@ type PickerProps = {
   activeType: ProfileOverlayType | null;
   onSelect: (type: ProfileOverlayType | null) => void;
   labels: Record<ProfileOverlayType, string>;
+  previewColor?: string;
+  previewSpacing?: number;
 };
 
-export function OverlayTypePicker({ activeType, onSelect, labels }: PickerProps) {
-  const types: ProfileOverlayType[] = [
-    "noise-denso",
-    "noise-esparso",
-    "scanlines",
-    "film-grain",
-  ];
-
+export function OverlayTypePicker({
+  activeType,
+  onSelect,
+  labels,
+  previewColor,
+  previewSpacing,
+}: PickerProps) {
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      {types.map((type) => {
+      {PROFILE_OVERLAY_TYPES.map((type) => {
         const selected = activeType === type;
         return (
           <button
@@ -117,7 +176,11 @@ export function OverlayTypePicker({ activeType, onSelect, labels }: PickerProps)
                 : "border-white/[0.08] bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]",
             )}
           >
-            <OverlayPreviewCanvas type={type} />
+            <OverlayPreviewCanvas
+              type={type}
+              color={previewColor}
+              spacing={previewSpacing}
+            />
             <span
               className={cn(
                 "max-w-full truncate text-center text-[10px] font-medium leading-tight",

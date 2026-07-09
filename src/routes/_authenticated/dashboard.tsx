@@ -89,7 +89,11 @@ import {
   type RoleBadgesPlacement,
 } from "@/lib/profile-roles";
 import { normalizeProfileLabels } from "@/lib/profile-labels";
-import { normalizeOverlayOpacity } from "@/lib/overlays/profile-overlays";
+import {
+  normalizeOverlayColor,
+  normalizeOverlayOpacity,
+  normalizeOverlaySpacing,
+} from "@/lib/overlays/profile-overlays";
 
 type PanelKey = PersonalizePanelKey;
 
@@ -471,6 +475,8 @@ function Dashboard() {
         bio_particle_color: profile.bio_particle_color ?? "#ff2d7a",
         overlay_type: profile.overlay_type ?? null,
         overlay_opacity: normalizeOverlayOpacity(profile.overlay_opacity),
+        overlay_color: normalizeOverlayColor(profile.overlay_color),
+        overlay_spacing: normalizeOverlaySpacing(profile.overlay_spacing),
       })
       .eq("id", profile.id);
     if (error) {

@@ -10,7 +10,12 @@ import { normalizeTextAnimationId } from "@/lib/text-animations";
 import { canUseAvatarFrame } from "@/lib/avatar-frames";
 import { getRoleBadgeGapPx, normalizeRoleBadgesHidden, normalizeRoleBadgesPlacement, ROLE_BADGE_DISPLAY_PX } from "@/lib/profile-roles";
 import { normalizeProfileLabels } from "@/lib/profile-labels";
-import { normalizeOverlayOpacity, normalizeProfileOverlayType } from "@/lib/overlays/profile-overlays";
+import {
+  normalizeOverlayColor,
+  normalizeOverlayOpacity,
+  normalizeOverlaySpacing,
+  normalizeProfileOverlayType,
+} from "@/lib/overlays/profile-overlays";
 
 export function normalizeProfile(raw: Record<string, unknown>): Profile {
   const p = raw as Profile;
@@ -176,5 +181,7 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
       p.overlay_type,
     ),
     overlay_opacity: normalizeOverlayOpacity(p.overlay_opacity ?? p.overlay_noise_opacity),
+    overlay_color: normalizeOverlayColor(p.overlay_color),
+    overlay_spacing: normalizeOverlaySpacing(p.overlay_spacing),
   };
 }

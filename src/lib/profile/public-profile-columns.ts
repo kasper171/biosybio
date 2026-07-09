@@ -135,6 +135,8 @@ export const PUBLIC_PROFILE_SELECT = [
   "bio_particle_color",
   "overlay_type",
   "overlay_opacity",
+  "overlay_color",
+  "overlay_spacing",
 
   // Music
   "music_url",

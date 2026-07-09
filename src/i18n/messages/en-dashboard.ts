@@ -376,7 +376,13 @@ export const enDashboard: MessageTree = {
       noiseEsparso: "Sparse noise",
       scanlines: "Scanlines",
       filmGrain: "Film grain",
+      diagonalStripes: "Diagonal stripes",
+      cyberGrid: "Cyber grid",
+      dotPattern: "Dot pattern",
     },
+    textureColor: "Texture color",
+    spacing: "Spacing",
+    spacingHint: "Lower = denser pattern (dots/lines closer). Range: 4–48 px.",
   },
   estatisticas: {
     title: "Analytics",

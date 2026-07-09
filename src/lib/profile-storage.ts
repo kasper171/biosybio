@@ -203,6 +203,10 @@ export type Profile = {
   overlay_type: import("@/lib/overlays/types").ProfileOverlayType | null;
   /** Intensidade do overlay ativo (0–100 → opacity CSS ~3%–15%) */
   overlay_opacity: number;
+  /** Cor das texturas estáticas (grid, dots, stripes) */
+  overlay_color: string;
+  /** Espaçamento/densidade das texturas estáticas (background-size) */
+  overlay_spacing: number;
   /** @deprecated mantido no banco; não usar no app */
   accent_color?: string;
 };

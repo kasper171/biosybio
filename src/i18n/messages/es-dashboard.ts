@@ -375,7 +375,13 @@ export const esDashboard: MessageTree = {
       noiseEsparso: "Ruido esparso",
       scanlines: "Scanlines",
       filmGrain: "Film grain",
+      diagonalStripes: "Rayas diagonales",
+      cyberGrid: "Cyber grid",
+      dotPattern: "Puntos",
     },
+    textureColor: "Color de textura",
+    spacing: "Espaciado",
+    spacingHint: "Menor = patrón más denso (puntos/líneas más juntos). Rango: 4–48 px.",
   },
   estatisticas: {
     title: "Estadísticas",

@@ -375,7 +375,13 @@ export const ptDashboard: MessageTree = {
       noiseEsparso: "Noise esparso",
       scanlines: "Scanlines",
       filmGrain: "Film grain",
+      diagonalStripes: "Listras diagonais",
+      cyberGrid: "Cyber grid",
+      dotPattern: "Pontos",
     },
+    textureColor: "Cor da textura",
+    spacing: "Espaçamento",
+    spacingHint: "Menor = padrão mais denso (pontos/linhas mais próximos). Intervalo: 4–48 px.",
   },
   estatisticas: {
     title: "Estatísticas",

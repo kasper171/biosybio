@@ -1,8 +1,13 @@
 import type { Profile } from "@/lib/profile-storage";
 import { OverlayTypePicker } from "@/components/dashboard/OverlayTypePicker";
 import {
+  isStaticOverlayType,
+  normalizeOverlayColor,
   normalizeOverlayOpacity,
-  normalizeProfileOverlayType,
+  normalizeOverlaySpacing,
+  normalizeOverlayType,
+  OVERLAY_SPACING_MAX,
+  OVERLAY_SPACING_MIN,
   type ProfileOverlayType,
 } from "@/lib/overlays/profile-overlays";
 import { useI18n } from "@/i18n/LocaleProvider";
@@ -14,14 +19,20 @@ type Props = {
 
 export function OverlaysPanel({ profile, update }: Props) {
   const { t } = useI18n();
-  const activeType = normalizeProfileOverlayType(profile);
+  const activeType = normalizeOverlayType(profile.overlay_type);
   const opacity = normalizeOverlayOpacity(profile.overlay_opacity);
+  const color = normalizeOverlayColor(profile.overlay_color);
+  const spacing = normalizeOverlaySpacing(profile.overlay_spacing);
+  const showStaticControls = activeType !== null && isStaticOverlayType(activeType);
 
   const labels: Record<ProfileOverlayType, string> = {
     "noise-denso": t("dashboard.overlays.types.noiseDenso"),
     "noise-esparso": t("dashboard.overlays.types.noiseEsparso"),
     scanlines: t("dashboard.overlays.types.scanlines"),
     "film-grain": t("dashboard.overlays.types.filmGrain"),
+    "diagonal-stripes": t("dashboard.overlays.types.diagonalStripes"),
+    "cyber-grid": t("dashboard.overlays.types.cyberGrid"),
+    "dot-pattern": t("dashboard.overlays.types.dotPattern"),
   };
 
   const handleSelect = (type: ProfileOverlayType | null) => {
@@ -41,32 +52,85 @@ export function OverlaysPanel({ profile, update }: Props) {
         <p className="mb-2 text-xs font-medium text-white/55">
           {t("dashboard.overlays.selectType")}
         </p>
-        <OverlayTypePicker activeType={activeType} onSelect={handleSelect} labels={labels} />
+        <OverlayTypePicker
+          activeType={activeType}
+          onSelect={handleSelect}
+          labels={labels}
+          previewColor={color}
+          previewSpacing={spacing}
+        />
         <p className="mt-2 text-[11px] leading-relaxed text-white/40">
           {t("dashboard.overlays.selectHint")}
         </p>
 
         {activeType && (
-          <div className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
-            <div className="flex items-center justify-between gap-3">
-              <label htmlFor="overlay-opacity" className="text-xs font-medium text-white/55">
-                {t("dashboard.overlays.opacity")}
-              </label>
-              <span className="text-xs tabular-nums text-white/45">{opacity}%</span>
+          <div className="mt-4 space-y-4 border-t border-white/[0.06] pt-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="overlay-opacity" className="text-xs font-medium text-white/55">
+                  {t("dashboard.overlays.opacity")}
+                </label>
+                <span className="text-xs tabular-nums text-white/45">{opacity}%</span>
+              </div>
+              <input
+                id="overlay-opacity"
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={opacity}
+                onChange={(e) => update("overlay_opacity", Number(e.target.value))}
+                className="w-full accent-pink-500"
+              />
+              <p className="text-[11px] leading-relaxed text-white/40">
+                {t("dashboard.overlays.opacityHint")}
+              </p>
             </div>
-            <input
-              id="overlay-opacity"
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={opacity}
-              onChange={(e) => update("overlay_opacity", Number(e.target.value))}
-              className="w-full accent-pink-500"
-            />
-            <p className="text-[11px] leading-relaxed text-white/40">
-              {t("dashboard.overlays.opacityHint")}
-            </p>
+
+            {showStaticControls && (
+              <>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-white/55">
+                    {t("dashboard.overlays.textureColor")}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={color}
+                      onChange={(e) => update("overlay_color", e.target.value)}
+                      className="h-9 w-12 cursor-pointer rounded border border-white/10 bg-transparent"
+                    />
+                    <input
+                      value={color}
+                      onChange={(e) => update("overlay_color", e.target.value)}
+                      className="flex-1 rounded-lg border border-white/[0.08] bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-pink-500/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <label htmlFor="overlay-spacing" className="text-xs font-medium text-white/55">
+                      {t("dashboard.overlays.spacing")}
+                    </label>
+                    <span className="text-xs tabular-nums text-white/45">{spacing}px</span>
+                  </div>
+                  <input
+                    id="overlay-spacing"
+                    type="range"
+                    min={OVERLAY_SPACING_MIN}
+                    max={OVERLAY_SPACING_MAX}
+                    step={1}
+                    value={spacing}
+                    onChange={(e) => update("overlay_spacing", Number(e.target.value))}
+                    className="w-full accent-pink-500"
+                  />
+                  <p className="text-[11px] leading-relaxed text-white/40">
+                    {t("dashboard.overlays.spacingHint")}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

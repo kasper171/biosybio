@@ -1,31 +1,21 @@
--- Tipos de overlay: noise-denso | noise-esparso | scanlines | film-grain (null = off)
+-- Overlays estáticos: cor + espaçamento; tipos diagonal-stripes, cyber-grid, dot-pattern
 ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS overlay_type text,
-  ADD COLUMN IF NOT EXISTS overlay_opacity integer NOT NULL DEFAULT 50;
-
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'overlay_noise_enabled'
-  ) THEN
-    UPDATE public.profiles
-    SET
-      overlay_type = CASE
-        WHEN overlay_noise_enabled = true THEN 'noise-denso'
-        ELSE overlay_type
-      END,
-      overlay_opacity = COALESCE(overlay_opacity, overlay_noise_opacity, 50)
-    WHERE overlay_noise_enabled = true OR overlay_type IS NULL;
-  END IF;
-END $$;
+  ADD COLUMN IF NOT EXISTS overlay_color text NOT NULL DEFAULT '#ffffff',
+  ADD COLUMN IF NOT EXISTS overlay_spacing integer NOT NULL DEFAULT 10;
 
 ALTER TABLE public.profiles
-  DROP CONSTRAINT IF EXISTS profiles_overlay_opacity_check;
+  DROP CONSTRAINT IF EXISTS profiles_overlay_spacing_check;
 
 ALTER TABLE public.profiles
-  ADD CONSTRAINT profiles_overlay_opacity_check
-  CHECK (overlay_opacity >= 0 AND overlay_opacity <= 100);
+  ADD CONSTRAINT profiles_overlay_spacing_check
+  CHECK (overlay_spacing >= 4 AND overlay_spacing <= 48);
+
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_overlay_color_check;
+
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_overlay_color_check
+  CHECK (overlay_color ~ '^#[0-9a-fA-F]{6}$');
 
 ALTER TABLE public.profiles
   DROP CONSTRAINT IF EXISTS profiles_overlay_type_check;
@@ -34,20 +24,23 @@ ALTER TABLE public.profiles
   ADD CONSTRAINT profiles_overlay_type_check
   CHECK (
     overlay_type IS NULL
-    OR overlay_type IN ('noise-denso', 'noise-esparso', 'scanlines', 'film-grain')
+    OR overlay_type IN (
+      'noise-denso',
+      'noise-esparso',
+      'scanlines',
+      'film-grain',
+      'diagonal-stripes',
+      'cyber-grid',
+      'dot-pattern'
+    )
   );
 
-COMMENT ON COLUMN public.profiles.overlay_type IS
-  'Overlay visual ativo na página pública (null = desligado)';
-COMMENT ON COLUMN public.profiles.overlay_opacity IS
-  'Intensidade do overlay ativo (0–100, mapeado para opacity CSS ~3%–15%)';
+COMMENT ON COLUMN public.profiles.overlay_color IS
+  'Cor da textura para overlays estáticos (hex #RRGGBB)';
+COMMENT ON COLUMN public.profiles.overlay_spacing IS
+  'Espaçamento/densidade do padrão estático (4–48 px)';
 
--- View depende das colunas antigas — dropar ANTES de remover overlay_noise_*
 DROP VIEW IF EXISTS public.profiles_public;
-
-ALTER TABLE public.profiles
-  DROP COLUMN IF EXISTS overlay_noise_enabled,
-  DROP COLUMN IF EXISTS overlay_noise_opacity;
 
 CREATE VIEW public.profiles_public
 WITH (security_barrier = true) AS
@@ -161,6 +154,8 @@ SELECT
   bio_particle_color,
   overlay_type,
   overlay_opacity,
+  overlay_color,
+  overlay_spacing,
   music_url,
   music_title,
   music_start_sec,
