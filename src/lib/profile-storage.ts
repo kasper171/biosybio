@@ -239,13 +239,13 @@ async function resolveUploadPremium(
 ): Promise<boolean> {
   if (hinted === true) return true;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .select("is_premium")
     .eq("id", userId)
     .maybeSingle();
 
-  if (data?.is_premium === true) return true;
+  if (!error && data?.is_premium === true) return true;
 
   const roles = await fetchProfileRoles(userId);
   return profileHasFullAccess({ is_premium: false, roles });

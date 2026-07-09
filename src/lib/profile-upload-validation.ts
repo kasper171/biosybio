@@ -84,15 +84,23 @@ function fileExtension(name: string): string {
   return match?.[1] ?? "";
 }
 
-/** Vídeo mp4/mov — MIME ou extensão (Windows costuma enviar MIME vazio). */
+/** Vídeo mp4/mov — extensão tem prioridade (Windows envia MIME errado, ex.: audio/mp4). */
 export function isMusicVideoFile(file: File): boolean {
-  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
   const ext = fileExtension(file.name);
+  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
 
-  if (ext === "m4a") return false;
-  if (mime === "audio/x-m4a" || mime === "audio/mp4") return false;
-  if (VIDEO_MIMES.has(mime)) return true;
   if (ext === "mp4" || ext === "m4v" || ext === "mov") return true;
+  if (ext === "m4a") return false;
+
+  if (VIDEO_MIMES.has(mime)) return true;
+  if (mime.startsWith("video/")) return true;
+
+  // Arquivos grandes na faixa de música com .mp4 no MIME são vídeo, não áudio
+  if (file.size > MUSIC_AUDIO_MAX_BYTES && (mime.includes("mp4") || mime === "application/octet-stream")) {
+    return true;
+  }
+
+  if (mime === "audio/x-m4a") return false;
   return false;
 }
 
