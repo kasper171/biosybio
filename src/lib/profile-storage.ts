@@ -209,6 +209,8 @@ export type Profile = {
   overlay_color_custom: boolean;
   /** Espaçamento/densidade das texturas estáticas (background-size) */
   overlay_spacing: number;
+  /** Premium pode ocultar a marca "by Byosy" no canto da página */
+  hide_byosy_branding: boolean;
   /** @deprecated mantido no banco; não usar no app */
   accent_color?: string;
 };

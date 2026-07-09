@@ -138,6 +138,7 @@ export const PUBLIC_PROFILE_SELECT = [
   "overlay_color",
   "overlay_color_custom",
   "overlay_spacing",
+  "hide_byosy_branding",
 
   // Music
   "music_url",

@@ -326,6 +326,17 @@ export const esDashboard: MessageTree = {
       repeat: "Repetir contraseña",
       changePassword: "Cambiar contraseña",
     },
+    branding: {
+      title: "Marca Byosy",
+      description:
+        "Muestra una caja \"by Byosy\" con un corazón en la esquina inferior izquierda de tu página pública.",
+      show: "Mostrar marca Byosy",
+      showDesc: "Desactiva para ocultar la marca en la página (beneficio Premium).",
+      showDescLocked: "Requiere plan Premium. Los usuarios free siempre muestran la marca.",
+      premiumRequired: "Ocultar la marca Byosy es un beneficio Premium.",
+      upgradeLink: "Ver planes Premium",
+      saveFailed: "No se pudo guardar esta configuración.",
+    },
   },
   miscellaneous: {
     title: "Varios",

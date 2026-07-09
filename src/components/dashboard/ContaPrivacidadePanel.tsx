@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   AtSign,
+  Crown,
   Globe,
   KeyRound,
   Link2,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/username";
 import type { Profile } from "@/lib/profile-storage";
 import { setPublicTemplateEnabled } from "@/lib/profile-template";
+import { canToggleByosyBranding } from "@/lib/byosy-branding";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { DashboardAccountLayout, DashCard } from "./DashboardAccountLayout";
 import { DashboardPrivacyToggle } from "./DashboardPrivacyToggle";
@@ -35,7 +37,9 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
   const [showViews, setShowViews] = useState(profile.show_view_count !== false);
   const [showUid, setShowUid] = useState(profile.show_public_uid !== false);
   const [publicTemplate, setPublicTemplate] = useState(profile.public_template_enabled === true);
+  const [hideBranding, setHideBranding] = useState(profile.hide_byosy_branding === true);
   const [togglingTemplate, setTogglingTemplate] = useState(false);
+  const [togglingBranding, setTogglingBranding] = useState(false);
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -57,7 +61,10 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     setShowViews(profile.show_view_count !== false);
     setShowUid(profile.show_public_uid !== false);
     setPublicTemplate(profile.public_template_enabled === true);
+    setHideBranding(profile.hide_byosy_branding === true);
   }, [profile]);
+
+  const canToggleBranding = canToggleByosyBranding(profile);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
@@ -152,6 +159,31 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
     toast.success("Password updated successfully!");
   };
 
+  const handleBrandingToggle = async (show: boolean) => {
+    if (!canToggleBranding) {
+      toast.error(t("dashboard.privacidade.branding.premiumRequired"));
+      return;
+    }
+
+    const nextHide = !show;
+    setTogglingBranding(true);
+    setHideBranding(nextHide);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ hide_byosy_branding: nextHide })
+        .eq("id", profile.id);
+      if (error) throw error;
+      onProfileChange({ ...profile, hide_byosy_branding: nextHide });
+      toast.success(t("dashboard.toasts.settingsSaved"));
+    } catch (e) {
+      setHideBranding(!nextHide);
+      toast.error(e instanceof Error ? e.message : t("dashboard.privacidade.branding.saveFailed"));
+    } finally {
+      setTogglingBranding(false);
+    }
+  };
+
   const handlePublicTemplateToggle = async (enabled: boolean) => {
     setTogglingTemplate(true);
     setPublicTemplate(enabled);
@@ -238,6 +270,42 @@ export function ContaPrivacidadePanel({ profile, onProfileChange }: Props) {
             <Globe className="h-3.5 w-3.5" />
             {t("dashboard.privacidade.publicTemplate.galleryLink")}
           </Link>
+        </DashCard>
+
+        <DashCard title={t("dashboard.privacidade.branding.title")}>
+          <p className="mb-4 text-xs leading-relaxed text-white/45">
+            {t("dashboard.privacidade.branding.description")}
+          </p>
+          <DashboardPrivacyToggle
+            label={t("dashboard.privacidade.branding.show")}
+            description={
+              canToggleBranding
+                ? t("dashboard.privacidade.branding.showDesc")
+                : t("dashboard.privacidade.branding.showDescLocked")
+            }
+            checked={!hideBranding}
+            disabled={!canToggleBranding || togglingBranding}
+            badge={
+              !canToggleBranding ? (
+                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-200">
+                  <Crown className="h-3 w-3" aria-hidden />
+                  {t("dashboard.common.premium")}
+                </span>
+              ) : undefined
+            }
+            onChange={(show) => {
+              if (!togglingBranding) void handleBrandingToggle(show);
+            }}
+          />
+          {!canToggleBranding && (
+            <Link
+              to="/planos"
+              className="mt-4 inline-flex items-center gap-1.5 text-xs text-pink-400 transition hover:text-pink-300"
+            >
+              <Crown className="h-3.5 w-3.5" />
+              {t("dashboard.privacidade.branding.upgradeLink")}
+            </Link>
+          )}
         </DashCard>
 
         <DashCard title={t("dashboard.privacidade.cardVisibility.title")}>

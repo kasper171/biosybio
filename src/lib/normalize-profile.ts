@@ -185,5 +185,6 @@ export function normalizeProfile(raw: Record<string, unknown>): Profile {
     overlay_color: normalizeOverlayColor(p.overlay_color),
     overlay_color_custom: normalizeOverlayColorCustom(p.overlay_color_custom),
     overlay_spacing: normalizeOverlaySpacing(p.overlay_spacing),
+    hide_byosy_branding: p.hide_byosy_branding === true,
   };
 }

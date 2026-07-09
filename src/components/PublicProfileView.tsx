@@ -10,6 +10,7 @@ import { useProfileHotelSync } from "@/hooks/useProfileHotelSync";
 import { useProfilePageMeta } from "@/hooks/useProfilePageMeta";
 import type { ProfileBlock } from "@/lib/profile-blocks";
 import { ProfileOverlayLayer } from "@/components/overlays/ProfileOverlayLayer";
+import { ProfileByosyBranding } from "@/components/ProfileByosyBranding";
 
 type Props = {
   profile: Profile;
@@ -122,6 +123,7 @@ export function PublicProfileView({ profile, isEditor, blocks: blocksProp, onPro
           zIndex={isEditor ? 20 : 50}
         />
       )}
+      <ProfileByosyBranding profile={liveProfile} />
       <ProfileOverlayLayer
         profile={liveProfile}
         isEditor={isEditor}

@@ -327,6 +327,17 @@ export const enDashboard: MessageTree = {
       repeat: "Repeat password",
       changePassword: "Change password",
     },
+    branding: {
+      title: "Byosy branding",
+      description:
+        "Shows a \"by Byosy\" box with a heart in the bottom-left corner of your public page.",
+      show: "Show Byosy branding",
+      showDesc: "Turn off to hide the badge on your page (Premium benefit).",
+      showDescLocked: "Premium plan required. Free users always show the badge.",
+      premiumRequired: "Hiding Byosy branding is a Premium benefit.",
+      upgradeLink: "View Premium plans",
+      saveFailed: "Could not save this setting.",
+    },
   },
   miscellaneous: {
     title: "Miscellaneous",
