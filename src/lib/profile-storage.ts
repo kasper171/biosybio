@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { validateProfileAssetUpload, type ProfileUploadValidationOptions } from "@/lib/profile-upload-validation";
+import { fetchProfileRoles, profileHasFullAccess } from "@/lib/profile-roles";
 import type { ProfileLabelsState } from "@/lib/profile-labels";
 
 export const DEFAULT_CARD_WIDTH = 600;
@@ -231,13 +232,37 @@ const BUCKET = "profile-assets";
 // 30 days signed URL
 const SIGNED_URL_TTL = 60 * 60 * 24 * 30;
 
+/** Confirma Premium no banco (is_premium + cargos) — evita stale state no dashboard. */
+async function resolveUploadPremium(
+  userId: string,
+  hinted?: boolean,
+): Promise<boolean> {
+  if (hinted === true) return true;
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("is_premium")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (data?.is_premium === true) return true;
+
+  const roles = await fetchProfileRoles(userId);
+  return profileHasFullAccess({ is_premium: false, roles });
+}
+
 export async function uploadProfileAsset(
   userId: string,
   kind: "avatar" | "banner" | "background" | "inner_banner" | "music" | "music_art" | "share_embed" | "page_favicon",
   file: File,
   options?: ProfileUploadValidationOptions,
 ): Promise<string> {
-  const validation = validateProfileAssetUpload(kind, file, options);
+  const isPremium =
+    kind === "music"
+      ? await resolveUploadPremium(userId, options?.isPremium)
+      : options?.isPremium === true;
+
+  const validation = validateProfileAssetUpload(kind, file, { isPremium });
   if (!validation.ok) {
     throw new Error(validation.error);
   }

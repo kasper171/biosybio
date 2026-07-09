@@ -27,9 +27,16 @@ const AUDIO_MIMES = new Set([
   "audio/ogg",
   "audio/webm",
   "audio/x-wav",
+  "audio/x-m4a",
+  "audio/mp4",
 ]);
 
-const VIDEO_MIMES = new Set(["video/mp4"]);
+const VIDEO_MIMES = new Set([
+  "video/mp4",
+  "video/quicktime",
+  "video/x-m4v",
+  "application/mp4",
+]);
 
 const MAX_BYTES: Record<ProfileAssetKind, number> = {
   avatar: 5 * 1024 * 1024,
@@ -60,11 +67,54 @@ const EXT_BY_MIME: Record<string, string> = {
   "audio/x-wav": "wav",
   "audio/ogg": "ogg",
   "audio/webm": "webm",
+  "audio/x-m4a": "m4a",
+  "audio/mp4": "m4a",
   "video/mp4": "mp4",
+  "video/quicktime": "mp4",
+  "video/x-m4v": "mp4",
+  "application/mp4": "mp4",
 };
 
 function maxMb(bytes: number): number {
   return Math.round(bytes / (1024 * 1024));
+}
+
+function fileExtension(name: string): string {
+  const match = name.toLowerCase().match(/\.([a-z0-9]+)$/);
+  return match?.[1] ?? "";
+}
+
+/** Vídeo mp4/mov — MIME ou extensão (Windows costuma enviar MIME vazio). */
+export function isMusicVideoFile(file: File): boolean {
+  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+  const ext = fileExtension(file.name);
+
+  if (ext === "m4a") return false;
+  if (mime === "audio/x-m4a" || mime === "audio/mp4") return false;
+  if (VIDEO_MIMES.has(mime)) return true;
+  if (ext === "mp4" || ext === "m4v" || ext === "mov") return true;
+  return false;
+}
+
+export function isMusicAudioFile(file: File): boolean {
+  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+  const ext = fileExtension(file.name);
+
+  if (isMusicVideoFile(file)) return false;
+  if (AUDIO_MIMES.has(mime)) return true;
+  return ext === "mp3" || ext === "wav" || ext === "ogg" || ext === "webm" || ext === "m4a";
+}
+
+function resolveMusicContentType(file: File, isVideo: boolean): string {
+  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+  if (mime && (isVideo ? VIDEO_MIMES.has(mime) : AUDIO_MIMES.has(mime))) return mime;
+  const ext = fileExtension(file.name);
+  if (isVideo) return "video/mp4";
+  if (ext === "wav") return "audio/wav";
+  if (ext === "ogg") return "audio/ogg";
+  if (ext === "webm") return "audio/webm";
+  if (ext === "m4a") return "audio/mp4";
+  return "audio/mpeg";
 }
 
 export function validateProfileAssetUpload(
@@ -72,12 +122,11 @@ export function validateProfileAssetUpload(
   file: File,
   options?: ProfileUploadValidationOptions,
 ): { ok: true; ext: string; contentType: string } | { ok: false; error: string } {
-  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
   const isPremium = options?.isPremium === true;
 
   if (kind === "music") {
-    const isVideo = VIDEO_MIMES.has(mime);
-    const isAudio = AUDIO_MIMES.has(mime);
+    const isVideo = isMusicVideoFile(file);
+    const isAudio = isMusicAudioFile(file);
 
     if (!isVideo && !isAudio) {
       return { ok: false, error: "Unsupported file type. Use mp3 or mp4." };
@@ -97,15 +146,28 @@ export function validateProfileAssetUpload(
           error: `File exceeds the ${maxMb(maxBytes)}MB limit.`,
         };
       }
-    } else if (file.size <= 0 || file.size > MUSIC_AUDIO_MAX_BYTES) {
+      const ext = fileExtension(file.name) || "mp4";
+      return {
+        ok: true,
+        ext: ext === "mov" || ext === "m4v" ? "mp4" : ext,
+        contentType: resolveMusicContentType(file, true),
+      };
+    }
+
+    if (file.size <= 0 || file.size > MUSIC_AUDIO_MAX_BYTES) {
       return { ok: false, error: `File exceeds the ${maxMb(MUSIC_AUDIO_MAX_BYTES)}MB limit.` };
     }
 
-    const ext = EXT_BY_MIME[mime];
-    if (!ext) return { ok: false, error: "Unsupported file type." };
-    return { ok: true, ext, contentType: mime };
+    const mime = (file.type || "").toLowerCase().split(";")[0].trim();
+    const ext = EXT_BY_MIME[mime] ?? fileExtension(file.name) ?? "mp3";
+    return {
+      ok: true,
+      ext,
+      contentType: resolveMusicContentType(file, false),
+    };
   }
 
+  const mime = (file.type || "").toLowerCase().split(";")[0].trim();
   const maxBytes = MAX_BYTES[kind];
   if (file.size <= 0 || file.size > maxBytes) {
     return { ok: false, error: `File exceeds the ${maxMb(maxBytes)}MB limit.` };
