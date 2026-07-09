@@ -1,13 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { Profile } from "@/lib/profile-storage";
 import type { AlbumBlock, AlbumBlockChrome } from "@/features/album/types/album.types";
-import { buildCardBorderChrome } from "@/lib/card-border";
+import { buildCardBorderChrome, normalizeCardBorderStyle } from "@/lib/card-border";
 import {
   cardGlassClass,
-  cardGlassIsolationClass,
   cardGlassSurfaceLayerStyle,
   cardSurfaceFillStyle,
-  isCardGlassEnabled,
 } from "@/lib/card-glass";
 import { normalizeCardRevealEffect } from "@/lib/card-reveal";
 import { albumBlockRevealClass } from "@/features/album/lib/effects/album-block-chrome";
@@ -19,7 +17,7 @@ type Props = {
   children: ReactNode;
 };
 
-function resolveChrome(block: AlbumBlock, profile?: Profile | null): AlbumBlockChrome {
+function resolveChrome(block: AlbumBlock, profile?: Profile | null): AlbumBlockChrome & { glassEnabled?: boolean } {
   const c = block.chrome ?? {};
   return {
     borderWidth: c.borderWidth ?? Number(profile?.card_border_width ?? 0),
@@ -29,6 +27,7 @@ function resolveChrome(block: AlbumBlock, profile?: Profile | null): AlbumBlockC
     glowEnabled: c.glowEnabled ?? Boolean(profile?.effect_glow),
     glowColor: c.glowColor ?? profile?.effect_glow_color ?? profile?.card_border_color,
     glowSize: c.glowSize ?? profile?.effect_glow_size ?? 24,
+    glassEnabled: c.glassEnabled ?? profile?.card_glass_enabled === true,
     revealEffect:
       c.revealEffect === "none"
         ? "none"
@@ -42,8 +41,9 @@ function resolveChrome(block: AlbumBlock, profile?: Profile | null): AlbumBlockC
 export function AlbumBlockFrame({ block, profile, animate = true, children }: Props) {
   const chrome = resolveChrome(block, profile);
   const radius = chrome.borderRadius ?? 12;
-  const borderStyle = chrome.borderStyle === "none" ? "solid" : chrome.borderStyle;
-  const borderWidth = chrome.borderStyle === "none" ? 0 : (chrome.borderWidth ?? 0);
+  const borderStyle = chrome.borderStyle === "none" ? "none" : normalizeCardBorderStyle(chrome.borderStyle);
+  const borderWidth = borderStyle === "none" ? 0 : (chrome.borderWidth ?? 0);
+  const glass = Boolean(chrome.glassEnabled);
 
   const borderChrome = buildCardBorderChrome({
     borderWidth,
@@ -56,30 +56,65 @@ export function AlbumBlockFrame({ block, profile, animate = true, children }: Pr
   });
 
   const revealClass = albumBlockRevealClass(chrome, animate);
-  const glass = profile ? isCardGlassEnabled(profile) : false;
 
-  const surfaceStyle: CSSProperties = {
-    ...borderChrome.style,
+  const surfaceProfile = profile
+    ? {
+        ...profile,
+        card_glass_enabled: glass,
+        card_color: profile.card_color ?? "#0a0a0f",
+        card_opacity: profile.card_opacity ?? 0.92,
+        card_blur: profile.card_blur ?? 8,
+      }
+    : null;
+
+  const borderOverlayStyle: CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    zIndex: 4,
+    pointerEvents: "none",
     borderRadius: radius,
-    overflow: "hidden",
+    boxSizing: "border-box",
+    ...(borderStyle !== "solid" && borderStyle !== "none" && borderWidth > 0
+      ? {
+          borderWidth,
+          borderStyle,
+          borderColor: chrome.borderColor,
+        }
+      : { boxShadow: borderChrome.style.boxShadow }),
   };
 
   return (
     <div
-      className={`album-block-frame relative h-full w-full ${borderChrome.className} ${revealClass} ${profile ? cardGlassIsolationClass(profile) : ""}`}
-      style={surfaceStyle}
+      className={`album-block-frame relative h-full w-full overflow-hidden ${borderChrome.className} ${revealClass}`}
+      style={{ borderRadius: radius }}
     >
-      {profile && glass ? (
+      {glass && surfaceProfile ? (
         <div
           aria-hidden
-          className={cardGlassClass(profile)}
+          className={cardGlassClass(surfaceProfile)}
           style={{
             ...cardGlassSurfaceLayerStyle(radius),
-            ...cardSurfaceFillStyle(profile, glass),
+            ...cardSurfaceFillStyle(surfaceProfile, true),
+          }}
+        />
+      ) : surfaceProfile && !glass && (profile?.card_opacity ?? 0) > 0 ? (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            borderRadius: radius,
+            ...cardSurfaceFillStyle({ ...surfaceProfile, card_glass_enabled: false }, false),
           }}
         />
       ) : null}
+
       <div className="relative z-[1] h-full w-full min-h-0 overflow-hidden">{children}</div>
+
+      {(borderWidth > 0 || chrome.glowEnabled) && (
+        <div aria-hidden style={borderOverlayStyle} />
+      )}
     </div>
   );
 }

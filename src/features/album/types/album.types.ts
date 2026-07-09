@@ -33,6 +33,7 @@ export type AlbumBlockChrome = {
   glowEnabled?: boolean;
   glowColor?: string;
   glowSize?: number;
+  glassEnabled?: boolean;
   revealEffect?: CardRevealEffect | "none";
 };
 
@@ -52,6 +53,8 @@ export type AlbumImageBlockData = {
   bytes?: number;
   alt?: string;
   objectFit?: "cover" | "contain";
+  posX?: number;
+  posY?: number;
 };
 
 export type AlbumVideoBlockData = {
@@ -62,6 +65,8 @@ export type AlbumVideoBlockData = {
   autoplay?: boolean;
   muted?: boolean;
   loop?: boolean;
+  posX?: number;
+  posY?: number;
 };
 
 export type AlbumSpotifyBlockData = {
@@ -110,6 +115,26 @@ export type AlbumTheme = {
   glowEnabled?: boolean;
   glowColor?: string;
   glowSize?: number;
+  sidebar?: AlbumSidebarTheme;
+};
+
+export type AlbumSidebarTheme = {
+  /** Oculta a coluna esquerda inteira */
+  visible?: boolean;
+  layout?: "centered" | "aligned";
+  glassEnabled?: boolean;
+  cardColor?: string;
+  cardOpacity?: number;
+  cardBlur?: number;
+  borderWidth?: number;
+  borderColor?: string;
+  borderStyle?: CardBorderStyle | "none";
+  borderRadius?: number;
+  showDivider?: boolean;
+  dividerColor?: string;
+  padding?: number;
+  /** Conexões (Discord/Habbo/Habblet) abaixo do perfil na coluna esquerda */
+  showSidebarConnections?: boolean;
 };
 
 export type AlbumLayoutRow = {

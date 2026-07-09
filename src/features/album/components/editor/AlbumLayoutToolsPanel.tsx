@@ -3,6 +3,7 @@ import { AlbumBlockPalette } from "@/features/album/components/editor/AlbumBlock
 import { getAlbumBlockDef } from "@/features/album/registry/blockRegistry";
 import { albumCreateBlockId } from "@/features/album/lib/album-grid-utils";
 import { parseSpotifyEmbedMeta } from "@/features/album/lib/spotify/album-spotify-embed";
+import { albumSpotifyBlockSize } from "@/features/album/lib/album-connection-block-sizes";
 import { albumSanitizePlainText } from "@/features/album/lib/security/album-sanitize";
 import { CARD_BORDER_STYLES } from "@/lib/card-border";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
@@ -52,6 +53,7 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
   const setSpotifyUrl = (raw: string) => {
     if (!selected || selected.type !== "spotify") return;
     const meta = parseSpotifyEmbedMeta(raw);
+    const size = meta ? albumSpotifyBlockSize(meta.compact) : null;
     onBlocksChange(
       updateBlock(blocks, selected.id, {
         data: {
@@ -59,12 +61,7 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
           embedUrl: meta?.embedUrl ?? raw,
           kind: meta?.kind,
         },
-        ...(meta
-          ? {
-              w: Math.max(selected.w, meta.suggestedGridW),
-              h: Math.max(selected.h, meta.suggestedGridH),
-            }
-          : {}),
+        ...(size ? { w: size.w, h: size.h } : {}),
       }),
     );
   };
@@ -178,6 +175,18 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
               }
             />
             <span>Glow no bloco</span>
+          </label>
+          <label className="album-theme-toggle">
+            <input
+              type="checkbox"
+              checked={selected.chrome?.glassEnabled ?? false}
+              onChange={(e) =>
+                onBlocksChange(
+                  updateChrome(blocks, selected.id, { glassEnabled: e.target.checked }),
+                )
+              }
+            />
+            <span>Efeito Glass no bloco</span>
           </label>
           <label className="album-theme-field">
             <span>Efeito de entrada</span>

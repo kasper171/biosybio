@@ -19,6 +19,8 @@ const blockDataSchema = z.discriminatedUnion("type", [
       url: z.string().max(2048).refine((v) => albumNormalizeMediaUrl(v) !== null || v.startsWith("https://"), "Invalid image URL"),
       alt: z.string().max(200).optional(),
       objectFit: z.enum(["cover", "contain"]).optional(),
+      posX: z.number().min(0).max(100).optional(),
+      posY: z.number().min(0).max(100).optional(),
     }),
   }),
   z.object({
@@ -29,6 +31,8 @@ const blockDataSchema = z.discriminatedUnion("type", [
       autoplay: z.boolean().optional(),
       muted: z.boolean().optional(),
       loop: z.boolean().optional(),
+      posX: z.number().min(0).max(100).optional(),
+      posY: z.number().min(0).max(100).optional(),
     }),
   }),
   z.object({
@@ -91,6 +95,24 @@ export const albumThemeSchema = z.object({
   glowEnabled: z.boolean().optional(),
   glowColor: z.string().max(32).optional(),
   glowSize: z.number().min(0).max(24).optional(),
+  sidebar: z
+    .object({
+      visible: z.boolean().optional(),
+      layout: z.enum(["centered", "aligned"]).optional(),
+      glassEnabled: z.boolean().optional(),
+      cardColor: z.string().max(32).optional(),
+      cardOpacity: z.number().min(0).max(1).optional(),
+      cardBlur: z.number().min(0).max(40).optional(),
+      borderWidth: z.number().min(0).max(16).optional(),
+      borderColor: z.string().max(32).optional(),
+      borderStyle: z.enum(["none", "solid", "dashed", "dotted", "double"]).optional(),
+      borderRadius: z.number().min(0).max(48).optional(),
+      showDivider: z.boolean().optional(),
+      dividerColor: z.string().max(32).optional(),
+      padding: z.number().min(0).max(48).optional(),
+      showSidebarConnections: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 export const albumLayoutPayloadSchema = z.object({

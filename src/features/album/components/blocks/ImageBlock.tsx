@@ -1,7 +1,9 @@
 import { useRef } from "react";
 import { Upload } from "lucide-react";
+import { toast } from "sonner";
 import type { AlbumBlockEditorProps, AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
 import { uploadAlbumMediaFile } from "@/features/album/services/albumSupabaseService";
+import { AlbumMediaPositionLayer } from "@/features/album/components/blocks/AlbumMediaPositionLayer";
 
 type EditorProps = AlbumBlockEditorProps<"image">;
 
@@ -19,18 +21,24 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
         url: result.publicUrl,
         storagePath: result.storagePath,
         bytes: result.bytes,
+        posX: block.data.posX ?? 50,
+        posY: block.data.posY ?? 50,
       });
+    } else {
+      toast.error(result.error);
     }
   };
 
   if (block.data.url) {
     return (
-      <img
-        src={block.data.url}
-        alt=""
-        className="h-full w-full object-cover"
-        style={{ objectFit: block.data.objectFit ?? "cover" }}
-        draggable={false}
+      <AlbumMediaPositionLayer
+        url={block.data.url}
+        kind="image"
+        posX={block.data.posX ?? 50}
+        posY={block.data.posY ?? 50}
+        objectFit={block.data.objectFit ?? "cover"}
+        editable
+        onChange={(x, y) => onChange({ ...block.data, posX: x, posY: y })}
       />
     );
   }
@@ -63,13 +71,12 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
 export function ImageBlockPublic({ block }: AlbumBlockPublicProps<"image">) {
   if (!block.data.url) return null;
   return (
-    <img
-      src={block.data.url}
-      alt=""
-      className="h-full w-full object-cover"
-      style={{ objectFit: block.data.objectFit ?? "cover" }}
-      loading="lazy"
-      draggable={false}
+    <AlbumMediaPositionLayer
+      url={block.data.url}
+      kind="image"
+      posX={block.data.posX ?? 50}
+      posY={block.data.posY ?? 50}
+      objectFit={block.data.objectFit ?? "cover"}
     />
   );
 }

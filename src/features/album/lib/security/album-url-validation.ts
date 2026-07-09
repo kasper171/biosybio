@@ -17,6 +17,9 @@ const TRUSTED_EMBED_HOSTS = new Set([
   "vimeo.com",
 ]);
 
+const SPOTIFY_KINDS = ["track", "album", "playlist", "episode", "show"] as const;
+type SpotifyKind = (typeof SPOTIFY_KINDS)[number];
+
 function isPrivateIpv4(host: string): boolean {
   const parts = host.split(".").map((p) => Number.parseInt(p, 10));
   if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return false;
@@ -53,27 +56,32 @@ export function albumIsSafeExternalUrl(
   }
 }
 
-export function albumNormalizeSpotifyEmbedUrl(raw: string): string | null {
+export function parseSpotifyPath(raw: string): { kind: SpotifyKind; id: string } | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
 
+  const uriMatch = trimmed.match(/^spotify:(track|album|playlist|episode|show):([a-zA-Z0-9]+)/i);
+  if (uriMatch) {
+    return { kind: uriMatch[1].toLowerCase() as SpotifyKind, id: uriMatch[2] };
+  }
+
   try {
-    const url = new URL(trimmed);
-    const host = normalizeHost(url.hostname);
-    if (host === "open.spotify.com") {
-      const parts = url.pathname.split("/").filter(Boolean);
-      if (parts.length >= 2 && ["track", "album", "playlist", "episode", "show"].includes(parts[0])) {
-        return `https://open.spotify.com/embed/${parts[0]}/${parts[1]}${url.search}`;
-      }
-      return null;
-    }
-    if (host === "embed.spotify.com") {
-      return trimmed.startsWith("http") ? trimmed : null;
-    }
-    return null;
+    const url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    if (!url.hostname.includes("spotify.com")) return null;
+    const match = url.pathname.match(/\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/i);
+    if (!match) return null;
+    const kind = match[1].toLowerCase() as SpotifyKind;
+    if (!SPOTIFY_KINDS.includes(kind)) return null;
+    return { kind, id: match[2] };
   } catch {
     return null;
   }
+}
+
+export function albumNormalizeSpotifyEmbedUrl(raw: string): string | null {
+  const parsed = parseSpotifyPath(raw);
+  if (!parsed) return null;
+  return `https://open.spotify.com/embed/${parsed.kind}/${parsed.id}`;
 }
 
 export function albumNormalizeMediaUrl(raw: string): string | null {

@@ -20,6 +20,7 @@ import { AlbumPageExperience } from "@/features/album/components/public/AlbumPag
 import { AlbumI18nProvider, useAlbumI18n } from "@/features/album/i18n/album-messages";
 import { useAlbumLayout } from "@/features/album/hooks/useAlbumLayout";
 import { useAlbumStudioPanels } from "@/features/album/hooks/useAlbumStudioPanels";
+import { useAlbumStyle } from "@/features/album/hooks/useAlbumStyle";
 import { resolveAlbumConnections } from "@/features/album/lib/resolve-album-connections";
 import { albumPageStyle } from "@/features/album/lib/effects/album-profile-colors";
 import { MoldurasPanel } from "@/components/dashboard/MoldurasPanel";
@@ -53,6 +54,7 @@ function AlbumPersonalizarShellInner({
   const { t: dashT } = useI18n();
   const { t: albumT } = useAlbumI18n();
   const albumPanels = useAlbumStudioPanels();
+  const { saveStyle } = useAlbumStyle();
   const { layout, theme, setLayout, setTheme, saving, flushSave } = useAlbumLayout();
   const [profile, setProfile] = useState(profileProp);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
@@ -78,6 +80,11 @@ function AlbumPersonalizarShellInner({
   const handleSave = async () => {
     setSavingAll(true);
     try {
+      const styleResult = await saveStyle("album");
+      if (!styleResult.ok) {
+        toast.error(styleResult.error ?? "Não foi possível salvar o estilo Álbum.");
+        return;
+      }
       await flushSave();
       await onSaveProfile();
       toast.success(albumT("album.studio.saved"));
@@ -113,7 +120,7 @@ function AlbumPersonalizarShellInner({
         >
           <div className="album-public-view min-h-full" style={pageStyle}>
             <div className="album-public-view__inner px-4 py-8 lg:px-8">
-              <AlbumStudioLayout profile={profile} theme={theme}>
+              <AlbumStudioLayout profile={profile} theme={theme} connections={connections}>
                 <AlbumGrid
                   blocks={layout}
                   theme={theme}
@@ -182,6 +189,8 @@ function AlbumPersonalizarShellInner({
               {openPanel === "album-connections" ? (
                 <AlbumConnectionsPanel
                   profile={profile}
+                  theme={theme}
+                  onThemeChange={setTheme}
                   update={updateProfile}
                   onBatchUpdate={(patch) => {
                     setProfile((p) => {

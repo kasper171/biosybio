@@ -92,13 +92,13 @@ export function validateAlbumMediaUpload(
     return { ok: false, error: `File exceeds the ${maxMb(maxBytes)}MB limit.` };
   }
 
-  if (kind === "image" && !IMAGE_MIMES.has(mime)) {
+  if (kind === "image" && mime && !IMAGE_MIMES.has(mime)) {
     return { ok: false, error: "Unsupported image type." };
   }
-  if (kind === "video" && !VIDEO_MIMES.has(mime) && !mime.startsWith("video/")) {
+  if (kind === "video" && mime && !VIDEO_MIMES.has(mime) && !mime.startsWith("video/")) {
     return { ok: false, error: "Unsupported video type." };
   }
-  if (kind === "audio" && !AUDIO_MIMES.has(mime)) {
+  if (kind === "audio" && mime && !AUDIO_MIMES.has(mime)) {
     return { ok: false, error: "Unsupported audio type." };
   }
 

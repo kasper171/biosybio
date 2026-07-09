@@ -290,7 +290,7 @@ const uploadMediaInput = z.object({
   fileName: z.string().min(1).max(255),
   mimeType: z.string().max(128),
   size: z.number().int().positive().max(ALBUM_VIDEO_MAX_BYTES_PREMIUM),
-  base64: z.string().min(1).max(45_000_000),
+  base64: z.string().min(1).max(55_000_000),
   previousPath: z.string().max(512).optional(),
   previousBytes: z.number().int().nonnegative().optional(),
   isPremium: z.boolean().optional(),

@@ -1,4 +1,4 @@
-import { albumNormalizeSpotifyEmbedUrl } from "@/features/album/lib/security/album-url-validation";
+import { albumNormalizeSpotifyEmbedUrl, parseSpotifyPath } from "@/features/album/lib/security/album-url-validation";
 
 export type SpotifyEmbedKind = "track" | "album" | "playlist" | "episode" | "show";
 
@@ -14,44 +14,29 @@ export type SpotifyEmbedMeta = {
 const COMPACT_KINDS = new Set<SpotifyEmbedKind>(["track", "episode"]);
 
 export function parseSpotifyEmbedMeta(raw: string): SpotifyEmbedMeta | null {
-  const base = albumNormalizeSpotifyEmbedUrl(raw);
-  if (!base) return null;
+  const parsed = parseSpotifyPath(raw);
+  const embedUrl = albumNormalizeSpotifyEmbedUrl(raw);
+  if (!parsed || !embedUrl) return null;
 
-  let kind: SpotifyEmbedKind = "track";
-  try {
-    const url = new URL(base);
-    const parts = url.pathname.split("/").filter(Boolean);
-    const typePart = parts[1];
-    if (
-      typePart === "track" ||
-      typePart === "album" ||
-      typePart === "playlist" ||
-      typePart === "episode" ||
-      typePart === "show"
-    ) {
-      kind = typePart;
-    }
-  } catch {
-    return null;
-  }
-
+  const kind = parsed.kind;
   const compact = COMPACT_KINDS.has(kind);
-  const embedUrl = (() => {
+
+  const finalUrl = (() => {
     try {
-      const url = new URL(base);
+      const url = new URL(embedUrl);
       url.searchParams.set("utm_source", "generator");
       url.searchParams.set("theme", "0");
       return url.toString();
     } catch {
-      return base;
+      return embedUrl;
     }
   })();
 
   return {
-    embedUrl,
+    embedUrl: finalUrl,
     kind,
     compact,
-    suggestedGridH: compact ? 4 : 9,
+    suggestedGridH: compact ? 2 : 8,
     suggestedGridW: compact ? 4 : 4,
     iframeHeightPx: compact ? 80 : 352,
   };

@@ -16,7 +16,7 @@ export function AlbumPublicView({ payload }: Props) {
     <AlbumPageExperience profile={profile}>
       <div className="album-public-view" style={pageStyle}>
         <div className="album-public-view__inner">
-          <AlbumStudioLayout profile={profile} theme={theme}>
+          <AlbumStudioLayout profile={profile} theme={theme} connections={connections}>
             <AlbumGrid
               blocks={layout}
               theme={theme}

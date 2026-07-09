@@ -1,17 +1,21 @@
 import type { Profile } from "@/lib/profile-storage";
+import type { AlbumTheme } from "@/features/album/types/album.types";
 import { DiscordConnectedCard } from "@/components/dashboard/DiscordConnectedCard";
 import { HotelConnectionPanel } from "@/components/dashboard/HotelConnectionPanel";
 import { useAlbumI18n } from "@/features/album/i18n/album-messages";
 
 type Props = {
   profile: Profile;
+  theme: AlbumTheme;
+  onThemeChange: (theme: AlbumTheme) => void;
   update: <K extends keyof Profile>(k: K, v: Profile[K]) => void;
   onBatchUpdate?: (patch: Partial<Profile>) => void;
 };
 
 /** Conexões compartilhadas com o Card Normal — mesma tabela `profiles`. */
-export function AlbumConnectionsPanel({ profile, update, onBatchUpdate }: Props) {
+export function AlbumConnectionsPanel({ profile, theme, onThemeChange, update, onBatchUpdate }: Props) {
   const { t } = useAlbumI18n();
+  const showSidebarConnections = theme.sidebar?.showSidebarConnections !== false;
 
   const applyPatch = (patch: Partial<Profile>) => {
     if (onBatchUpdate) {
@@ -28,6 +32,21 @@ export function AlbumConnectionsPanel({ profile, update, onBatchUpdate }: Props)
       <p className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-xs leading-relaxed text-white/50">
         {t("album.connections.sharedNote")}
       </p>
+
+      <label className="album-theme-toggle rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+        <input
+          type="checkbox"
+          checked={showSidebarConnections}
+          onChange={(e) =>
+            onThemeChange({
+              ...theme,
+              sidebar: { ...(theme.sidebar ?? {}), showSidebarConnections: e.target.checked },
+            })
+          }
+        />
+        <span>{t("album.connections.showSidebar")}</span>
+      </label>
+      <p className="text-[0.65rem] leading-relaxed text-white/35">{t("album.connections.showSidebarHint")}</p>
 
       {profile.discord_user_id ? (
         <DiscordConnectedCard
