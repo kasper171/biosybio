@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from "react";
 import type { AlbumBlock, AlbumBlockChrome, AlbumBlockType } from "@/features/album/types/album.types";
 import { AlbumBlockPalette } from "@/features/album/components/editor/AlbumBlockPalette";
 import { getAlbumBlockDef } from "@/features/album/registry/blockRegistry";
@@ -8,10 +9,11 @@ import { albumSanitizePlainText } from "@/features/album/lib/security/album-sani
 import { ALBUM_TEXT_ANIMATION_IDS, ALBUM_TEXT_ANIMATION_LABELS } from "@/features/album/lib/effects/album-text-animations";
 import { CARD_BORDER_STYLES } from "@/lib/card-border";
 import { CARD_REVEAL_OPTIONS } from "@/lib/card-reveal";
+import { AlbumThemeToggle } from "@/features/album/components/editor/AlbumThemeToggle";
 
 type Props = {
   blocks: AlbumBlock[];
-  onBlocksChange: (blocks: AlbumBlock[]) => void;
+  onBlocksChange: Dispatch<SetStateAction<AlbumBlock[]>>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
 };
@@ -37,27 +39,33 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
     const def = getAlbumBlockDef(type);
     if (!def) return;
     const size = def.defaultSize;
-    const maxY = blocks.reduce((acc, b) => Math.max(acc, b.y + b.h), 0);
-    const block: AlbumBlock = {
-      id: albumCreateBlockId(),
-      type,
-      x: 0,
-      y: maxY,
-      w: size.w,
-      h: size.h,
-      data: def.defaultData() as AlbumBlock["data"],
-    };
-    onBlocksChange([...blocks, block]);
-    onSelect(block.id);
+    let newId = "";
+    onBlocksChange((prev) => {
+      const maxY = prev.reduce((acc, b) => Math.max(acc, b.y + b.h), 0);
+      newId = albumCreateBlockId();
+      const block: AlbumBlock = {
+        id: newId,
+        type,
+        x: 0,
+        y: maxY,
+        w: size.w,
+        h: size.h,
+        data: def.defaultData() as AlbumBlock["data"],
+      };
+      return [...prev, block];
+    });
+    onSelect(newId);
   };
 
   const setSpotifyUrl = (raw: string) => {
     if (!selected || selected.type !== "spotify") return;
     const meta = parseSpotifyEmbedMeta(raw);
-    onBlocksChange(
-      updateBlock(blocks, selected.id, {
+    const blockId = selected.id;
+    const data = selected.data;
+    onBlocksChange((prev) =>
+      updateBlock(prev, blockId, {
         data: {
-          ...selected.data,
+          ...data,
           embedUrl: meta?.embedUrl ?? raw,
           kind: meta?.kind,
         },
@@ -75,8 +83,8 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
           <textarea
             value={selected.data.content}
             onChange={(e) =>
-              onBlocksChange(
-                updateBlock(blocks, selected.id, {
+              onBlocksChange((prev) =>
+                updateBlock(prev, selected.id, {
                   data: { ...selected.data, content: albumSanitizePlainText(e.target.value) },
                 }),
               )
@@ -88,8 +96,8 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
           <select
             value={selected.data.textAnimation ?? "none"}
             onChange={(e) =>
-              onBlocksChange(
-                updateBlock(blocks, selected.id, {
+              onBlocksChange((prev) =>
+                updateBlock(prev, selected.id, {
                   data: { ...selected.data, textAnimation: e.target.value },
                 }),
               )
@@ -105,8 +113,8 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
           <select
             value={selected.data.align ?? "left"}
             onChange={(e) =>
-              onBlocksChange(
-                updateBlock(blocks, selected.id, {
+              onBlocksChange((prev) =>
+                updateBlock(prev, selected.id, {
                   data: {
                     ...selected.data,
                     align: e.target.value as "left" | "center" | "right",
@@ -135,8 +143,8 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
           <input
             value={selected.data.title ?? ""}
             onChange={(e) =>
-              onBlocksChange(
-                updateBlock(blocks, selected.id, {
+              onBlocksChange((prev) =>
+                updateBlock(prev, selected.id, {
                   data: {
                     ...selected.data,
                     title: albumSanitizePlainText(e.target.value, 120),
@@ -160,7 +168,9 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
                 const meta = parseSpotifyEmbedMeta(selected.data.embedUrl);
                 if (!meta) return;
                 const size = albumSpotifyBlockSize(meta.compact);
-                onBlocksChange(updateBlock(blocks, selected.id, { w: size.w, h: size.h }));
+                onBlocksChange((prev) =>
+                  updateBlock(prev, selected.id, { w: size.w, h: size.h }),
+                );
               }}
             >
               Aplicar tamanho sugerido
@@ -180,8 +190,8 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
               max={8}
               value={selected.chrome?.borderWidth ?? 0}
               onChange={(e) =>
-                onBlocksChange(
-                  updateChrome(blocks, selected.id, { borderWidth: Number(e.target.value) }),
+                onBlocksChange((prev) =>
+                  updateChrome(prev, selected.id, { borderWidth: Number(e.target.value) }),
                 )
               }
             />
@@ -194,8 +204,8 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
               max={32}
               value={selected.chrome?.borderRadius ?? 12}
               onChange={(e) =>
-                onBlocksChange(
-                  updateChrome(blocks, selected.id, { borderRadius: Number(e.target.value) }),
+                onBlocksChange((prev) =>
+                  updateChrome(prev, selected.id, { borderRadius: Number(e.target.value) }),
                 )
               }
             />
@@ -206,7 +216,9 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
               type="color"
               value={selected.chrome?.borderColor ?? "#ffffff"}
               onChange={(e) =>
-                onBlocksChange(updateChrome(blocks, selected.id, { borderColor: e.target.value }))
+                onBlocksChange((prev) =>
+                  updateChrome(prev, selected.id, { borderColor: e.target.value }),
+                )
               }
             />
           </label>
@@ -215,8 +227,8 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
             <select
               value={selected.chrome?.borderStyle ?? "solid"}
               onChange={(e) =>
-                onBlocksChange(
-                  updateChrome(blocks, selected.id, {
+                onBlocksChange((prev) =>
+                  updateChrome(prev, selected.id, {
                     borderStyle: e.target.value as AlbumBlockChrome["borderStyle"],
                   }),
                 )
@@ -231,38 +243,28 @@ export function AlbumLayoutToolsPanel({ blocks, onBlocksChange, selectedId, onSe
               ))}
             </select>
           </label>
-          <label className="album-theme-toggle">
-            <input
-              type="checkbox"
-              checked={selected.chrome?.glowEnabled ?? false}
-              onChange={(e) =>
-                onBlocksChange(
-                  updateChrome(blocks, selected.id, { glowEnabled: e.target.checked }),
-                )
-              }
-            />
-            <span>Glow no bloco</span>
-          </label>
-          <label className="album-theme-toggle">
-            <input
-              type="checkbox"
-              checked={selected.chrome?.glassEnabled ?? false}
-              onChange={(e) =>
-                onBlocksChange(
-                  updateChrome(blocks, selected.id, { glassEnabled: e.target.checked }),
-                )
-              }
-            />
-            <span>Efeito Glass no bloco</span>
-          </label>
+          <AlbumThemeToggle
+            label="Glow no bloco"
+            checked={selected.chrome?.glowEnabled ?? false}
+            onChange={(checked) =>
+              onBlocksChange((prev) => updateChrome(prev, selected.id, { glowEnabled: checked }))
+            }
+          />
+          <AlbumThemeToggle
+            label="Efeito Glass no bloco"
+            checked={selected.chrome?.glassEnabled ?? false}
+            onChange={(checked) =>
+              onBlocksChange((prev) => updateChrome(prev, selected.id, { glassEnabled: checked }))
+            }
+          />
           <label className="album-theme-field">
             <span>Efeito de entrada</span>
             <select
               value={selected.chrome?.revealEffect ?? "inherit"}
               onChange={(e) => {
                 const value = e.target.value;
-                onBlocksChange(
-                  blocks.map((b) => {
+                onBlocksChange((prev) =>
+                  prev.map((b) => {
                     if (b.id !== selected.id) return b;
                     const nextChrome = { ...(b.chrome ?? {}) };
                     if (value === "inherit") delete nextChrome.revealEffect;

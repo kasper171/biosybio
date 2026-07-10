@@ -112,7 +112,6 @@ export const albumThemeSchema = z.object({
       dividerColor: z.string().max(32).optional(),
       padding: z.number().min(0).max(48).optional(),
       showSidebarConnections: z.boolean().optional(),
-      connectionsGlassEnabled: z.boolean().optional(),
     })
     .optional(),
 });

@@ -3,6 +3,7 @@ import type { AlbumTheme } from "@/features/album/types/album.types";
 import { DiscordConnectedCard } from "@/components/dashboard/DiscordConnectedCard";
 import { HotelConnectionPanel } from "@/components/dashboard/HotelConnectionPanel";
 import { useAlbumI18n } from "@/features/album/i18n/album-messages";
+import { AlbumThemeToggle } from "@/features/album/components/editor/AlbumThemeToggle";
 
 type Props = {
   profile: Profile;
@@ -33,20 +34,17 @@ export function AlbumConnectionsPanel({ profile, theme, onThemeChange, update, o
         {t("album.connections.sharedNote")}
       </p>
 
-      <label className="album-theme-toggle rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
-        <input
-          type="checkbox"
-          checked={showSidebarConnections}
-          onChange={(e) =>
-            onThemeChange({
-              ...theme,
-              sidebar: { ...(theme.sidebar ?? {}), showSidebarConnections: e.target.checked },
-            })
-          }
-        />
-        <span>{t("album.connections.showSidebar")}</span>
-      </label>
-      <p className="text-[0.65rem] leading-relaxed text-white/35">{t("album.connections.showSidebarHint")}</p>
+      <AlbumThemeToggle
+        label={t("album.connections.showSidebar")}
+        description={t("album.connections.showSidebarHint")}
+        checked={showSidebarConnections}
+        onChange={(checked) =>
+          onThemeChange({
+            ...theme,
+            sidebar: { ...(theme.sidebar ?? {}), showSidebarConnections: checked },
+          })
+        }
+      />
 
       {profile.discord_user_id ? (
         <DiscordConnectedCard

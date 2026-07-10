@@ -135,8 +135,6 @@ export type AlbumSidebarTheme = {
   padding?: number;
   /** Conexões (Discord/Habbo/Habblet) abaixo do perfil na coluna esquerda */
   showSidebarConnections?: boolean;
-  /** Glass / fundo nos cards de conexão (Discord, Habbo, Habblet) na coluna esquerda */
-  connectionsGlassEnabled?: boolean;
 };
 
 export type AlbumLayoutRow = {

@@ -32,13 +32,11 @@ const DEFAULTS: ResolvedAlbumSidebar = {
   dividerColor: "rgba(255,255,255,0.12)",
   padding: 16,
   showSidebarConnections: true,
-  connectionsGlassEnabled: false,
 };
 
 export function resolveAlbumSidebarTheme(theme: AlbumTheme, _profile?: Profile | null): ResolvedAlbumSidebar {
   const s = theme.sidebar ?? {};
   const glassEnabled = s.glassEnabled === true;
-  const connectionsGlassEnabled = s.connectionsGlassEnabled === true;
 
   return {
     visible: s.visible !== false,
@@ -58,7 +56,6 @@ export function resolveAlbumSidebarTheme(theme: AlbumTheme, _profile?: Profile |
     dividerColor: s.dividerColor ?? DEFAULTS.dividerColor,
     padding: s.padding ?? DEFAULTS.padding,
     showSidebarConnections: s.showSidebarConnections !== false,
-    connectionsGlassEnabled,
   };
 }
 
@@ -77,34 +74,28 @@ export function albumSidebarSurfaceProfile(
   };
 }
 
-/** Perfil derivado para Discord/Habbo/Habblet na coluna esquerda — sem herdar glass do Card Normal. */
-export function albumSidebarConnectionsProfile(
-  profile: Profile,
-  sidebar: ResolvedAlbumSidebar,
-): Profile {
-  if (!sidebar.connectionsGlassEnabled) {
-    return {
-      ...profile,
-      card_glass_enabled: false,
-      card_opacity: 0,
-      card_blur: 0,
-      card_border_width: 0,
-      effect_glow: false,
-    };
-  }
+/** Perfil derivado unificado — avatar, Discord, Habbo e Habblet usam o mesmo card da coluna esquerda. */
+export function albumSidebarCardProfile(profile: Profile, sidebar: ResolvedAlbumSidebar): Profile {
+  const borderStyle = sidebar.borderStyle === "none" ? "solid" : sidebar.borderStyle;
+  const showSurface = albumSidebarShouldShowSurface(sidebar);
 
   return {
     ...profile,
-    card_glass_enabled: true,
+    card_glass_enabled: showSurface && sidebar.glassEnabled,
     card_color: sidebar.cardColor,
-    card_opacity: sidebar.cardOpacity > 0 ? sidebar.cardOpacity : 0.88,
-    card_blur: sidebar.cardBlur > 0 ? sidebar.cardBlur : 8,
-    card_border_width: sidebar.borderWidth,
+    card_opacity: showSurface ? sidebar.cardOpacity : 0,
+    card_blur: showSurface ? sidebar.cardBlur : 0,
+    card_border_width: sidebar.borderStyle === "none" ? 0 : sidebar.borderWidth,
     card_border_color: sidebar.borderColor,
     card_border_radius: sidebar.borderRadius,
-    card_border_style: sidebar.borderStyle === "none" ? "solid" : sidebar.borderStyle,
+    card_border_style: borderStyle,
     effect_glow: false,
   };
+}
+
+/** @deprecated Use albumSidebarCardProfile */
+export function albumSidebarConnectionsProfile(profile: Profile, sidebar: ResolvedAlbumSidebar): Profile {
+  return albumSidebarCardProfile(profile, sidebar);
 }
 
 export function albumSidebarCardChrome(sidebar: ResolvedAlbumSidebar) {

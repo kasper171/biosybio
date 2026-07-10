@@ -4,7 +4,7 @@ import { DiscordPresenceCard } from "@/components/DiscordPresenceCard";
 import { HotelProfileCard } from "@/components/HotelProfileCard";
 import { getHotelCardLayoutFromProfile } from "@/lib/hotel";
 import { profileToHabboData, profileToHabbletData } from "@/lib/hotel/profile-hotel";
-import { resolveAlbumSidebarTheme, albumSidebarConnectionsProfile } from "@/features/album/lib/effects/album-sidebar-theme";
+import { resolveAlbumSidebarTheme, albumSidebarCardProfile } from "@/features/album/lib/effects/album-sidebar-theme";
 
 type Props = {
   profile: Profile;
@@ -23,7 +23,7 @@ export function AlbumSidebarConnections({ profile, theme, connections }: Props) 
 
   if (!discordId && !habbo && !habblet) return null;
 
-  const connectionsProfile = albumSidebarConnectionsProfile(profile, sidebar);
+  const cardProfile = albumSidebarCardProfile(profile, sidebar);
 
   return (
     <div className="album-sidebar-connections space-y-3">
@@ -31,7 +31,7 @@ export function AlbumSidebarConnections({ profile, theme, connections }: Props) 
         <DiscordPresenceCard
           userId={discordId}
           variant="outside"
-          profileTheme={connectionsProfile}
+          profileTheme={cardProfile}
           showBadges={connections?.discord_show_badges ?? profile.discord_show_badges !== false}
           scale={connections?.discord_inside_scale ?? profile.discord_inside_scale ?? 100}
           stackActivity
@@ -40,7 +40,7 @@ export function AlbumSidebarConnections({ profile, theme, connections }: Props) 
       {habbo ? (
         <HotelProfileCard
           data={habbo}
-          profile={connectionsProfile}
+          profile={cardProfile}
           layout={hotelLayout}
           variant="outside"
           className="w-full"
@@ -49,7 +49,7 @@ export function AlbumSidebarConnections({ profile, theme, connections }: Props) 
       {habblet ? (
         <HotelProfileCard
           data={habblet}
-          profile={connectionsProfile}
+          profile={cardProfile}
           layout={hotelLayout}
           variant="outside"
           className="w-full"

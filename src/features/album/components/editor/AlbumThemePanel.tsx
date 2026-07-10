@@ -2,6 +2,7 @@ import type { AlbumTheme } from "@/features/album/types/album.types";
 import { albumSanitizeHexColor } from "@/features/album/lib/security/album-sanitize";
 import { useAlbumI18n } from "@/features/album/i18n/album-messages";
 import { CARD_BORDER_STYLES } from "@/lib/card-border";
+import { AlbumThemeToggle } from "@/features/album/components/editor/AlbumThemeToggle";
 
 type Props = {
   theme: AlbumTheme;
@@ -44,6 +45,15 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
     </label>
   );
 
+  const setSidebarGlass = (enabled: boolean) => {
+    const patch: NonNullable<AlbumTheme["sidebar"]> = { glassEnabled: enabled };
+    if (enabled) {
+      if ((sidebar.cardOpacity ?? 0) <= 0) patch.cardOpacity = 0.88;
+      if ((sidebar.cardBlur ?? 0) <= 0) patch.cardBlur = 8;
+    }
+    onChange(patchSidebar(theme, patch));
+  };
+
   return (
     <div className="album-theme-panel space-y-5">
       <section>
@@ -54,18 +64,16 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
           {colorField("titleTextColor", t("album.theme.titleColor"))}
           {colorField("glowColor", t("album.theme.glow"))}
         </div>
-        <label className="album-theme-toggle">
-          <input
-            type="checkbox"
-            checked={theme.glowEnabled ?? false}
-            onChange={(e) => onChange({ ...theme, glowEnabled: e.target.checked })}
-          />
-          <span>{t("album.theme.glowEnabled")}</span>
-        </label>
+        <AlbumThemeToggle
+          label={t("album.theme.glowEnabled")}
+          checked={theme.glowEnabled ?? false}
+          onChange={(checked) => onChange({ ...theme, glowEnabled: checked })}
+        />
         <label className="album-theme-field">
           <span>{t("album.theme.glowSize")}</span>
           <input
             type="range"
+            className="album-theme-range"
             min={0}
             max={24}
             value={theme.glowSize ?? 8}
@@ -74,18 +82,28 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
         </label>
       </section>
 
-      <section className="space-y-3 border-t border-white/[0.06] pt-4">
+      <section className="album-theme-section">
         <h3 className="album-theme-panel__title">{t("album.theme.sidebarTitle")}</h3>
-        <p className="text-xs leading-relaxed text-white/40">{t("album.theme.sidebarHint")}</p>
+        <p className="album-theme-section__hint">{t("album.theme.sidebarHint")}</p>
 
-        <label className="album-theme-toggle">
-          <input
-            type="checkbox"
+        <div className="album-theme-toggle-stack">
+          <AlbumThemeToggle
+            label={t("album.theme.sidebarVisible")}
             checked={sidebar.visible !== false}
-            onChange={(e) => onChange(patchSidebar(theme, { visible: e.target.checked }))}
+            onChange={(checked) => onChange(patchSidebar(theme, { visible: checked }))}
           />
-          <span>{t("album.theme.sidebarVisible")}</span>
-        </label>
+          <AlbumThemeToggle
+            label={t("album.theme.sidebarGlass")}
+            description={t("album.theme.sidebarGlassHint")}
+            checked={sidebar.glassEnabled === true}
+            onChange={setSidebarGlass}
+          />
+          <AlbumThemeToggle
+            label={t("album.theme.sidebarDivider")}
+            checked={sidebar.showDivider !== false}
+            onChange={(checked) => onChange(patchSidebar(theme, { showDivider: checked }))}
+          />
+        </div>
 
         <label className="album-theme-field">
           <span>{t("album.theme.sidebarLayout")}</span>
@@ -103,43 +121,17 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
           </select>
         </label>
 
-        <label className="album-theme-toggle">
-          <input
-            type="checkbox"
-            checked={sidebar.glassEnabled === true}
-            onChange={(e) => onChange(patchSidebar(theme, { glassEnabled: e.target.checked }))}
-          />
-          <span>{t("album.theme.sidebarGlass")}</span>
-        </label>
-
-        <label className="album-theme-toggle">
-          <input
-            type="checkbox"
-            checked={sidebar.connectionsGlassEnabled === true}
-            onChange={(e) =>
-              onChange(patchSidebar(theme, { connectionsGlassEnabled: e.target.checked }))
-            }
-          />
-          <span>{t("album.theme.sidebarConnectionsGlass")}</span>
-        </label>
-
-        <label className="album-theme-toggle">
-          <input
-            type="checkbox"
-            checked={sidebar.showDivider !== false}
-            onChange={(e) => onChange(patchSidebar(theme, { showDivider: e.target.checked }))}
-          />
-          <span>{t("album.theme.sidebarDivider")}</span>
-        </label>
-
-        {sidebarColor("cardColor", t("album.theme.sidebarCardColor"), "#0a0a0f")}
-        {sidebarColor("borderColor", t("album.theme.sidebarBorderColor"), "#ffffff")}
-        {sidebarColor("dividerColor", t("album.theme.sidebarDividerColor"), "#ffffff")}
+        <div className="album-theme-panel__grid">
+          {sidebarColor("cardColor", t("album.theme.sidebarCardColor"), "#0a0a0f")}
+          {sidebarColor("borderColor", t("album.theme.sidebarBorderColor"), "#ffffff")}
+          {sidebarColor("dividerColor", t("album.theme.sidebarDividerColor"), "#ffffff")}
+        </div>
 
         <label className="album-theme-field">
           <span>{t("album.theme.sidebarOpacity")}</span>
           <input
             type="range"
+            className="album-theme-range"
             min={0}
             max={1}
             step={0.01}
@@ -151,6 +143,7 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
           <span>{t("album.theme.sidebarBlur")}</span>
           <input
             type="range"
+            className="album-theme-range"
             min={0}
             max={40}
             value={sidebar.cardBlur ?? 0}
@@ -161,6 +154,7 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
           <span>{t("album.theme.sidebarBorderWidth")}</span>
           <input
             type="range"
+            className="album-theme-range"
             min={0}
             max={8}
             value={sidebar.borderWidth ?? 0}
@@ -171,6 +165,7 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
           <span>{t("album.theme.sidebarRadius")}</span>
           <input
             type="range"
+            className="album-theme-range"
             min={0}
             max={32}
             value={sidebar.borderRadius ?? 16}
@@ -181,6 +176,7 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
           <span>{t("album.theme.sidebarPadding")}</span>
           <input
             type="range"
+            className="album-theme-range"
             min={0}
             max={32}
             value={sidebar.padding ?? 16}
