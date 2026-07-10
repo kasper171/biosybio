@@ -141,7 +141,9 @@ export function AlbumProfileSidebar({ profile, theme, className }: Props) {
       className={cn("album-profile-sidebar-card relative overflow-hidden", chromeClass, className)}
       style={shell}
     >
-      <div aria-hidden className={surface.className} style={surface.style} />
+      {surface ? (
+        <div aria-hidden className={surface.className} style={surface.style} />
+      ) : null}
       <div
         className={cn(
           "album-profile-sidebar relative z-[1]",

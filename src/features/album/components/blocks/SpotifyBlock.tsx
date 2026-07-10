@@ -1,18 +1,18 @@
 import { Music2 } from "lucide-react";
 import type { AlbumBlockEditorProps, AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
-import { ScaledEmbed } from "@/components/blocks/BlockFrame";
 import { parseSpotifyEmbedMeta } from "@/features/album/lib/spotify/album-spotify-embed";
 
 function SpotifyEmbed({ rawUrl, title, kind }: { rawUrl: string; title?: string; kind?: string }) {
   const meta = parseSpotifyEmbedMeta(rawUrl);
   if (!meta) return null;
-  const nativeHeight = meta.compact ? 80 : 352;
 
   return (
-    <ScaledEmbed
+    <iframe
       src={meta.embedUrl}
       title={title ?? (kind === "playlist" || meta.kind === "playlist" ? "Spotify Playlist" : "Spotify")}
-      nativeHeight={nativeHeight}
+      className="absolute inset-0 h-full w-full border-0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy"
     />
   );
 }

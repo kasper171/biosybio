@@ -22,9 +22,9 @@ const DEFAULTS: ResolvedAlbumSidebar = {
   layout: "centered",
   glassEnabled: false,
   cardColor: "#0a0a0f",
-  cardOpacity: 0.88,
-  cardBlur: 8,
-  borderWidth: 2,
+  cardOpacity: 0,
+  cardBlur: 0,
+  borderWidth: 0,
   borderColor: "rgba(255,255,255,0.14)",
   borderStyle: "solid",
   borderRadius: 16,
@@ -32,29 +32,38 @@ const DEFAULTS: ResolvedAlbumSidebar = {
   dividerColor: "rgba(255,255,255,0.12)",
   padding: 16,
   showSidebarConnections: true,
+  connectionsGlassEnabled: false,
 };
 
-export function resolveAlbumSidebarTheme(theme: AlbumTheme, profile?: Profile | null): ResolvedAlbumSidebar {
+export function resolveAlbumSidebarTheme(theme: AlbumTheme, _profile?: Profile | null): ResolvedAlbumSidebar {
   const s = theme.sidebar ?? {};
+  const glassEnabled = s.glassEnabled === true;
+  const connectionsGlassEnabled = s.connectionsGlassEnabled === true;
+
   return {
     visible: s.visible !== false,
     layout: s.layout === "aligned" ? "aligned" : "centered",
-    glassEnabled: s.glassEnabled ?? Boolean(profile?.card_glass_enabled),
-    cardColor: s.cardColor ?? profile?.card_color ?? DEFAULTS.cardColor,
-    cardOpacity: s.cardOpacity ?? profile?.card_opacity ?? DEFAULTS.cardOpacity,
-    cardBlur: s.cardBlur ?? profile?.card_blur ?? DEFAULTS.cardBlur,
-    borderWidth: s.borderWidth ?? Number(profile?.card_border_width ?? DEFAULTS.borderWidth),
-    borderColor: s.borderColor ?? profile?.card_border_color ?? DEFAULTS.borderColor,
+    glassEnabled,
+    cardColor: s.cardColor ?? DEFAULTS.cardColor,
+    cardOpacity: s.cardOpacity ?? (glassEnabled ? 0.88 : 0),
+    cardBlur: s.cardBlur ?? (glassEnabled ? 8 : 0),
+    borderWidth: s.borderWidth ?? DEFAULTS.borderWidth,
+    borderColor: s.borderColor ?? DEFAULTS.borderColor,
     borderStyle:
       s.borderStyle === "none"
         ? "none"
-        : normalizeCardBorderStyle(s.borderStyle ?? profile?.card_border_style ?? DEFAULTS.borderStyle),
-    borderRadius: s.borderRadius ?? Number(profile?.card_border_radius ?? DEFAULTS.borderRadius),
+        : normalizeCardBorderStyle(s.borderStyle ?? DEFAULTS.borderStyle),
+    borderRadius: s.borderRadius ?? DEFAULTS.borderRadius,
     showDivider: s.showDivider !== false,
-  dividerColor: s.dividerColor ?? profile?.card_border_color ?? DEFAULTS.dividerColor,
-  padding: s.padding ?? DEFAULTS.padding,
-  showSidebarConnections: s.showSidebarConnections !== false,
-};
+    dividerColor: s.dividerColor ?? DEFAULTS.dividerColor,
+    padding: s.padding ?? DEFAULTS.padding,
+    showSidebarConnections: s.showSidebarConnections !== false,
+    connectionsGlassEnabled,
+  };
+}
+
+export function albumSidebarShouldShowSurface(sidebar: ResolvedAlbumSidebar): boolean {
+  return sidebar.glassEnabled || sidebar.cardOpacity > 0;
 }
 
 export function albumSidebarSurfaceProfile(
@@ -65,6 +74,36 @@ export function albumSidebarSurfaceProfile(
     card_color: sidebar.cardColor,
     card_opacity: sidebar.cardOpacity,
     card_blur: sidebar.cardBlur,
+  };
+}
+
+/** Perfil derivado para Discord/Habbo/Habblet na coluna esquerda — sem herdar glass do Card Normal. */
+export function albumSidebarConnectionsProfile(
+  profile: Profile,
+  sidebar: ResolvedAlbumSidebar,
+): Profile {
+  if (!sidebar.connectionsGlassEnabled) {
+    return {
+      ...profile,
+      card_glass_enabled: false,
+      card_opacity: 0,
+      card_blur: 0,
+      card_border_width: 0,
+      effect_glow: false,
+    };
+  }
+
+  return {
+    ...profile,
+    card_glass_enabled: true,
+    card_color: sidebar.cardColor,
+    card_opacity: sidebar.cardOpacity > 0 ? sidebar.cardOpacity : 0.88,
+    card_blur: sidebar.cardBlur > 0 ? sidebar.cardBlur : 8,
+    card_border_width: sidebar.borderWidth,
+    card_border_color: sidebar.borderColor,
+    card_border_radius: sidebar.borderRadius,
+    card_border_style: sidebar.borderStyle === "none" ? "solid" : sidebar.borderStyle,
+    effect_glow: false,
   };
 }
 
@@ -84,8 +123,6 @@ export function albumSidebarCardStyles(
   profile?: Profile | null,
 ): { shell: CSSProperties; className: string; surfaceRadius: number; sidebar: ResolvedAlbumSidebar } {
   const sidebar = resolveAlbumSidebarTheme(theme, profile);
-  const surfaceProfile = albumSidebarSurfaceProfile(sidebar);
-  const glass = isCardGlassEnabled(surfaceProfile);
   const chrome = albumSidebarCardChrome(sidebar);
 
   return {
@@ -103,7 +140,9 @@ export function albumSidebarCardStyles(
 
 export function albumSidebarSurfaceLayerStyle(
   sidebar: ResolvedAlbumSidebar,
-): { className?: string; style: CSSProperties } {
+): { className?: string; style: CSSProperties } | null {
+  if (!albumSidebarShouldShowSurface(sidebar)) return null;
+
   const surfaceProfile = albumSidebarSurfaceProfile(sidebar);
   const glass = isCardGlassEnabled(surfaceProfile);
   return {

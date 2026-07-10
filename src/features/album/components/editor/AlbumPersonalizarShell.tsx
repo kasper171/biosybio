@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, type ReactNode } from "react";
+import { useMemo, useState, useEffect, useRef, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronRight, Eye, PanelLeftClose, Save, Share2 } from "lucide-react";
@@ -59,10 +59,21 @@ function AlbumPersonalizarShellInner({
   const [profile, setProfile] = useState(profileProp);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [savingAll, setSavingAll] = useState(false);
+  const styleEnsuredRef = useRef(false);
 
   useEffect(() => {
     setProfile(profileProp);
   }, [profileProp]);
+
+  useEffect(() => {
+    if (styleEnsuredRef.current) return;
+    styleEnsuredRef.current = true;
+    void saveStyle("album").then((result) => {
+      if (!result.ok) {
+        toast.error(result.error ?? "Não foi possível ativar o estilo Álbum na página pública.");
+      }
+    });
+  }, [saveStyle]);
 
   const connections = useMemo(() => resolveAlbumConnections(profile), [profile]);
 

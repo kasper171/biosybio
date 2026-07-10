@@ -645,6 +645,10 @@
   width: 100%;
 }
 
+.album-block-fill--embed > iframe {
+  border: 0;
+}
+
 .album-block-frame {
   flex: 1 1 auto;
   height: 100%;

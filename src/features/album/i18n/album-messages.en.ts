@@ -54,6 +54,7 @@ export const albumMessagesEn = {
       sidebarLayoutCentered: "Centered",
       sidebarLayoutAligned: "Aligned (avatar on the left)",
       sidebarGlass: "Glass effect",
+      sidebarConnectionsGlass: "Glass on connections (Discord, Habbo…)",
       sidebarDivider: "Vertical divider line",
       sidebarCardColor: "Card color",
       sidebarBorderColor: "Border color",

@@ -144,6 +144,13 @@ export const saveAlbumLayoutFn = createServerFn({ method: "POST" })
     );
 
     if (error) return { ok: false as const, error: error.message };
+
+    const { error: styleError } = await supabaseAdmin.from("profile_display_styles").upsert(
+      { user_id: userId, style: "album" },
+      { onConflict: "user_id" },
+    );
+
+    if (styleError) return { ok: false as const, error: styleError.message };
     return { ok: true as const };
   });
 

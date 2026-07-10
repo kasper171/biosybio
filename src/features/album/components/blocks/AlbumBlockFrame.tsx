@@ -27,7 +27,7 @@ function resolveChrome(block: AlbumBlock, profile?: Profile | null): AlbumBlockC
     glowEnabled: c.glowEnabled ?? Boolean(profile?.effect_glow),
     glowColor: c.glowColor ?? profile?.effect_glow_color ?? profile?.card_border_color,
     glowSize: c.glowSize ?? profile?.effect_glow_size ?? 24,
-    glassEnabled: c.glassEnabled ?? profile?.card_glass_enabled === true,
+    glassEnabled: c.glassEnabled === true,
     revealEffect:
       c.revealEffect === "none"
         ? "none"
@@ -95,17 +95,6 @@ export function AlbumBlockFrame({ block, profile, animate = true, children }: Pr
           style={{
             ...cardGlassSurfaceLayerStyle(radius),
             ...cardSurfaceFillStyle(surfaceProfile, true),
-          }}
-        />
-      ) : surfaceProfile && !glass && (profile?.card_opacity ?? 0) > 0 ? (
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 0,
-            borderRadius: radius,
-            ...cardSurfaceFillStyle({ ...surfaceProfile, card_glass_enabled: false }, false),
           }}
         />
       ) : null}

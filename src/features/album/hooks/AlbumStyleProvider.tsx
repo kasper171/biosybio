@@ -101,6 +101,7 @@ export function AlbumStyleProvider({ children }: { children: ReactNode }) {
   const saveStyle = useCallback(async (next: ProfileDisplayStyle) => {
     setSaving(true);
     setError(null);
+    const previousStyle = style;
     setStyle(next);
     writeCachedStyle(next);
 
@@ -108,6 +109,8 @@ export function AlbumStyleProvider({ children }: { children: ReactNode }) {
     if (!userData.user) {
       const message = "Not authenticated.";
       setError(message);
+      setStyle(previousStyle);
+      writeCachedStyle(previousStyle);
       setSaving(false);
       return { ok: false as const, error: message };
     }
@@ -129,6 +132,8 @@ export function AlbumStyleProvider({ children }: { children: ReactNode }) {
       );
       if (upsertError) {
         setError(upsertError.message);
+        setStyle(previousStyle);
+        writeCachedStyle(previousStyle);
         setSaving(false);
         return { ok: false as const, error: upsertError.message };
       }
@@ -139,9 +144,10 @@ export function AlbumStyleProvider({ children }: { children: ReactNode }) {
       await ensureAlbumLayoutRow(userData.user.id);
     }
 
+    setError(null);
     setSaving(false);
     return { ok: true as const };
-  }, []);
+  }, [style]);
 
   const value = useMemo(
     () => ({ style, loading, saving, error, saveStyle, refreshStyle }),

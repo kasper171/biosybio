@@ -73,8 +73,13 @@ export async function fetchAlbumPublicProfile(username: string): Promise<AlbumPu
     supabaseAdmin.from("album_connections").select("*").eq("user_id", userId).maybeSingle(),
   ]);
 
-  const style = (styleRow?.style ?? "card") as ProfileDisplayStyle;
-  if (style !== "album") return null;
+  const layout = parseLayout(layoutRow?.layout);
+  const styleFromDb = styleRow?.style as ProfileDisplayStyle | undefined;
+  const isAlbumStyle =
+    styleFromDb === "album" || (styleFromDb == null && layout.length > 0);
+  if (!isAlbumStyle) return null;
+
+  const style: ProfileDisplayStyle = "album";
 
   const visibleProfile = albumApplyVisibilityMeta(
     profileWithRoles as Parameters<typeof albumApplyVisibilityMeta>[0],
@@ -99,7 +104,7 @@ export async function fetchAlbumPublicProfile(username: string): Promise<AlbumPu
     style,
     meta,
     profile: visibleProfile as Profile,
-    layout: parseLayout(layoutRow?.layout),
+    layout,
     theme: parseTheme(layoutRow?.theme),
     connections,
   };

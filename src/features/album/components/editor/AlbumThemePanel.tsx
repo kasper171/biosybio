@@ -115,6 +115,17 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
         <label className="album-theme-toggle">
           <input
             type="checkbox"
+            checked={sidebar.connectionsGlassEnabled === true}
+            onChange={(e) =>
+              onChange(patchSidebar(theme, { connectionsGlassEnabled: e.target.checked }))
+            }
+          />
+          <span>{t("album.theme.sidebarConnectionsGlass")}</span>
+        </label>
+
+        <label className="album-theme-toggle">
+          <input
+            type="checkbox"
             checked={sidebar.showDivider !== false}
             onChange={(e) => onChange(patchSidebar(theme, { showDivider: e.target.checked }))}
           />
@@ -132,7 +143,7 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
             min={0}
             max={1}
             step={0.01}
-            value={sidebar.cardOpacity ?? 0.88}
+            value={sidebar.cardOpacity ?? 0}
             onChange={(e) => onChange(patchSidebar(theme, { cardOpacity: Number(e.target.value) }))}
           />
         </label>
@@ -142,7 +153,7 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
             type="range"
             min={0}
             max={40}
-            value={sidebar.cardBlur ?? 8}
+            value={sidebar.cardBlur ?? 0}
             onChange={(e) => onChange(patchSidebar(theme, { cardBlur: Number(e.target.value) }))}
           />
         </label>
@@ -152,7 +163,7 @@ export function AlbumThemePanel({ theme, onChange }: Props) {
             type="range"
             min={0}
             max={8}
-            value={sidebar.borderWidth ?? 2}
+            value={sidebar.borderWidth ?? 0}
             onChange={(e) => onChange(patchSidebar(theme, { borderWidth: Number(e.target.value) }))}
           />
         </label>
