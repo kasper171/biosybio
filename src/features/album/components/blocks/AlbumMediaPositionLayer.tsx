@@ -20,7 +20,7 @@ export function AlbumMediaPositionLayer({
   kind,
   posX,
   posY,
-  objectFit = "cover",
+  objectFit = "contain",
   editable = false,
   onChange,
 }: Props) {

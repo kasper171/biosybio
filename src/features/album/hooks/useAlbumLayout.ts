@@ -7,6 +7,10 @@ import {
 
 const SAVE_DEBOUNCE_MS = 800;
 
+export type AlbumLayoutSaveResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
 export function useAlbumLayout() {
   const [layout, setLayout] = useState<AlbumBlock[]>([]);
   const [theme, setTheme] = useState<AlbumTheme>({});
@@ -15,7 +19,16 @@ export function useAlbumLayout() {
   const [error, setError] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingRef = useRef<{ layout: AlbumBlock[]; theme: AlbumTheme } | null>(null);
+  const layoutRef = useRef<AlbumBlock[]>([]);
+  const themeRef = useRef<AlbumTheme>({});
+
+  useEffect(() => {
+    layoutRef.current = layout;
+  }, [layout]);
+
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -23,8 +36,12 @@ export function useAlbumLayout() {
       try {
         const result = await fetchAlbumLayoutFn();
         if (cancelled) return;
-        setLayout((result.layout as AlbumBlock[]) ?? []);
-        setTheme((result.theme as AlbumTheme) ?? {});
+        const nextLayout = (result.layout as AlbumBlock[]) ?? [];
+        const nextTheme = (result.theme as AlbumTheme) ?? {};
+        layoutRef.current = nextLayout;
+        themeRef.current = nextTheme;
+        setLayout(nextLayout);
+        setTheme(nextTheme);
         setLastSavedAt(result.updated_at);
       } catch {
         if (!cancelled) setError("Could not load album layout.");
@@ -37,59 +54,68 @@ export function useAlbumLayout() {
     };
   }, []);
 
-  const flushSave = useCallback(async () => {
-    const pending = pendingRef.current;
-    if (!pending) return;
-    pendingRef.current = null;
+  const flushSave = useCallback(async (): Promise<AlbumLayoutSaveResult> => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    const snapshot = {
+      layout: layoutRef.current,
+      theme: themeRef.current,
+    };
+
     setSaving(true);
     setError(null);
     try {
       const result = await saveAlbumLayoutFn({
-        data: { layout: pending.layout, theme: pending.theme },
+        data: { layout: snapshot.layout, theme: snapshot.theme },
       });
       if (!result.ok) {
-        setError(result.error);
-        return;
+        const message = result.error ?? "Could not save layout.";
+        setError(message);
+        return { ok: false as const, error: message };
       }
       setLastSavedAt(new Date().toISOString());
+      return { ok: true as const };
     } catch {
-      setError("Could not save layout.");
+      const message = "Could not save layout.";
+      setError(message);
+      return { ok: false as const, error: message };
     } finally {
       setSaving(false);
     }
   }, []);
 
-  const scheduleSave = useCallback(
-    (nextLayout: AlbumBlock[], nextTheme: AlbumTheme) => {
-      pendingRef.current = { layout: nextLayout, theme: nextTheme };
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        void flushSave();
-      }, SAVE_DEBOUNCE_MS);
-    },
-    [flushSave],
-  );
+  const scheduleSave = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      void flushSave();
+    }, SAVE_DEBOUNCE_MS);
+  }, [flushSave]);
 
   const updateLayout = useCallback(
     (next: AlbumBlock[] | ((prev: AlbumBlock[]) => AlbumBlock[])) => {
       setLayout((prev) => {
         const resolved = typeof next === "function" ? next(prev) : next;
-        scheduleSave(resolved, theme);
+        layoutRef.current = resolved;
+        scheduleSave();
         return resolved;
       });
     },
-    [scheduleSave, theme],
+    [scheduleSave],
   );
 
   const updateTheme = useCallback(
     (next: AlbumTheme | ((prev: AlbumTheme) => AlbumTheme)) => {
       setTheme((prev) => {
         const resolved = typeof next === "function" ? next(prev) : next;
-        scheduleSave(layout, resolved);
+        themeRef.current = resolved;
+        scheduleSave();
         return resolved;
       });
     },
-    [layout, scheduleSave],
+    [scheduleSave],
   );
 
   useEffect(() => {

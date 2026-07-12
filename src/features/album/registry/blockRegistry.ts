@@ -50,7 +50,7 @@ register({
   icon: ImageIcon,
   defaultSize: defaultSize("image"),
   minSize: { w: 2, h: 2 },
-  defaultData: () => ({ url: "", objectFit: "cover" }),
+  defaultData: () => ({ url: "", objectFit: "contain" }),
   Editor: ImageBlockEditor,
   Public: ImageBlockPublic,
 });

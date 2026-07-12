@@ -26,6 +26,9 @@ export function albumMergeLayoutIntoBlocks(blocks: AlbumBlock[], layout: Layout[
   return blocks.map((block) => {
     const item = byId.get(block.id);
     if (!item) return block;
+    if (block.x === item.x && block.y === item.y && block.w === item.w && block.h === item.h) {
+      return block;
+    }
     return { ...block, x: item.x, y: item.y, w: item.w, h: item.h };
   });
 }

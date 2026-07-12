@@ -3,6 +3,7 @@ import type { AlbumConnectionsRow } from "@/features/album/types/album.types";
 import type { AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
 import { DiscordPresenceCard } from "@/components/DiscordPresenceCard";
 import { FaDiscord } from "react-icons/fa";
+import { AlbumBlockFit } from "@/features/album/components/blocks/AlbumBlockFit";
 
 type Props = AlbumBlockPublicProps<"discord"> & {
   connections: AlbumConnectionsRow | null;
@@ -31,16 +32,18 @@ export function DiscordConnectionBlockPublic({ block, connections, profile }: Pr
   }
 
   return (
-    <div className="album-block-fill flex h-full min-h-0 w-full flex-col justify-center overflow-hidden px-2 py-2">
-      <DiscordPresenceCard
-        userId={userId}
-        variant="inside"
-        profileTheme={profile}
-        showBadges={showBadges}
-        scale={scale}
-        stackActivity
-      />
-    </div>
+    <AlbumBlockFit className="album-block-fill album-block-fill--fit">
+      <div className="album-discord-block-card w-full min-w-[13rem] max-w-[22rem]">
+        <DiscordPresenceCard
+          userId={userId}
+          variant="inside"
+          profileTheme={profile}
+          showBadges={showBadges}
+          scale={scale}
+          stackActivity
+        />
+      </div>
+    </AlbumBlockFit>
   );
 }
 

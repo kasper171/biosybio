@@ -1,5 +1,6 @@
 import "@tanstack/react-start/server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AlbumMediaKind } from "@/features/album/lib/security/album-upload-validation";
 import {
   ALBUM_AUDIO_MAX_BYTES,
@@ -7,6 +8,66 @@ import {
   ALBUM_VIDEO_MAX_BYTES_FREE,
   ALBUM_VIDEO_MAX_BYTES_PREMIUM,
 } from "@/features/album/lib/security/album-upload-validation";
+import { FULL_ACCESS_ROLE_IDS } from "@/lib/profile-roles";
+
+function maxMb(bytes: number): number {
+  return Math.round(bytes / (1024 * 1024));
+}
+
+export function albumVideoMaxBytes(isPremium: boolean): number {
+  return isPremium ? ALBUM_VIDEO_MAX_BYTES_PREMIUM : ALBUM_VIDEO_MAX_BYTES_FREE;
+}
+
+const VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov", "m4v"]);
+
+export function albumStoragePathMediaKind(storagePath: string): AlbumMediaKind | null {
+  const ext = storagePath.split(".").pop()?.toLowerCase() ?? "";
+  if (VIDEO_EXTENSIONS.has(ext)) return "video";
+  if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext)) return "image";
+  if (["mp3", "wav", "ogg", "m4a"].includes(ext)) return "audio";
+  return null;
+}
+
+export function validateAlbumDirectUploadBytes(
+  storagePath: string,
+  bytes: number,
+  isPremium: boolean,
+): { ok: true } | { ok: false; error: string } {
+  const kind = albumStoragePathMediaKind(storagePath);
+  if (kind !== "video") return { ok: true };
+
+  const maxBytes = albumVideoMaxBytes(isPremium);
+  if (bytes > maxBytes) {
+    return { ok: false, error: `File exceeds the ${maxMb(maxBytes)}MB limit.` };
+  }
+  return { ok: true };
+}
+
+export async function resolveAlbumUploadPremiumServer(
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+): Promise<boolean> {
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("is_premium")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profile?.is_premium === true) return true;
+
+  const { data: roleRows } = await supabaseAdmin
+    .from("profile_roles")
+    .select("role_id, profile_role_types(grants_full_access)")
+    .eq("profile_id", userId);
+
+  for (const row of roleRows ?? []) {
+    const roleId = row.role_id as string;
+    const grants = (row.profile_role_types as { grants_full_access?: boolean } | null)?.grants_full_access;
+    if (grants || FULL_ACCESS_ROLE_IDS.has(roleId as never)) return true;
+  }
+
+  return false;
+}
 
 function matchesMagic(buffer: Buffer, bytes: number[]): boolean {
   if (buffer.length < bytes.length) return false;
@@ -60,7 +121,7 @@ export function validateAlbumMediaBuffer(
 
   let maxBytes = ALBUM_IMAGE_MAX_BYTES;
   if (kind === "video") {
-    maxBytes = options?.isPremium ? ALBUM_VIDEO_MAX_BYTES_PREMIUM : ALBUM_VIDEO_MAX_BYTES_FREE;
+    maxBytes = albumVideoMaxBytes(options?.isPremium === true);
   } else if (kind === "audio") {
     maxBytes = ALBUM_AUDIO_MAX_BYTES;
   }

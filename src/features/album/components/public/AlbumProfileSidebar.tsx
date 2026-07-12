@@ -134,15 +134,20 @@ export function AlbumProfileSidebar({ profile, theme, className }: Props) {
   const frameOverflow = profile.avatar_frame_id
     ? Math.ceil(avatarSize * (AVATAR_FRAME_SCALE - 1) / 2)
     : 0;
-  const avatarVisualH = avatarSize + frameOverflow * 2;
+  const avatarVisualSize = avatarSize + frameOverflow * 2;
+  const avatarVisualH = avatarVisualSize;
 
   return (
     <aside
-      className={cn("album-profile-sidebar-card relative overflow-hidden", chromeClass, className)}
+      className={cn("album-profile-sidebar-card relative overflow-visible", chromeClass, className)}
       style={shell}
     >
       {surface ? (
-        <div aria-hidden className={surface.className} style={surface.style} />
+        <div
+          aria-hidden
+          className={cn(surface.className, "overflow-hidden")}
+          style={surface.style}
+        />
       ) : null}
       <div
         className={cn(
@@ -153,11 +158,11 @@ export function AlbumProfileSidebar({ profile, theme, className }: Props) {
         {aligned ? (
           <div
             className="album-profile-sidebar__aligned-grid"
-            style={{ gridTemplateColumns: `${avatarSize}px minmax(0, 1fr)` }}
+            style={{ gridTemplateColumns: `${avatarVisualSize}px minmax(0, 1fr)` }}
           >
             <div
-              className="flex items-center justify-center self-center overflow-visible"
-              style={{ minHeight: avatarVisualH }}
+              className="album-profile-sidebar__avatar-wrap flex items-center justify-center self-center"
+              style={{ minHeight: avatarVisualH, minWidth: avatarVisualSize }}
             >
               <SidebarAvatar profile={profile} size={avatarSize} />
             </div>
@@ -167,7 +172,7 @@ export function AlbumProfileSidebar({ profile, theme, className }: Props) {
           </div>
         ) : (
           <>
-            <div className="album-profile-sidebar__avatar-wrap flex justify-center">
+            <div className="album-profile-sidebar__avatar-wrap flex justify-center" style={{ paddingTop: frameOverflow }}>
               <SidebarAvatar profile={profile} size={avatarSize} />
             </div>
             <SidebarIdentity profile={profile} theme={theme} aligned={false} />

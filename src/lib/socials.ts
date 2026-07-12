@@ -32,8 +32,9 @@ export const SOCIALS: SocialDef[] = [
     prefix: "tiktok.com/@", placeholder: "yourname",
     build: (h) => `https://tiktok.com/@${h}` },
   { key: "youtube", label: "YouTube", icon: FaYoutube, brandColor: "#FF0000",
-    prefix: "youtube.com/@", placeholder: "yourchannel",
-    build: (h) => `https://youtube.com/@${h}` },
+    prefix: "youtube.com/", placeholder: "@canal, watch?v=... ou cole o link",
+    build: (h) => buildYoutubeSocialUrl(h),
+    isFreeform: true },
   { key: "twitter", label: "X / Twitter", icon: FaTwitter, brandColor: "#1DA1F2",
     prefix: "x.com/", placeholder: "yourname",
     build: (h) => `https://x.com/${h}` },
@@ -50,8 +51,9 @@ export const SOCIALS: SocialDef[] = [
     prefix: "discord.gg/", placeholder: "invite",
     build: (h) => `https://discord.gg/${h}` },
   { key: "spotify", label: "Spotify", icon: FaSpotify, brandColor: "#1DB954",
-    prefix: "open.spotify.com/user/", placeholder: "your-id",
-    build: (h) => `https://open.spotify.com/user/${h}` },
+    prefix: "open.spotify.com/", placeholder: "playlist/... track/... ou cole o link",
+    build: (h) => buildSpotifySocialUrl(h),
+    isFreeform: true },
   { key: "soundcloud", label: "SoundCloud", icon: FaSoundcloud, brandColor: "#FF5500",
     prefix: "soundcloud.com/", placeholder: "yourname",
     build: (h) => `https://soundcloud.com/${h}` },
@@ -135,6 +137,118 @@ function isImgurHost(hostname: string): boolean {
   return host === "imgur.com" || host.endsWith(".imgur.com");
 }
 
+function isYoutubeHost(hostname: string): boolean {
+  const host = hostname.replace(/^www\./i, "").toLowerCase();
+  return (
+    host === "youtube.com" ||
+    host === "m.youtube.com" ||
+    host === "music.youtube.com" ||
+    host === "youtu.be" ||
+    host === "youtube-nocookie.com" ||
+    host.endsWith(".youtube.com")
+  );
+}
+
+function isSpotifyHost(hostname: string): boolean {
+  const host = hostname.replace(/^www\./i, "").toLowerCase();
+  return host === "spotify.com" || host === "open.spotify.com" || host.endsWith(".spotify.com");
+}
+
+/** Canal, vídeo, playlist, shorts — qualquer URL youtube.com / youtu.be. */
+function normalizeYoutubeSocial(raw: string): string {
+  let v = raw.trim();
+  if (!v) return "";
+
+  try {
+    const withProto = /^https?:\/\//i.test(v)
+      ? v
+      : v.toLowerCase().includes("youtube.com") || v.toLowerCase().includes("youtu.be")
+        ? `https://${v.replace(/^\/+/, "")}`
+        : null;
+    if (withProto) {
+      const u = new URL(withProto);
+      if (!isYoutubeHost(u.hostname)) return "";
+      const host = u.hostname.replace(/^www\./i, "").toLowerCase();
+      if (host === "youtu.be") {
+        const id = u.pathname.replace(/^\/+/, "").split("/")[0];
+        return id ? `watch?v=${id}` : "";
+      }
+      return `${u.pathname}${u.search}`.replace(/^\/+/, "").replace(/\/+$/, "");
+    }
+  } catch {
+    // segue como handle/caminho
+  }
+
+  v = v.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+  if (/^(?:m\.)?youtube\.com\//i.test(v)) {
+    v = v.replace(/^(?:m\.)?youtube\.com\//i, "");
+  } else if (/^youtu\.be\//i.test(v)) {
+    const id = v.slice("youtu.be/".length).split(/[/?#]/)[0];
+    return id ? `watch?v=${id}` : "";
+  }
+  v = v.replace(/^\/+/, "").replace(/\/+$/, "");
+  if (!v) return "";
+  // handle legado: só o nome do canal → @nome
+  if (!v.includes("/") && !v.includes("?") && !v.startsWith("@")) return `@${v}`;
+  return v;
+}
+
+function buildYoutubeSocialUrl(handle: string): string {
+  const v = normalizeYoutubeSocial(handle);
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  return `https://www.youtube.com/${v.replace(/^\/+/, "")}`;
+}
+
+/** User, playlist, track, album, artist, show, episode — qualquer open.spotify.com. */
+function normalizeSpotifySocial(raw: string): string {
+  let v = raw.trim();
+  if (!v) return "";
+
+  const uriMatch = v.match(/^spotify:(track|album|playlist|artist|user|show|episode):([a-zA-Z0-9]+)/i);
+  if (uriMatch) {
+    return `${uriMatch[1].toLowerCase()}/${uriMatch[2]}`;
+  }
+
+  try {
+    const withProto = /^https?:\/\//i.test(v)
+      ? v
+      : v.toLowerCase().includes("spotify.com")
+        ? `https://${v.replace(/^\/+/, "")}`
+        : null;
+    if (withProto) {
+      const u = new URL(withProto);
+      if (!isSpotifyHost(u.hostname)) return "";
+      const path = u.pathname.replace(/^\/+/, "").replace(/\/+$/, "");
+      const match = path.match(
+        /^(?:intl-[a-z]{2}\/)?(track|album|playlist|artist|user|show|episode)\/([a-zA-Z0-9]+)/i,
+      );
+      if (match) return `${match[1].toLowerCase()}/${match[2]}`;
+      return path;
+    }
+  } catch {
+    // segue como caminho/id
+  }
+
+  v = v.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+  if (/^open\.spotify\.com\//i.test(v)) v = v.slice("open.spotify.com/".length);
+  else if (/^spotify\.com\//i.test(v)) v = v.slice("spotify.com/".length);
+  v = v.replace(/^\/+/, "").replace(/\/+$/, "");
+  if (!v) return "";
+  // legado: só o user id
+  if (!v.includes("/")) return `user/${v}`;
+  const intl = v.match(/^(?:intl-[a-z]{2}\/)?(track|album|playlist|artist|user|show|episode)\/([a-zA-Z0-9]+)/i);
+  if (intl) return `${intl[1].toLowerCase()}/${intl[2]}`;
+  return v;
+}
+
+function buildSpotifySocialUrl(handle: string): string {
+  const v = normalizeSpotifySocial(handle);
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  return `https://open.spotify.com/${v.replace(/^\/+/, "")}`;
+}
+
 /** Aceita user/seunome, a/álbum, gallery/… ou URL completa com imgur.com */
 function normalizeImgurHandle(raw: string): string {
   let v = raw.trim();
@@ -174,6 +288,8 @@ export function normalizeHandle(def: SocialDef, raw: string): string {
   let v = raw.trim();
   if (!v) return "";
   if (def.key === "imgur") return normalizeImgurHandle(v);
+  if (def.key === "youtube") return normalizeYoutubeSocial(v);
+  if (def.key === "spotify") return normalizeSpotifySocial(v);
   if (def.isFreeform) return v;
   // If they pasted the full URL, keep only what's after the known prefix.
   try {
@@ -194,6 +310,8 @@ export function resolveSocialUrl(key: string, value: string): string | null {
   const def = SOCIAL_MAP[key];
   if (!def) return value.startsWith("http") ? value : `https://${value}`;
   if (key === "imgur") return buildImgurUrl(value);
+  if (key === "youtube") return buildYoutubeSocialUrl(value) || null;
+  if (key === "spotify") return buildSpotifySocialUrl(value) || null;
   if (value.startsWith("http") || value.startsWith("mailto:")) return value;
   return def.build(value);
 }

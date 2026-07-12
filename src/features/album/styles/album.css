@@ -299,6 +299,7 @@
 
 .album-profile-sidebar__avatar-wrap {
   display: flex;
+  overflow: visible;
 }
 
 .album-profile-sidebar__avatar {
@@ -734,9 +735,38 @@
   overflow: hidden;
 }
 
-.album-block-fill > * {
+.album-block-fill--media > * {
   height: 100%;
   width: 100%;
+}
+
+.album-block-fill--fit {
+  overflow: hidden;
+}
+
+.album-block-fit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.35rem;
+  box-sizing: border-box;
+}
+
+.album-block-fit__stage {
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.album-block-fit__measure {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
 }
 
 .album-block-fill--embed {

@@ -19,6 +19,8 @@ import {
 } from "@/features/album/services/albumStorage.server";
 import {
   albumStoragePathOwnedByUser,
+  resolveAlbumUploadPremiumServer,
+  validateAlbumDirectUploadBytes,
   validateAlbumMediaBuffer,
 } from "@/features/album/lib/security/album-upload-validation.server";
 
@@ -154,7 +156,7 @@ export const saveAlbumLayoutFn = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-export const fetchAlbumLayoutFn = createServerFn({ method: "GET" }).handler(async () => {
+export const fetchAlbumLayoutFn = createServerFn({ method: "POST" }).handler(async () => {
   const userId = await requireAuthenticatedUserId();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -283,7 +285,7 @@ export const albumLinkVerifiedConnectionFn = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
-export const fetchAlbumPublicByUsernameFn = createServerFn({ method: "GET" })
+export const fetchAlbumPublicByUsernameFn = createServerFn({ method: "POST" })
   .inputValidator(z.object({ username: z.string().min(2).max(64) }))
   .handler(async ({ data }) => {
     const { fetchAlbumPublicProfile } = await import(
@@ -327,6 +329,13 @@ export const registerAlbumMediaUploadFn = createServerFn({ method: "POST" })
       return { ok: false as const, error: "Invalid storage path." };
     }
 
+    const isPremium = await resolveAlbumUploadPremiumServer(supabaseAdmin, userId);
+    const sizeCheck = validateAlbumDirectUploadBytes(data.storagePath, data.bytes, isPremium);
+    if (!sizeCheck.ok) {
+      await supabaseAdmin.storage.from(ALBUM_BUCKET).remove([data.storagePath]);
+      return { ok: false as const, error: sizeCheck.error };
+    }
+
     if (data.previousPath && data.previousBytes && data.previousBytes > 0) {
       if (albumStoragePathOwnedByUser(userId, data.previousPath)) {
         await supabaseAdmin.storage.from(ALBUM_BUCKET).remove([data.previousPath]);
@@ -365,8 +374,10 @@ export const uploadAlbumMediaFn = createServerFn({ method: "POST" })
       return { ok: false as const, error: "Invalid file payload." };
     }
 
+    const isPremium = await resolveAlbumUploadPremiumServer(supabaseAdmin, userId);
+
     const validation = validateAlbumMediaBuffer(buffer, data.size, {
-      isPremium: data.isPremium === true,
+      isPremium,
     });
     if (!validation.ok) return { ok: false as const, error: validation.error };
 

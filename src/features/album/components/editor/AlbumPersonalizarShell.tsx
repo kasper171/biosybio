@@ -55,7 +55,7 @@ function AlbumPersonalizarShellInner({
   const { t: albumT } = useAlbumI18n();
   const albumPanels = useAlbumStudioPanels();
   const { saveStyle } = useAlbumStyle();
-  const { layout, theme, setLayout, setTheme, saving, flushSave } = useAlbumLayout();
+  const { layout, theme, setLayout, setTheme, saving, error: layoutError, flushSave } = useAlbumLayout();
   const [profile, setProfile] = useState(profileProp);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [savingAll, setSavingAll] = useState(false);
@@ -75,6 +75,11 @@ function AlbumPersonalizarShellInner({
     });
   }, [saveStyle]);
 
+  useEffect(() => {
+    if (!layoutError) return;
+    toast.error(layoutError);
+  }, [layoutError]);
+
   const connections = useMemo(() => resolveAlbumConnections(profile), [profile]);
 
   const updateProfile = <K extends keyof Profile>(k: K, v: Profile[K]) => {
@@ -91,12 +96,16 @@ function AlbumPersonalizarShellInner({
   const handleSave = async () => {
     setSavingAll(true);
     try {
+      const layoutResult = await flushSave();
+      if (!layoutResult.ok) {
+        toast.error(layoutResult.error ?? "Não foi possível salvar o layout do álbum.");
+        return;
+      }
       const styleResult = await saveStyle("album");
       if (!styleResult.ok) {
         toast.error(styleResult.error ?? "Não foi possível salvar o estilo Álbum.");
         return;
       }
-      await flushSave();
       await onSaveProfile();
       toast.success(albumT("album.studio.saved"));
     } finally {

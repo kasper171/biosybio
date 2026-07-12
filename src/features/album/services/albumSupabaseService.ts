@@ -8,11 +8,32 @@ import {
   detectAlbumMediaKind,
   validateAlbumMediaUpload,
 } from "@/features/album/lib/security/album-upload-validation";
+import { fetchProfileRoles, profileHasFullAccess } from "@/lib/profile-roles";
 
 export const ALBUM_BUCKET = "album-media";
 
 /** Limite para upload via base64 no server fn (~8MB arquivo). Acima disso usa storage direto. */
 const DIRECT_UPLOAD_THRESHOLD = 8 * 1024 * 1024;
+
+async function resolveAlbumUploadPremiumClient(hint?: boolean): Promise<boolean> {
+  if (hint === true) return true;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_premium")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.is_premium === true) return true;
+
+  const roles = await fetchProfileRoles(user.id);
+  return profileHasFullAccess({ is_premium: false, roles });
+}
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -98,13 +119,16 @@ export async function uploadAlbumMediaFile(
   | { ok: true; publicUrl: string; storagePath: string; bytes: number }
   | { ok: false; error: string }
 > {
+  const isPremium = await resolveAlbumUploadPremiumClient(options?.isPremium);
+  const uploadOptions = { ...options, isPremium };
+
   const kind = detectAlbumMediaKind(file);
   if (
     file.size >= DIRECT_UPLOAD_THRESHOLD ||
     file.type.startsWith("video/") ||
     kind === "video"
   ) {
-    return uploadAlbumMediaDirect(blockId, file, options);
+    return uploadAlbumMediaDirect(blockId, file, uploadOptions);
   }
 
   const base64 = await fileToBase64(file);
@@ -117,12 +141,12 @@ export async function uploadAlbumMediaFile(
       base64,
       previousPath: options?.previousPath,
       previousBytes: options?.previousBytes,
-      isPremium: options?.isPremium,
+      isPremium,
     },
   });
 
   if (!result.ok) {
-    return uploadAlbumMediaDirect(blockId, file, options);
+    return uploadAlbumMediaDirect(blockId, file, uploadOptions);
   }
 
   return {

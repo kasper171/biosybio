@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { Responsive, WidthProvider, type Layout } from "react-grid-layout/legacy";
 import type { Profile } from "@/lib/profile-storage";
 import type { AlbumBlock, AlbumBlockType, AlbumConnectionsRow, AlbumTheme } from "@/features/album/types/album.types";
@@ -10,11 +11,11 @@ import {
   ALBUM_ROW_HEIGHT,
   albumBlocksToLayout,
   albumMergeLayoutIntoBlocks,
+  ALBUM_SIZE_PRESETS,
 } from "@/features/album/lib/album-grid-utils";
 import { AlbumBlockShell } from "@/features/album/components/editor/AlbumBlockShell";
 import { AlbumBlockFrame } from "@/features/album/components/blocks/AlbumBlockFrame";
 import { releaseAlbumBlockMedia } from "@/features/album/lib/album-block-media";
-import { useAlbumBlockResize } from "@/features/album/hooks/useAlbumBlockResize";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -40,7 +41,7 @@ type Props = {
   connections?: AlbumConnectionsRow | null;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
-  onLayoutChange?: (blocks: AlbumBlock[]) => void;
+  onLayoutChange?: Dispatch<SetStateAction<AlbumBlock[]>>;
 };
 
 function renderPublicBlock(
@@ -81,14 +82,36 @@ export function AlbumGrid({
   onSelect,
   onLayoutChange,
 }: Props) {
-  const { applyPreset } = useAlbumBlockResize(onLayoutChange ?? (() => {}));
+  const isEdit = mode === "edit";
+  const suppressLayoutSyncRef = useRef(false);
+
+  const commitLayout = useCallback(
+    (layout: Layout[]) => {
+      if (!isEdit || !onLayoutChange || suppressLayoutSyncRef.current) return;
+      onLayoutChange((prev) => albumMergeLayoutIntoBlocks(prev, layout));
+    },
+    [isEdit, onLayoutChange],
+  );
+
+  const applyPreset = useCallback(
+    (blockId: string, presetKey: string) => {
+      const preset = ALBUM_SIZE_PRESETS[presetKey];
+      if (!preset || !onLayoutChange) return;
+      suppressLayoutSyncRef.current = true;
+      onLayoutChange((prev) =>
+        prev.map((b) => (b.id === blockId ? { ...b, w: preset.w, h: preset.h } : b)),
+      );
+      queueMicrotask(() => {
+        suppressLayoutSyncRef.current = false;
+      });
+    },
+    [onLayoutChange],
+  );
 
   const layouts = useMemo(() => {
     const lg = albumBlocksToLayout(blocks);
     return { lg, md: lg, sm: lg.map((item) => ({ ...item, x: 0, w: 1 })) };
   }, [blocks]);
-
-  const isEdit = mode === "edit";
 
   if (blocks.length === 0) {
     return (
@@ -116,11 +139,8 @@ export function AlbumGrid({
         isResizable={isEdit}
         compactType="vertical"
         preventCollision={false}
-        onLayoutChange={(_current: Layout[], allLayouts) => {
-          if (!isEdit || !onLayoutChange) return;
-          const lg = allLayouts.lg ?? _current;
-          onLayoutChange(albumMergeLayoutIntoBlocks(blocks, lg));
-        }}
+        onDragStop={(layout) => commitLayout(layout)}
+        onResizeStop={(layout) => commitLayout(layout)}
       >
         {blocks.map((block) => {
           const def = getAlbumBlockDef(block.type);
@@ -144,9 +164,10 @@ export function AlbumGrid({
                 block={block as never}
                 userId={userId ?? ""}
                 theme={theme}
+                profile={profile}
                 onChange={(data) => {
-                  onLayoutChange?.(
-                    blocks.map((b) => (b.id === block.id ? { ...b, data } : b)),
+                  onLayoutChange?.((prev) =>
+                    prev.map((b) => (b.id === block.id ? { ...b, data } : b)),
                   );
                 }}
               />
@@ -174,7 +195,7 @@ export function AlbumGrid({
               onSelect={() => onSelect?.(block.id)}
               onRemove={() => {
                 void releaseAlbumBlockMedia(block);
-                onLayoutChange?.(blocks.filter((b) => b.id !== block.id));
+                onLayoutChange?.((prev) => prev.filter((b) => b.id !== block.id));
                 if (isSelected) onSelect?.(null);
               }}
               onApplyPreset={(key) => applyPreset(block.id, key)}

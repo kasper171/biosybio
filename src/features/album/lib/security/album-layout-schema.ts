@@ -8,6 +8,18 @@ import {
 
 const gridInt = z.number().int().min(0).max(48);
 
+const albumBlockChromeSchema = z.object({
+  borderWidth: z.number().min(0).max(16).optional(),
+  borderColor: z.string().max(32).optional(),
+  borderStyle: z.enum(["none", "solid", "dashed", "dotted", "double"]).optional(),
+  borderRadius: z.number().min(0).max(48).optional(),
+  glowEnabled: z.boolean().optional(),
+  glowColor: z.string().max(32).optional(),
+  glowSize: z.number().min(0).max(48).optional(),
+  glassEnabled: z.boolean().optional(),
+  revealEffect: z.enum(["fade", "slide_up", "scale", "none"]).optional(),
+});
+
 const connectionDataSchema = z.object({
   showBadges: z.boolean().optional(),
   scale: z.number().min(0.5).max(2).optional(),
@@ -75,6 +87,7 @@ export const albumBlockSchema = z
     y: gridInt,
     w: gridInt.refine((n) => n >= 1 && n <= 12),
     h: gridInt.refine((n) => n >= 1 && n <= 24),
+    chrome: albumBlockChromeSchema.optional(),
     data: z.record(z.unknown()),
   })
   .superRefine((block, ctx) => {
@@ -126,10 +139,22 @@ export type AlbumLayoutPayload = z.infer<typeof albumLayoutPayloadSchema>;
 export function sanitizeAlbumLayoutPayload(payload: AlbumLayoutPayload): AlbumLayoutPayload {
   const layout = payload.layout.map((block) => {
     const base = { ...block };
+    const chrome = block.chrome
+      ? {
+          ...block.chrome,
+          borderColor: block.chrome.borderColor
+            ? albumSanitizeHexColor(block.chrome.borderColor) ?? undefined
+            : undefined,
+          glowColor: block.chrome.glowColor
+            ? albumSanitizeHexColor(block.chrome.glowColor) ?? undefined
+            : undefined,
+        }
+      : undefined;
     if (block.type === "text" && block.data && typeof block.data === "object") {
       const d = block.data as Record<string, unknown>;
       return {
         ...base,
+        chrome,
         data: {
           ...d,
           content: albumSanitizePlainText(String(d.content ?? "")),
@@ -142,6 +167,7 @@ export function sanitizeAlbumLayoutPayload(payload: AlbumLayoutPayload): AlbumLa
       const d = block.data as Record<string, unknown>;
       return {
         ...base,
+        chrome,
         data: {
           ...d,
           alt: d.alt ? albumSanitizePlainText(String(d.alt), 200) : undefined,
@@ -154,6 +180,7 @@ export function sanitizeAlbumLayoutPayload(payload: AlbumLayoutPayload): AlbumLa
       const embed = albumNormalizeSpotifyEmbedUrl(String(d.embedUrl ?? ""));
       return {
         ...base,
+        chrome,
         data: {
           ...d,
           embedUrl: embed ?? "",
@@ -161,7 +188,7 @@ export function sanitizeAlbumLayoutPayload(payload: AlbumLayoutPayload): AlbumLa
         },
       };
     }
-    return base;
+    return chrome ? { ...base, chrome } : base;
   });
 
   const theme = payload.theme
@@ -181,6 +208,20 @@ export function sanitizeAlbumLayoutPayload(payload: AlbumLayoutPayload): AlbumLa
           : undefined,
         glowColor: payload.theme.glowColor
           ? albumSanitizeHexColor(payload.theme.glowColor) ?? undefined
+          : undefined,
+        sidebar: payload.theme.sidebar
+          ? {
+              ...payload.theme.sidebar,
+              cardColor: payload.theme.sidebar.cardColor
+                ? albumSanitizeHexColor(payload.theme.sidebar.cardColor) ?? undefined
+                : undefined,
+              borderColor: payload.theme.sidebar.borderColor
+                ? albumSanitizeHexColor(payload.theme.sidebar.borderColor) ?? undefined
+                : undefined,
+              dividerColor: payload.theme.sidebar.dividerColor
+                ? albumSanitizeHexColor(payload.theme.sidebar.dividerColor) ?? undefined
+                : undefined,
+            }
           : undefined,
       }
     : undefined;

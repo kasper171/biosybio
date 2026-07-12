@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import type { AlbumBlockEditorProps, AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
 import { uploadAlbumMediaFile } from "@/features/album/services/albumSupabaseService";
 import { AlbumMediaPositionLayer } from "@/features/album/components/blocks/AlbumMediaPositionLayer";
+import { AlbumBlockFit } from "@/features/album/components/blocks/AlbumBlockFit";
 
 type EditorProps = AlbumBlockEditorProps<"image">;
 
@@ -31,13 +32,13 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
 
   if (block.data.url) {
     return (
-      <div className="album-block-fill">
+      <div className="album-block-fill album-block-fill--media">
         <AlbumMediaPositionLayer
         url={block.data.url}
         kind="image"
         posX={block.data.posX ?? 50}
         posY={block.data.posY ?? 50}
-        objectFit={block.data.objectFit ?? "cover"}
+        objectFit={block.data.objectFit ?? "contain"}
         editable
         onChange={(x, y) => onChange({ ...block.data, posX: x, posY: y })}
         />
@@ -73,13 +74,13 @@ export function ImageBlockEditor({ block, onChange }: EditorProps) {
 export function ImageBlockPublic({ block }: AlbumBlockPublicProps<"image">) {
   if (!block.data.url) return null;
   return (
-    <div className="album-block-fill">
+    <div className="album-block-fill album-block-fill--media">
       <AlbumMediaPositionLayer
       url={block.data.url}
       kind="image"
       posX={block.data.posX ?? 50}
       posY={block.data.posY ?? 50}
-      objectFit={block.data.objectFit ?? "cover"}
+      objectFit={block.data.objectFit ?? "contain"}
       />
     </div>
   );

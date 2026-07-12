@@ -1,5 +1,10 @@
 /** ALBUM_COPY — upload validation isolated from profile-assets */
 
+import {
+  PROFILE_VIDEO_MAX_BYTES_FREE,
+  PROFILE_VIDEO_MAX_BYTES_PREMIUM,
+} from "@/lib/profile-upload-validation";
+
 export type AlbumMediaKind = "image" | "video" | "audio";
 
 const IMAGE_MIMES = new Set([
@@ -25,8 +30,8 @@ const AUDIO_MIMES = new Set([
 ]);
 
 export const ALBUM_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
-export const ALBUM_VIDEO_MAX_BYTES_FREE = 10 * 1024 * 1024;
-export const ALBUM_VIDEO_MAX_BYTES_PREMIUM = 30 * 1024 * 1024;
+export const ALBUM_VIDEO_MAX_BYTES_FREE = PROFILE_VIDEO_MAX_BYTES_FREE;
+export const ALBUM_VIDEO_MAX_BYTES_PREMIUM = PROFILE_VIDEO_MAX_BYTES_PREMIUM;
 export const ALBUM_AUDIO_MAX_BYTES = 10 * 1024 * 1024;
 /** Per-user quota across album-media bucket */
 export const ALBUM_STORAGE_QUOTA_BYTES = 200 * 1024 * 1024;
@@ -83,7 +88,7 @@ export function validateAlbumMediaUpload(
   const mime = (file.type || "").toLowerCase().split(";")[0].trim();
   let maxBytes = ALBUM_IMAGE_MAX_BYTES;
   if (kind === "video") {
-    maxBytes = options?.isPremium ? ALBUM_VIDEO_MAX_BYTES_PREMIUM : ALBUM_VIDEO_MAX_BYTES_FREE;
+    maxBytes = options?.isPremium === true ? ALBUM_VIDEO_MAX_BYTES_PREMIUM : ALBUM_VIDEO_MAX_BYTES_FREE;
   } else if (kind === "audio") {
     maxBytes = ALBUM_AUDIO_MAX_BYTES;
   }

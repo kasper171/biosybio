@@ -2,8 +2,9 @@ import type { Profile } from "@/lib/profile-storage";
 import type { AlbumConnectionsRow } from "@/features/album/types/album.types";
 import type { AlbumBlockPublicProps } from "@/features/album/types/block-registry.types";
 import { HotelProfileCard } from "@/components/HotelProfileCard";
-import { getHotelCardLayoutFromProfile } from "@/lib/hotel";
+import { getHotelCardFrameStyle, getHotelCardLayoutFromProfile } from "@/lib/hotel";
 import { profileToHabboData, profileToHabbletData } from "@/lib/hotel/profile-hotel";
+import { AlbumBlockFit } from "@/features/album/components/blocks/AlbumBlockFit";
 
 type HabboProps = AlbumBlockPublicProps<"habbo"> & {
   connections: AlbumConnectionsRow | null;
@@ -18,17 +19,21 @@ function HotelGridBlock({ profile, platform }: { profile: Profile; platform: "ha
   const data = platform === "habbo" ? profileToHabboData(profile) : profileToHabbletData(profile);
   if (!data) return null;
   const layout = getHotelCardLayoutFromProfile(profile);
+  const frameStyle = getHotelCardFrameStyle(layout.size, layout.shape);
+  const frameHeight = typeof frameStyle.height === "number" ? frameStyle.height : 140;
 
   return (
-    <div className="album-block-fill flex h-full min-h-0 w-full items-stretch justify-center overflow-hidden p-1">
-      <HotelProfileCard
-        data={data}
-        profile={profile}
-        layout={layout}
-        variant="inside"
-        className="h-full w-full min-h-0"
-      />
-    </div>
+    <AlbumBlockFit className="album-block-fill album-block-fill--fit">
+      <div className="album-hotel-block-card w-full max-w-[20rem]" style={{ height: frameHeight }}>
+        <HotelProfileCard
+          data={data}
+          profile={profile}
+          layout={layout}
+          variant="inside"
+          className="h-full w-full min-w-0"
+        />
+      </div>
+    </AlbumBlockFit>
   );
 }
 
