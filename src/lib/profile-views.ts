@@ -38,9 +38,20 @@ export function hasCountedProfileView(profileId: string): boolean {
   if (!canUseStorage()) return false;
   const raw = localStorage.getItem(`${VIEW_FLAG_PREFIX}${profileId}`);
   if (!raw) return false;
+
+  // Legado gravava "1" sem timestamp — isso bloqueava o browser pra sempre.
   const ts = Number(raw);
-  if (!Number.isFinite(ts)) return raw === "1";
-  return Date.now() - ts < VIEW_DEDUP_TTL_MS;
+  if (!Number.isFinite(ts) || ts <= 0) {
+    localStorage.removeItem(`${VIEW_FLAG_PREFIX}${profileId}`);
+    return false;
+  }
+
+  if (Date.now() - ts >= VIEW_DEDUP_TTL_MS) {
+    localStorage.removeItem(`${VIEW_FLAG_PREFIX}${profileId}`);
+    return false;
+  }
+
+  return true;
 }
 
 /** Marca que este visitante já viu o perfil (evita chamadas repetidas ao servidor). */
